@@ -1,0 +1,21 @@
+# 敏感信息（绝不入仓）
+私密/
+
+# 编辑器 / 工具会话状态
+.claudian/
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.idea/
+.vscode/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+
+# 临时与系统文件
+Thumbs.db
+Desktop.ini
+*.tmp

@@ -1,0 +1,176 @@
+{
+  "id": "2026-04-04-205925",
+  "generated_at": "2026-04-04T12:59:25.2358337Z",
+  "language": "zh",
+  "pages": [
+    {
+      "slug": "1-xiang-mu-gai-lan",
+      "title": "项目概览",
+      "file": "1-xiang-mu-gai-lan.md",
+      "section": "快速入门",
+      "level": "Beginner"
+    },
+    {
+      "slug": "2-kuai-su-kai-shi",
+      "title": "快速开始",
+      "file": "2-kuai-su-kai-shi.md",
+      "section": "快速入门",
+      "level": "Beginner"
+    },
+    {
+      "slug": "3-huan-jing-yao-qiu-yu-an-zhuang",
+      "title": "环境要求与安装",
+      "file": "3-huan-jing-yao-qiu-yu-an-zhuang.md",
+      "section": "快速入门",
+      "group": "基础配置",
+      "level": "Beginner"
+    },
+    {
+      "slug": "4-deng-lu-yu-ping-tai-pei-zhi",
+      "title": "登录与平台配置",
+      "file": "4-deng-lu-yu-ping-tai-pei-zhi.md",
+      "section": "快速入门",
+      "group": "基础配置",
+      "level": "Beginner"
+    },
+    {
+      "slug": "5-feature-flags-gong-neng-kai-guan",
+      "title": "Feature Flags 功能开关",
+      "file": "5-feature-flags-gong-neng-kai-guan.md",
+      "section": "快速入门",
+      "group": "基础配置",
+      "level": "Intermediate"
+    },
+    {
+      "slug": "6-wu-ceng-jia-gou-she-ji",
+      "title": "五层架构设计",
+      "file": "6-wu-ceng-jia-gou-she-ji.md",
+      "section": "核心架构",
+      "level": "Advanced"
+    },
+    {
+      "slug": "7-agentic-loop-he-xin-xun-huan",
+      "title": "Agentic Loop 核心循环",
+      "file": "7-agentic-loop-he-xin-xun-huan.md",
+      "section": "核心架构",
+      "level": "Advanced"
+    },
+    {
+      "slug": "8-queryengine-bian-pai-ji-zhi",
+      "title": "QueryEngine 编排机制",
+      "file": "8-queryengine-bian-pai-ji-zhi.md",
+      "section": "核心架构",
+      "group": "数据流与状态管理",
+      "level": "Advanced"
+    },
+    {
+      "slug": "9-hui-hua-zhuang-tai-guan-li",
+      "title": "会话状态管理",
+      "file": "9-hui-hua-zhuang-tai-guan-li.md",
+      "section": "核心架构",
+      "group": "数据流与状态管理",
+      "level": "Intermediate"
+    },
+    {
+      "slug": "10-gong-ju-xi-tong-jia-gou",
+      "title": "工具系统架构",
+      "file": "10-gong-ju-xi-tong-jia-gou.md",
+      "section": "工具系统",
+      "level": "Intermediate"
+    },
+    {
+      "slug": "11-nei-zhi-gong-ju-xiang-jie",
+      "title": "内置工具详解",
+      "file": "11-nei-zhi-gong-ju-xiang-jie.md",
+      "section": "工具系统",
+      "level": "Intermediate"
+    },
+    {
+      "slug": "12-mcp-xie-yi-ji-cheng",
+      "title": "MCP 协议集成",
+      "file": "12-mcp-xie-yi-ji-cheng.md",
+      "section": "工具系统",
+      "group": "高级工具",
+      "level": "Advanced"
+    },
+    {
+      "slug": "13-computer-use-dian-nao-cao-kong",
+      "title": "Computer Use 电脑操控",
+      "file": "13-computer-use-dian-nao-cao-kong.md",
+      "section": "工具系统",
+      "group": "高级工具",
+      "level": "Advanced"
+    },
+    {
+      "slug": "14-voice-mode-yu-yin-mo-shi",
+      "title": "Voice Mode 语音模式",
+      "file": "14-voice-mode-yu-yin-mo-shi.md",
+      "section": "工具系统",
+      "group": "高级工具",
+      "level": "Advanced"
+    },
+    {
+      "slug": "15-quan-xian-mo-xing-yu-gui-ze-yin-qing",
+      "title": "权限模型与规则引擎",
+      "file": "15-quan-xian-mo-xing-yu-gui-ze-yin-qing.md",
+      "section": "安全与权限",
+      "level": "Intermediate"
+    },
+    {
+      "slug": "16-auto-mode-zi-dong-mo-shi",
+      "title": "Auto Mode 自动模式",
+      "file": "16-auto-mode-zi-dong-mo-shi.md",
+      "section": "安全与权限",
+      "level": "Intermediate"
+    },
+    {
+      "slug": "17-sha-xiang-an-quan-ji-zhi",
+      "title": "沙箱安全机制",
+      "file": "17-sha-xiang-an-quan-ji-zhi.md",
+      "section": "安全与权限",
+      "level": "Advanced"
+    },
+    {
+      "slug": "18-remote-control-yuan-cheng-kong-zhi",
+      "title": "Remote Control 远程控制",
+      "file": "18-remote-control-yuan-cheng-kong-zhi.md",
+      "section": "高级功能",
+      "level": "Advanced"
+    },
+    {
+      "slug": "19-agent-xie-diao-mo-shi",
+      "title": "Agent 协调模式",
+      "file": "19-agent-xie-diao-mo-shi.md",
+      "section": "高级功能",
+      "level": "Advanced"
+    },
+    {
+      "slug": "20-memory-ji-yi-xi-tong",
+      "title": "Memory 记忆系统",
+      "file": "20-memory-ji-yi-xi-tong.md",
+      "section": "高级功能",
+      "level": "Intermediate"
+    },
+    {
+      "slug": "21-zi-ding-yi-agents",
+      "title": "自定义 Agents",
+      "file": "21-zi-ding-yi-agents.md",
+      "section": "扩展与定制",
+      "level": "Advanced"
+    },
+    {
+      "slug": "22-skills-ji-neng-kai-fa",
+      "title": "Skills 技能开发",
+      "file": "22-skills-ji-neng-kai-fa.md",
+      "section": "扩展与定制",
+      "level": "Advanced"
+    },
+    {
+      "slug": "23-hooks-ji-zhi",
+      "title": "Hooks 机制",
+      "file": "23-hooks-ji-zhi.md",
+      "section": "扩展与定制",
+      "level": "Intermediate"
+    }
+  ]
+}
