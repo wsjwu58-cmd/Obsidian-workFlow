@@ -42,19 +42,21 @@ def redact_text(text):
     lines = text.splitlines(keepends=True)
     out = []
     i = 0
-    while i < len(lines):
+    n = len(lines)
+    while i < n:
         line = lines[i]
         if HEADER_RE.match(line.strip()):
-            j = i + 1
-            while j < len(lines) and not lines[j].strip():
-                j += 1
-            if j < len(lines):
-                val = lines[j].strip()
+            out.append(line)
+            i += 1
+            # 该 AccessKey 段内（直到下一个头）的所有值行统一替换为占位符
+            while i < n and not HEADER_RE.match(lines[i].strip()):
+                val = lines[i].strip()
                 if VALUE_RE.match(val) and not val.startswith("["):
-                    out.append(line)
-                    out.append(lines[j].replace(val, PLACEHOLDER, 1))
-                    i = j
-                    continue
+                    out.append(lines[i].replace(val, PLACEHOLDER, 1))
+                else:
+                    out.append(lines[i])
+                i += 1
+            continue
         out.append(line)
         i += 1
     return "".join(out)
