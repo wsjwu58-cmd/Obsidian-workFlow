@@ -746,5 +746,4 @@ TransactionSynchronizationManager.registerSynchronization(
     *   **如果事务回滚 (`afterRollback`)**：Spring **不会**调用 `afterCommit()`。那个删除物理文件的代码永远不会执行。数据库记录恢复了，物理文件也还在，数据保持一致。
 
 ## 相关条目
-- [[09-源码解读/Free-fs/free-fs]]
 - [[面向对象]]

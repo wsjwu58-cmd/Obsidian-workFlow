@@ -8,6 +8,18 @@ tags: [知识库, 日志]
 
 > 时间倒序排列
 
+## [2026-08-03] maintenance | P1 巡检与安全上线
+
+- 新增：`scripts/lint.py`（断链 / 孤立 / 重复 / 积压 / index 同步 / 空笔记六项巡检，首跑全绿）、`scripts/scan_secrets.py`（凭据扫描，本地验证 0 命中）
+- 新增：`.github/workflows/lint.yml`（每日 08:30）、`.github/workflows/scan-secrets.yml`（push/PR 触发）
+- 更新：[[index]]（Day02-06 摘要细化）；Free-fs 去重后引用清理（保留「网盘项目的解析」版）
+- 安全：LLM_API_KEY 已存入 `私密/API密钥.md`，待配置为 GitHub Secret
+
+## [2026-08-03] lint | 巡检报告
+
+- 巡检时间：2026-08-03 | 条目数：108 | 断链：0 | 孤立：0 | 重复对：0 | pending：0 | index 缺失：0 | 空笔记：6
+
+
 ## [2026-08-03] maintenance | P0 地基：git 初始化与文件名规范化
 
 - 初始化：`D:\note` 建立 git 仓库（main 分支），`.gitignore` 排除 `私密/`、`.claudian/`、Obsidian 工作区状态

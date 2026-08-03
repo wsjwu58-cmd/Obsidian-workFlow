@@ -19,3 +19,7 @@ venv/
 Thumbs.db
 Desktop.ini
 *.tmp
+
+# 巡检产物
+.lint-report.md
+.lint-issues.md

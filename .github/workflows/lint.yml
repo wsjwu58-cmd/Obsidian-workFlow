@@ -1,0 +1,44 @@
+name: 每日巡检
+
+on:
+  schedule:
+    - cron: '30 0 * * *'      # 每天 08:30（UTC+8）= 00:30 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 安装 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 运行巡检
+        run: python scripts/lint.py --log wiki/log.md
+
+      - name: 提交巡检报告
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git config user.name "kb-bot"
+            git config user.email "kb-bot@users.noreply.github.com"
+            git add wiki/log.md
+            git commit -m "lint: $(date +%F) 巡检报告"
+            git push
+          fi
+
+      - name: 严重问题开 Issue
+        if: hashFiles('.lint-issues.md') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ -s .lint-issues.md ]; then
+            gh issue create --title "巡检异常 $(date +%F)" --body-file .lint-issues.md
+          fi
