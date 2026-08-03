@@ -18,6 +18,7 @@ SKIP_SUFFIXES = {".png", ".jpg", ".jpeg", ".gif", ".bmp", ".ico", ".webp",
 PATTERNS = [
     ("GitHub Token", re.compile(r"\bgh[pousr]_[A-Za-z0-9]{20,}\b")),
     ("API Key (sk-)", re.compile(r"\bsk-[A-Za-z0-9]{20,}\b")),
+    ("Alibaba AccessKey ID", re.compile(r"\bLTAI[A-Za-z0-9]{16,}\b")),
     ("AWS Access Key", re.compile(r"\bAKIA[0-9A-Z]{16}\b")),
     ("Google API Key", re.compile(r"\bAIza[0-9A-Za-z_\-]{35}\b")),
     ("Slack Token", re.compile(r"\bxox[baprs]-[0-9A-Za-z_\-]{10,}\b")),

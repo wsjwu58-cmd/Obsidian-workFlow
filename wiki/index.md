@@ -161,6 +161,7 @@ tags: [知识库, 索引]
 ## 待办清单（维护提醒）
 
 1. ⚠️ **安全**：`私密/密码管理.md` 含真实密码与 GitHub Token，已移出 wiki 图谱。建议立即**吊销该 Token** 并开启两步验证。
-2. ✅ 已完成（2026-08-03）：Free-fs 去重，保留 `Free-fs（网盘项目的解析）` 一份
-3. 补全：4 个空笔记（`python`、`redis分布式缓存`、Claude Code 8/16 篇）+ 2 个占位笔记（`全量微调`、`高效微调`）。
-4. ✅ 已完成（2026-08-03）：`x #includestdio.md`→[[取余与逆向脚本]]、`x #include iostream...`→[[Dijkstra最短路算法]]、`未命名.md`→[[Destination 逆向题解]]、`Untitled.md`→[[驾照考试要点]]
+2. ⚠️ **安全**：`wiki/03-后端/javaweb/案例.md` 曾含阿里云 AccessKey（已移入私密并重写历史），请到阿里云控制台**吊销**该密钥。
+3. ✅ 已完成（2026-08-03）：Free-fs 去重，保留 `Free-fs（网盘项目的解析）` 一份
+4. 补全：4 个空笔记（`python`、`redis分布式缓存`、Claude Code 8/16 篇）+ 2 个占位笔记（`全量微调`、`高效微调`）。
+5. ✅ 已完成（2026-08-03）：`x #includestdio.md`→[[取余与逆向脚本]]、`x #include iostream...`→[[Dijkstra最短路算法]]、`未命名.md`→[[Destination 逆向题解]]、`Untitled.md`→[[驾照考试要点]]

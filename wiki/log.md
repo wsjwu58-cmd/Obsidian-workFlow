@@ -8,6 +8,13 @@ tags: [知识库, 日志]
 
 > 时间倒序排列
 
+## [2026-08-03] security | 阿里云 AccessKey 泄露处置
+
+- 拦截：GitHub push protection 检测到 `wiki/03-后端/javaweb/案例.md` 含阿里云 AccessKey ID/Secret，推送被拒
+- 处置：密钥已移入 `私密/阿里云AccessKey.md`；笔记中替换为占位符；重写全部本地提交历史，已确认无残留
+- 加固：`scripts/scan_secrets.py` 新增 Alibaba AccessKey 检测模式
+- 提醒：请到阿里云控制台**吊销**该 AccessKey 并重新创建
+
 ## [2026-08-03] maintenance | P1 巡检与安全上线
 
 - 新增：`scripts/lint.py`（断链 / 孤立 / 重复 / 积压 / index 同步 / 空笔记六项巡检，首跑全绿）、`scripts/scan_secrets.py`（凭据扫描，本地验证 0 命中）
