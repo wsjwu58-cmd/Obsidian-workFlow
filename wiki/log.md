@@ -8,6 +8,11 @@ tags: [知识库, 日志]
 
 > 时间倒序排列
 
+## [2026-08-03] lint | 巡检报告
+
+- 巡检时间：2026-08-03 | 条目数：108 | 断链：0 | 孤立：0 | 重复对：0 | pending：0 | index 缺失：0 | 空笔记：6
+
+
 ## [2026-08-03] security | 阿里云 AccessKey 泄露处置
 
 - 拦截：GitHub push protection 检测到 `wiki/03-后端/javaweb/案例.md` 含阿里云 AccessKey ID/Secret，推送被拒
