@@ -1,4 +1,4 @@
 # P2/P3 采集与加工阶段使用；P1 巡检/扫描脚本仅依赖标准库
-requests>=2.31
-PyYAML>=6.0
-feedparser>=6.0
+trafilatura>=1.8
+pypdf>=4.0
+youtube-transcript-api>=1.0

@@ -1,0 +1,51 @@
+name: 采集与过滤
+
+on:
+  schedule:
+    - cron: '0 22 * * 0'      # 每周一 06:00（UTC+8）= 周日 22:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 安装依赖
+        run: pip install -r scripts/requirements.txt
+
+      - name: 采集（GitHub / HN / ArXiv）
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python scripts/collect.py --sources github hn arxiv --max 10
+
+      - name: 抓取全文并翻译
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL }}
+          GH_PAT: ${{ secrets.GH_PAT }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python scripts/fetch_full.py
+
+      - name: 过滤去重与打分
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL }}
+        run: python scripts/filter.py --threshold 7
+
+      - name: 提交素材
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git config user.name "kb-bot"
+            git config user.email "kb-bot@users.noreply.github.com"
+            git add raw/
+            git commit -m "collect: $(date +%F) 素材入库"
+            git push
+          fi

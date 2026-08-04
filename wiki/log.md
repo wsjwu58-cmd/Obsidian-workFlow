@@ -8,6 +8,13 @@ tags: [知识库, 日志]
 
 > 时间倒序排列
 
+## [2026-08-04] maintenance | P2 采集管道升级：全文抓取 + DeepSeek 翻译
+
+- 新增：`scripts/fetch_full.py`（GitHub README / 文章正文 / arXiv / YouTube / B站字幕 / PDF 全文抓取，经 DeepSeek 翻译为简体中文）
+- 更新：`scripts/filter.py` 与 `collect.yml` 默认 DeepSeek（`LLM_BASE_URL` / `LLM_MODEL` 已配置为仓库 Secrets）；`collect.yml` 增加依赖安装与全文翻译步骤
+- 实测：13 条素材 → 全文抓取成功 11 条 → DeepSeek 打分保留 10 条（7-8.7 分）
+- 说明：2 条外部文章站点抓取失败保留原摘要；视频/PDF 抓取逻辑已实现，待真实链接验证
+
 ## [2026-08-03] lint | 巡检报告
 
 - 巡检时间：2026-08-03 | 条目数：108 | 断链：0 | 孤立：0 | 重复对：0 | pending：0 | index 缺失：0 | 空笔记：6
