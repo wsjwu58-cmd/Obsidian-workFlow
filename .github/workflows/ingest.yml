@@ -1,4 +1,4 @@
-name: AI 加工（六维 Ingest）
+name: AI 加工（深度 Ingest）
 
 on:
   schedule:
@@ -20,7 +20,7 @@ jobs:
         id: pending
         run: echo "count=$(python scripts/count_pending.py)" >> "$GITHUB_OUTPUT"
 
-      - name: 执行六维加工
+      - name: 执行深度技术笔记加工
         if: steps.pending.outputs.count != '0'
         env:
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
@@ -41,9 +41,9 @@ jobs:
           if [ -n "$(git status --porcelain)" ]; then
             git config user.name "kb-bot"
             git config user.email "kb-bot@users.noreply.github.com"
-            git commit -m "ingest: $(date +%F) 六维加工结果"
+            git commit -m "ingest: $(date +%F) 深度技术笔记加工结果"
             git push -u origin "$BRANCH"
             gh pr create --base main --head "$BRANCH" \
-              --title "AI 加工 $(date +%F)" \
-              --body "六维加工自动生成，请 review 后合并。变更摘要见 wiki/log.md。"
+              --title "AI 深度加工 $(date +%F)" \
+              --body "深度技术笔记模板自动生成，请 review 后合并。变更摘要见 expand/log.md。"
           fi

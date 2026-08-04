@@ -24,6 +24,7 @@ RAW = ROOT / "raw"
 # 基础设施文件不计入孤立/同步检查
 INFRA = {"index.md", "log.md", "知识图谱.md",
          "自动化工作流设计.md", "自动化工作流功能与实现方案.md"}
+INFRA |= {"动态索引.md", "知识库周报.md"}
 LINK_RE = re.compile(r"\[\[([^\]|]+)(?:\|[^\]]*)?\]\]")
 FM_RE = re.compile(r"^---\s*$(.*?)^---\s*$", re.M | re.S)
 

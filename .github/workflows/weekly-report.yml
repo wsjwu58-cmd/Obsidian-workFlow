@@ -1,0 +1,29 @@
+name: 知识库周报
+
+on:
+  schedule:
+    - cron: '0 11 * * 5'      # 周五 19:00（UTC+8）= 11:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  weekly:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 生成周报
+        run: python scripts/weekly_report.py
+
+      - name: 提交周报
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git config user.name "kb-bot"
+            git config user.email "kb-bot@users.noreply.github.com"
+            git add expand/知识库周报.md expand/log.md
+            git commit -m "weekly: $(date +%F) 知识库周报"
+            git push
+          fi

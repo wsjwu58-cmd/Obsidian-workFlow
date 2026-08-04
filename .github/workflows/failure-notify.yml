@@ -1,0 +1,38 @@
+name: 失败告警
+
+on:
+  workflow_run:
+    workflows:
+      - 采集与过滤
+      - AI 加工（深度 Ingest）
+      - 每日巡检
+      - 凭据扫描
+      - 知识库周报
+    types:
+      - completed
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    steps:
+      - name: 发送失败告警
+        env:
+          NOTIFY_WEBHOOK: ${{ secrets.NOTIFY_WEBHOOK }}
+          RUN_NAME: ${{ github.event.workflow_run.name }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+        run: |
+          if [ -z "$NOTIFY_WEBHOOK" ]; then
+            echo "未配置 NOTIFY_WEBHOOK Secret，跳过告警（流程本身不失败）"
+            exit 0
+          fi
+          PAYLOAD="{\"title\":\"知识库工作流失败\",\"desp\":\"工作流：$RUN_NAME ($RUN_ID)\\n仓库：${{ github.repository }}\\n详情：$RUN_URL\"}"
+          curl -sf -X POST "$NOTIFY_WEBHOOK" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            && echo "告警已发送" \
+            || echo "告警发送失败（不影响主流程）"

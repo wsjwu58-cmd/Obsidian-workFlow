@@ -23,3 +23,7 @@ Desktop.ini
 # 巡检产物
 .lint-report.md
 .lint-issues.md
+
+# 语义检索索引与 Codex 定时任务运行日志（本地产物，不入仓）
+.semantic/
+.codex-runs/

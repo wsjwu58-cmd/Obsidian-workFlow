@@ -18,11 +18,12 @@ jobs:
       - name: 安装依赖
         run: pip install -r scripts/requirements.txt
 
-      - name: 采集（GitHub / HN / ArXiv）
+      - name: 采集（GitHub / HN / ArXiv / RSSHub）
         env:
           GH_PAT: ${{ secrets.GH_PAT }}
           GITHUB_TOKEN: ${{ github.token }}
-        run: python scripts/collect.py --sources github hn arxiv --max 10
+          RSSHUB_BASE: ${{ secrets.RSSHUB_BASE }}
+        run: python scripts/collect.py --sources github hn arxiv rsshub --max 10
 
       - name: 抓取全文并翻译
         env:

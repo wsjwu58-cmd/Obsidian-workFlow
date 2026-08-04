@@ -150,7 +150,61 @@ def fetch_arxiv(max_items):
     return out
 
 
-SOURCES = {"github": fetch_github, "hn": fetch_hn, "arxiv": fetch_arxiv}
+RSSHUB_BASE = (os.environ.get("RSSHUB_BASE") or "https://hub.slarker.me").rstrip("/")
+# RSSHub 国内源（二期）：掘金分类 / 知乎热榜。公共实例不稳定，失效时在仓库 Secret
+# 设置 RSSHUB_BASE 指向自建实例（推荐 docker 部署 RSSHub）。
+RSSHUB_FEEDS = [
+    ("juejin-backend", "/juejin/category/backend"),
+    ("juejin-ai", "/juejin/category/ai"),
+    ("juejin-android", "/juejin/category/android"),
+    ("zhihu-hot", "/zhihu/hot"),
+]
+
+
+def fetch_rsshub(max_items):
+    """RSSHub 聚合：掘金分类 + 知乎热榜（Atom/RSS 兼容解析，仅标准库）"""
+    import xml.etree.ElementTree as ET
+    out = []
+    for name, route in RSSHUB_FEEDS:
+        url = RSSHUB_BASE + route
+        try:
+            data = http_get(url, timeout=30)
+        except Exception as e:
+            print(f"[rsshub:{name}] 抓取失败：{type(e).__name__}: {e}")
+            continue
+        try:
+            root = ET.fromstring(data)
+        except Exception:
+            print(f"[rsshub:{name}] 解析失败")
+            continue
+        items = []
+        # RSS 2.0
+        for it in root.iter("item"):
+            title = (it.findtext("title") or "").strip()
+            link = (it.findtext("link") or "").strip()
+            desc = re.sub(r"<[^>]+>", " ", it.findtext("description") or "").strip()
+            desc = re.sub(r"\s+", " ", desc)[:500]
+            if title and link:
+                items.append({"title": title, "url": link, "desc": desc})
+        # Atom
+        ns = {"a": "http://www.w3.org/2005/Atom"}
+        for e in root.findall(".//a:entry", ns):
+            title = " ".join((e.findtext("a:title", default="", namespaces=ns) or "").split())
+            link_el = e.find("a:link", ns)
+            link = link_el.get("href", "") if link_el is not None else ""
+            summary = e.findtext("a:summary", default="", namespaces=ns) or ""
+            desc = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", summary)).strip()[:500]
+            if title and link:
+                items.append({"title": title, "url": link, "desc": desc})
+        print(f"[rsshub:{name}] 候选 {len(items)} 条")
+        out.extend(items)
+        if len(out) >= max_items * 3:
+            break
+    return out[: max_items * 3]
+
+
+SOURCES = {"github": fetch_github, "hn": fetch_hn, "arxiv": fetch_arxiv,
+           "rsshub": fetch_rsshub}
 
 
 def main():
