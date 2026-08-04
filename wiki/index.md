@@ -81,11 +81,17 @@ tags: [知识库, 索引]
 - [[langchain4j-study-notes-03-advanced]]：LangChain4j 高级特性
 - [[langgraph4j-study-notes-01-core]]：LangGraph4j 有向图工作流（DAG）
 - [[langgraph4j-study-notes-02-advanced]]：LangGraph4j 高级应用
+
+### 外部摄入 · Agent研究与评测（2026-08-04）
+
 - [[AgentHPOBench]]：评估 LLM Agent 作为顺序超参数优化器的基准（7 类 30 任务）
 - [[ExtractBench]]：模式引导的企业文档提取基准（370 文档 / 4869 页）
 - [[DungeonBench]]：D&D 规则密集型战术推理基准（遭遇战 + 一日冒险双轨道）
 - [[MOT-SR]]：多目标工具增强符号回归框架（双 LLM 模块 + 帕累托前沿）
 - [[在线策略交互与模仿学习]]：专家交互放宽模仿学习表征需求，提出 OVI 算法
+
+### 外部摄入 · Agent工具与平台（2026-08-04）
+
 - [[ECC]]：面向编程代理的"代理工具操作系统"（技能 / 记忆 / 安全）
 - [[Hermes-Agent]]：Nous 的自我改进 AI 代理——闭环学习与跨会话记忆
 - [[n8n]]：AI 原生工作流自动化平台（可视化画布 + 1500+ 集成）
