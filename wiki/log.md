@@ -8,6 +8,12 @@ tags: [知识库, 日志]
 
 > 时间倒序排列
 
+## [2026-08-04] ingest | 首批采集素材摄入（10 条）
+
+- 新增：[[AgentHPOBench]]、[[ExtractBench]]、[[MOT-SR]]、[[DungeonBench]]、[[在线策略交互与模仿学习]]、[[ECC]]、[[Hermes-Agent]]、[[n8n]]、[[MarkItDown]]、[[JavaGuide]]
+- 更新：[[index]]（+10 条目，共 115）、[[知识图谱]]（AI 外部摄入簇 + Agent 工具簇 + JavaGuide 指南桥）
+- 标记：`raw/` 中 10 条素材 `status` → `processed`
+
 ## [2026-08-04] maintenance | P2 采集管道升级：全文抓取 + DeepSeek 翻译
 
 - 新增：`scripts/fetch_full.py`（GitHub README / 文章正文 / arXiv / YouTube / B站字幕 / PDF 全文抓取，经 DeepSeek 翻译为简体中文）

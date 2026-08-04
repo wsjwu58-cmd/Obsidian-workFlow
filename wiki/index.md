@@ -7,7 +7,7 @@ tags: [知识库, 索引]
 # 内容总目录
 
 > 知识库分类体系：`01-编程语言` → `02-前端` → `03-后端` → `04-数据库` → `05-数据结构与算法` → `06-AI与LLM` → `07-Linux与工具链` → `08-逆向与安全` → `09-源码解读` → `10-求职面试` → `11-生活杂项`
-> 全库共 105 个 Markdown 条目，已全部建立双向链接。关系总览见 [[知识图谱]]。
+> 全库共 115 个 Markdown 条目，已全部建立双向链接。关系总览见 [[知识图谱]]。
 
 ## 知识库自动化
 
@@ -50,6 +50,7 @@ tags: [知识库, 索引]
 - [[rocketmq]]：RocketMQ 发布-订阅消息模型
 - [[judge0 API调用]]：Judge0 部署实战与 cgroup 兼容性排查
 - [[苍穹]]：苍穹外卖项目——类别/菜品/套餐业务关系设计
+- [[JavaGuide]]：Java 后端学习与面试指南（基础 / 集合 / 并发 / JVM / 数据库 / 分布式 / AI）
 
 ## 04-数据库
 
@@ -80,6 +81,15 @@ tags: [知识库, 索引]
 - [[langchain4j-study-notes-03-advanced]]：LangChain4j 高级特性
 - [[langgraph4j-study-notes-01-core]]：LangGraph4j 有向图工作流（DAG）
 - [[langgraph4j-study-notes-02-advanced]]：LangGraph4j 高级应用
+- [[AgentHPOBench]]：评估 LLM Agent 作为顺序超参数优化器的基准（7 类 30 任务）
+- [[ExtractBench]]：模式引导的企业文档提取基准（370 文档 / 4869 页）
+- [[DungeonBench]]：D&D 规则密集型战术推理基准（遭遇战 + 一日冒险双轨道）
+- [[MOT-SR]]：多目标工具增强符号回归框架（双 LLM 模块 + 帕累托前沿）
+- [[在线策略交互与模仿学习]]：专家交互放宽模仿学习表征需求，提出 OVI 算法
+- [[ECC]]：面向编程代理的"代理工具操作系统"（技能 / 记忆 / 安全）
+- [[Hermes-Agent]]：Nous 的自我改进 AI 代理——闭环学习与跨会话记忆
+- [[n8n]]：AI 原生工作流自动化平台（可视化画布 + 1500+ 集成）
+- [[MarkItDown]]：微软文档转 Markdown 工具（PDF / Office / 图片 / 音视频）
 
 ## 07-Linux与工具链
 
