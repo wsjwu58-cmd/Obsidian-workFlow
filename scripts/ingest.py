@@ -28,6 +28,8 @@ import sys
 import time
 import urllib.request
 
+import bing_search
+
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 WIKI = ROOT / "wiki"
 EXPAND = ROOT / "expand"
@@ -135,7 +137,30 @@ def rules_snippet():
     return "\n".join(out)
 
 
-def build_prompt(fm, body):
+def search_context(title, max_results=5):
+    """用素材标题检索 Bing，返回可注入 Prompt 的文本"""
+    if not os.environ.get("BING_SEARCH_API_KEY"):
+        return ""
+    q = re.sub(r"\s+", " ", title or "")[:100]
+    if not q:
+        return ""
+    results = bing_search.search(q, count=max_results)
+    if not results:
+        return ""
+    lines = [
+        "## 联网检索补充（Bing Search，仅用于 [补充] 章节）",
+        "以下为真实检索结果；引用时标注 [补充] 并附上来源 URL：",
+        "",
+    ]
+    for i, r in enumerate(results, 1):
+        lines.append(f"{i}. **{r['title']}**")
+        lines.append(f"   URL: {r['url']}")
+        if r.get("snippet"):
+            lines.append(f"   摘要: {r['snippet'][:400]}")
+    return "\n".join(lines)
+
+
+def build_prompt(fm, body, search_text=""):
     title = fm.get("title", "")
     url = fm.get("url", "")
     source = fm.get("source", "")
@@ -179,6 +204,8 @@ def build_prompt(fm, body):
 
 ## 知识库现有条目（供知识关联地图引用，只从这些里选，也可不选）
 {entries[:3000]}
+
+{search_text}
 
 ## 原始素材
 标题：{title}
@@ -253,7 +280,7 @@ def update_log(created):
     p.write_text(text, encoding="utf-8")
 
 
-def process_one(p, dry_run, force):
+def process_one(p, dry_run, force, no_search):
     text = read_text(p)
     fm, body = parse_fm(text)
     if not force and fm.get("status", "").lower() != "pending":
@@ -261,7 +288,9 @@ def process_one(p, dry_run, force):
     if fm.get("translated") != "true" and len(body.strip()) < 300:
         return None, "素材过短（可能未抓全文），跳过"
 
-    out = llm_json("你是知识库管理助手，严格按用户要求输出 JSON。", build_prompt(fm, body))
+    search_text = "" if no_search else search_context(fm.get("title", ""))
+    out = llm_json("你是知识库管理助手，严格按用户要求输出 JSON。",
+                   build_prompt(fm, body, search_text))
     if out is None:
         return None, "LLM 调用失败"
     data = extract_json(out)
@@ -303,6 +332,7 @@ def main():
     ap.add_argument("--paths", nargs="*", help="指定 raw 素材；缺省处理所有 pending")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--force", action="store_true")
+    ap.add_argument("--no-search", action="store_true", help="禁用 Bing 联网检索")
     args = ap.parse_args()
 
     if args.paths:
@@ -312,7 +342,7 @@ def main():
 
     created = []
     for p in files:
-        target, msg = process_one(p, args.dry_run, args.force)
+        target, msg = process_one(p, args.dry_run, args.force, args.no_search)
         print(f"[{p.name}] {msg}")
         if target and not args.dry_run:
             created.append({"stem": target.stem, "summary": ""})

@@ -8,6 +8,13 @@ tags: [知识库, 日志]
 
 > 时间倒序排列
 
+## [2026-08-04] maintenance | 接入 Bing Search API（[补充] 联网检索）
+
+- 新增：`scripts/bing_search.py`（Bing Web Search API v7 封装，未配置密钥时优雅降级）
+- 更新：`scripts/ingest.py` 用素材主题检索并把结果注入 Prompt，`[补充]` 内容可基于真实来源并附 URL；新增 `--no-search` 开关
+- 更新：`ingest.yml` 传入 `BING_SEARCH_API_KEY` / `BING_SEARCH_ENDPOINT` Secrets
+- 待配置：密钥需由用户提供后写入 `私密/API密钥.md` 并设置仓库 Secret
+
 ## [2026-08-04] ingest | MarkItDown 按深度技术笔记模板重加工
 
 - 更新：[[MarkItDown]]（`expand/06-AI与LLM/Agent工具与平台/`）——六维格式升级为深度技术笔记模板（核心概念拆解 / 方案对比 / 代码速查 / 避坑清单 / 知识关联地图）

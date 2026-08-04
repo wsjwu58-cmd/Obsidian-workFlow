@@ -26,6 +26,8 @@ jobs:
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
           LLM_MODEL: ${{ secrets.LLM_MODEL }}
+          BING_SEARCH_API_KEY: ${{ secrets.BING_SEARCH_API_KEY }}
+          BING_SEARCH_ENDPOINT: ${{ secrets.BING_SEARCH_ENDPOINT }}
         run: python scripts/ingest.py
 
       - name: 提交并创建 PR（人工审阅闭环）
