@@ -8,7 +8,7 @@
 
 ## 特性
 
-- **定时采集**：GitHub Search / HackerNews / ArXiv / RSSHub（掘金、知乎）多源采集，全文抓取 + DeepSeek 中文翻译
+- **定时采集**：GitHub Search / HackerNews / ArXiv / RSSHub（掘金、知乎）多源采集，全文抓取 + 低成本翻译（本地模型优先，LLM 兜底）
 - **LLM 质量把关**：关键词粗滤 → LLM 三维打分（相关性 / 技术深度 / 新鲜度，总分 ≥ 7 才入库）→ URL / 标题 / SimHash 去重
 - **深度技术笔记加工**：AI 按「深度技术笔记模板」生成条目（强制补全 `[补充]` 溯源、人话解释、生产级代码示例、避坑清单、知识关联地图），Bing 联网检索注入 `[补充]` 内容
 - **人工审阅闭环**：AI 加工结果提交到 `ai-ingest/日期` 分支并开 PR，review 后合并；本地 Codex 定时任务输出变更摘要
@@ -99,6 +99,7 @@ D:\note\
 | --- | --- |
 | `collect.py` | 采集（GitHub / HN / ArXiv / RSSHub）+ 关键词粗滤 + URL 去重 |
 | `fetch_full.py` | 全文抓取（GitHub README / 文章 / arXiv / YouTube / B 站字幕 / PDF）+ DeepSeek 中文翻译 |
+| `translator.py` | 可插拔翻译后端：本地 MarianMT（零 token）→ Google 免费 → LLM 兜底 |
 | `filter.py` | 标题去重 + LLM 三维打分（失败回退启发式） |
 | `ingest.py` | AI 加工入库：深度技术笔记模板生成条目，同步 index / log / 状态机（幂等） |
 | `count_pending.py` | 统计 `raw/` 待处理素材数 |
@@ -123,9 +124,14 @@ D:\note\
 
 ```bash
 pip install -r scripts/requirements.txt
-# 语义检索可选（本地使用；未安装时自动降级 TF-IDF）
+# 语义检索 + 本地翻译可选（本地使用；未安装时语义检索降级 TF-IDF、翻译回退 Google/LLM）
 pip install -r scripts/requirements-semantic.txt
 ```
+
+翻译后端通过环境变量 `TRANSLATE_BACKEND=local|google|llm|auto` 切换，默认 `auto`：
+先尝试本地 MarianMT（`Helsinki-NLP/opus-mt-en-zh`，离线、零 token 成本），
+失败或未安装时依次回退 Google 免费翻译、DeepSeek LLM；内容已基本为中文时自动跳过翻译。
+需要出版级措辞时可临时切回 `TRANSLATE_BACKEND=llm`。
 
 ### 2. 配置密钥
 

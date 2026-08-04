@@ -8,6 +8,13 @@ tags: [知识库, 日志]
 
 > 时间倒序排列
 
+## [2026-08-04] maintenance | 翻译后端去 LLM 化——本地 MarianMT / Google / LLM 兜底
+
+- 新增：`scripts/translator.py` 可插拔翻译后端——`TRANSLATE_BACKEND=local|google|llm|auto`（默认 auto：本地 MarianMT 零 token → Google 免费 → DeepSeek 兜底；已中文内容自动跳过）
+- 更新：`scripts/fetch_full.py` 改用 translator 模块，新增 `--backend` 参数；`requirements.txt` 增加 `deep-translator`（Actions 云端走 Google 后端）
+- 更新：`scripts/requirements-semantic.txt` 增加 `sentencepiece`（本地翻译 / 语义检索共用依赖）
+- 实测：本地 opus-mt-en-zh 翻译 RAG 段落正常，零 token 消耗；质量中等，需要出版级措辞时可切回 `llm`
+
 ## [2026-08-04] maintenance | README 文档重写
 
 - 更新：`README.md` 完整重写——项目简介、架构图、目录结构、6 条 GitHub Actions 流水线与 2 个 Codex 定时任务、核心脚本表、快速开始（依赖 / 密钥 / 使用）、Obsidian 配置、质量指标与安全说明

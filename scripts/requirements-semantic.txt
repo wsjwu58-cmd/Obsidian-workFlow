@@ -1,4 +1,6 @@
 # F11 语义检索可选依赖（仅本地使用；GitHub Actions 不安装，避免拉取重型依赖）
 # 安装：pip install -r scripts/requirements-semantic.txt
 # 未安装时 scripts/semantic_search.py 自动降级为 TF-IDF 检索
+# 同时为 scripts/translator.py 提供本地翻译后端（transformers + torch + sentencepiece）
 sentence-transformers>=2.6
+sentencepiece>=0.2.0

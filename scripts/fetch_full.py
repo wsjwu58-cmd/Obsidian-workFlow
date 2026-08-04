@@ -12,8 +12,9 @@
 - bilibili → 字幕 API
 - pdf      → pypdf 文本提取
 
-翻译：DeepSeek API（默认 https://api.deepseek.com/v1, deepseek-chat），
-可用环境变量 LLM_BASE_URL / LLM_MODEL / LLM_API_KEY 覆盖；翻译失败保留原文。
+翻译：可插拔后端（scripts/translator.py）——本地 MarianMT（零 token 成本）→
+Google 免费翻译 → DeepSeek LLM 兜底；用环境变量 TRANSLATE_BACKEND=local|google|llm|auto
+切换，翻译失败保留原文。
 """
 import argparse
 import datetime
@@ -24,12 +25,12 @@ import pathlib
 import re
 import urllib.request
 
+import translator
+
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 RAW = ROOT / "raw"
 UA = {"User-Agent": "Mozilla/5.0 (compatible; kb-collector/1.0)"}
 MAX_TRANSLATE_CHARS = 60000
-
-
 def http_get(url, timeout=30, headers=None, binary=False):
     req = urllib.request.Request(url, headers={**UA, **(headers or {})})
     with urllib.request.urlopen(req, timeout=timeout) as r:
@@ -56,58 +57,6 @@ def parse_fm(text):
 def rewrite(p, fm, body):
     lines = [f"{k}: {v}" for k, v in fm.items()]
     p.write_text("---\n" + "\n".join(lines) + "\n---\n" + body, encoding="utf-8")
-
-
-def llm_chat(system, user, max_tokens=3000):
-    key = os.environ.get("LLM_API_KEY", "")
-    if not key:
-        return None
-    base = os.environ.get("LLM_BASE_URL", "https://api.deepseek.com/v1").rstrip("/")
-    model = os.environ.get("LLM_MODEL", "deepseek-chat")
-    body = json.dumps({
-        "model": model,
-        "messages": [
-            {"role": "system", "content": system},
-            {"role": "user", "content": user},
-        ],
-        "temperature": 0.3,
-        "max_tokens": max_tokens,
-        "stream": False,
-    })
-    req = urllib.request.Request(
-        base + "/chat/completions",
-        data=body.encode("utf-8"),
-        headers={"Content-Type": "application/json", "Authorization": f"Bearer {key}"},
-    )
-    with urllib.request.urlopen(req, timeout=180) as r:
-        data = json.loads(r.read())
-    return data["choices"][0]["message"]["content"].strip()
-
-
-def translate_to_zh(text):
-    text = text.strip()
-    if not text:
-        return None
-    if len(text) > MAX_TRANSLATE_CHARS:
-        text = text[:MAX_TRANSLATE_CHARS] + "\n\n（内容过长，已截断翻译）"
-    chunks, cur, size = [], [], 0
-    for para in text.split("\n"):
-        cur.append(para)
-        size += len(para) + 1
-        if size >= 4500:
-            chunks.append("\n".join(cur))
-            cur, size = [], 0
-    if cur:
-        chunks.append("\n".join(cur))
-    system = ("你是专业的技术文档翻译。把英文内容翻译成简体中文，"
-              "保持 Markdown 结构、代码块、链接、列表、专业术语不变。只输出译文，不要解释。")
-    results = []
-    for c in chunks:
-        out = llm_chat(system, f"原文：\n\n{c}")
-        if out is None:
-            return None
-        results.append(out)
-    return "\n\n".join(results)
 
 
 def fetch_github_readme(url):
@@ -228,7 +177,12 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--paths", nargs="*", help="指定 raw 文件；缺省处理所有 pending 素材")
     ap.add_argument("--no-translate", action="store_true", help="只抓全文不翻译")
+    ap.add_argument("--backend", default=None,
+                    choices=["local", "google", "llm", "auto"],
+                    help="翻译后端（缺省读 TRANSLATE_BACKEND，再缺省 auto）")
     args = ap.parse_args()
+    if args.backend:
+        os.environ["TRANSLATE_BACKEND"] = args.backend
 
     if args.paths:
         files = [pathlib.Path(p) for p in args.paths]
@@ -254,7 +208,7 @@ def main():
             content = None
         if content and not args.no_translate:
             print(f"  翻译中（{len(content)} 字符）…")
-            zh = translate_to_zh(content)
+            zh = translator.translate_to_zh(content)
             if zh:
                 content = zh
             else:

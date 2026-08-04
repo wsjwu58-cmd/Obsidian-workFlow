@@ -2,3 +2,4 @@
 trafilatura>=1.8
 pypdf>=4.0
 youtube-transcript-api>=1.0
+deep-translator>=1.11
