@@ -180,7 +180,7 @@ BACKENDS = {
 AUTO_ORDER = ("local", "google", "llm")
 
 
-def translate_to_zh(text, backend="auto"):
+def translate_to_zh(text, backend=None):
     """把英文/外文内容翻译成简体中文；失败或已中文化时返回 None/原文"""
     text = (text or "").strip()
     if not text:
@@ -189,8 +189,12 @@ def translate_to_zh(text, backend="auto"):
         text = text[:MAX_TRANSLATE_CHARS] + "\n\n（内容过长，已截断翻译）"
     if is_mostly_chinese(text):
         return text
+    if backend is None or backend == "auto":
+        backend = os.environ.get("TRANSLATE_BACKEND", "auto")
     if backend == "auto":
-        for b in AUTO_ORDER:
+        # 长文本地 CPU 翻译太慢：优先免费在线后端，本地模型兜底
+        order = ("google", "local", "llm") if len(text) > 8000 else AUTO_ORDER
+        for b in order:
             out = BACKENDS[b](text)
             if out:
                 return out

@@ -8,6 +8,36 @@ tags: [知识库, 日志]
 
 > 时间倒序排列
 
+## [2026-08-04] maintenance | 全流程实测跑通（采集→翻译→过滤→加工→巡检→入库）
+
+- 采集：GitHub / HN / ArXiv / RSSHub 四源新增 23 条素材（RSSHub 知乎热榜仅 3 条通过粗滤）
+- 全文+翻译：GitHub 5 条全文翻译成功（Google 后端）、arXiv 10 条摘要级、HN 1 条全文、RSSHub 6 条被 403 拦截保留摘要、HN PDF 1 条抓取失败
+- 过滤：LLM 三维打分保留 17 条 / 拒绝 6 条（知乎新闻、无关 PDF 等）
+- 加工：深度技术笔记模板新增 17 条条目（`expand/06-AI与LLM/`），raw 状态全部置 processed
+- 巡检：137 条目全绿（断链 0 / 孤立 0 / 重复 0 / pending 0）；修复 LLM 生成产生的 7 处断链
+- 修复：`translator.py` 长文自动跳过本地模型（CPU 翻译大文档过慢）、`fetch_full.py` 网络抓取加超时 + 已翻译幂等跳过
+
+## [2026-08-04] ingest | 深度技术笔记模板加工 17 条
+
+- 新增：[[ParEvalLayer-部分LLM代理评价决策层]]（）
+- 新增：[[Tiny-Damage-车辆损伤评估Agentic-VLM分割落地]]（）
+- 新增：[[Magnet跨会话AI滥用检测]]（）
+- 新增：[[SWE-Touch-编码Agent共享工作空间基准]]（）
+- 新增：[[UEmbed统一稀疏与稠密多模态嵌入]]（）
+- 新增：[[PRECOG-边缘语言模型结构化内存与O1状态注入]]（）
+- 新增：[[AtumAI-数据中心控制面策略生成框架]]（）
+- 新增：[[实时检测与修复LLM-Agent失败]]（）
+- 新增：[[认知能力差距分类学与适应性认知智能架构ACIA]]（）
+- 新增：[[dify-llm-app-platform-deep-dive]]（）
+- 新增：[[langchain-agent-engineering-platform]]（）
+- 新增：[[open-webui-自托管AI平台深度解析]]（）
+- 新增：[[awesome-llm-apps-开源AI代理与RAG应用集锦]]（）
+- 新增：[[cc-switch-跨平台AI编码代理配置管理器]]（）
+- 新增：[[llms-reward-expertise-领域知识决定LLM使用上限]]（）
+- 新增：[[DeepSeek-V4-Flash-0731-斩杀线分析]]（）
+- 新增：[[DeepSeek-V4-Flash-8万亿Token调用量信号解读]]（）
+
+
 ## [2026-08-04] maintenance | 翻译后端去 LLM 化——本地 MarianMT / Google / LLM 兜底
 
 - 新增：`scripts/translator.py` 可插拔翻译后端——`TRANSLATE_BACKEND=local|google|llm|auto`（默认 auto：本地 MarianMT 零 token → Google 免费 → DeepSeek 兜底；已中文内容自动跳过）

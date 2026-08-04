@@ -74,7 +74,8 @@ def fetch_github_readme(url):
 
 def fetch_article(url):
     import trafilatura
-    downloaded = trafilatura.fetch_url(url)
+    # 用带超时的下载，避免外部站点无响应时挂死整个流水线
+    downloaded = http_get(url, timeout=30)
     if not downloaded:
         return None
     return trafilatura.extract(downloaded, include_comments=False,
@@ -180,6 +181,7 @@ def main():
     ap.add_argument("--backend", default=None,
                     choices=["local", "google", "llm", "auto"],
                     help="翻译后端（缺省读 TRANSLATE_BACKEND，再缺省 auto）")
+    ap.add_argument("--force", action="store_true", help="忽略 translated 标记，重新抓取/翻译")
     args = ap.parse_args()
     if args.backend:
         os.environ["TRANSLATE_BACKEND"] = args.backend
@@ -194,6 +196,8 @@ def main():
         text = read_text(p)
         fm, body = parse_fm(text)
         if not args.paths and fm.get("status", "").lower() not in ("pending", ""):
+            continue
+        if not args.force and fm.get("translated", "").lower() == "true":
             continue
         url = fm.get("url", "")
         source = fm.get("source", "")
