@@ -29,6 +29,7 @@ import urllib.request
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 WIKI = ROOT / "wiki"
+EXPAND = ROOT / "expand"
 RAW = ROOT / "raw"
 INFRA = {"index.md", "log.md", "知识图谱.md",
          "自动化工作流设计.md", "自动化工作流功能与实现方案.md"}
@@ -92,7 +93,7 @@ def extract_json(text):
 
 
 def top_categories():
-    return sorted(p.name for p in WIKI.iterdir()
+    return sorted(p.name for p in EXPAND.iterdir()
                   if p.is_dir() and re.match(r"^\d{2}-", p.name))
 
 
@@ -102,6 +103,11 @@ def existing_entries():
         if p.name in INFRA:
             continue
         names.append(p.stem)
+    if EXPAND.exists():
+        for p in EXPAND.rglob("*.md"):
+            if p.name in INFRA:
+                continue
+            names.append(p.stem)
     return sorted(set(names))
 
 
@@ -167,7 +173,7 @@ def resolve_category(suggested):
     parts = [p for p in (suggested or "").strip("/").split("/") if p]
     if not parts or not re.match(r"^\d{2}-", parts[0]):
         return None, "分类非法"
-    top_dir = WIKI / parts[0]
+    top_dir = EXPAND / parts[0]
     top_dir.mkdir(exist_ok=True)
     cur = top_dir
     for sub in parts[1:]:
@@ -177,7 +183,7 @@ def resolve_category(suggested):
 
 
 def update_index(top, line):
-    p = WIKI / "index.md"
+    p = EXPAND / "index.md"
     text = read_text(p)
     header = f"## {top}"
     if header in text:
@@ -196,7 +202,7 @@ def update_index(top, line):
 
 
 def update_log(created):
-    p = WIKI / "log.md"
+    p = EXPAND / "log.md"
     text = read_text(p)
     today = datetime.date.today().isoformat()
     section = f"## [{today}] ingest | 自动化六维加工 {len(created)} 条\n\n"

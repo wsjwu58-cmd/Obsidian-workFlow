@@ -18,6 +18,7 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 WIKI = ROOT / "wiki"
+EXPAND = ROOT / "expand"
 RAW = ROOT / "raw"
 
 # 基础设施文件不计入孤立/同步检查
@@ -57,14 +58,17 @@ def frontmatter(text: str) -> dict:
 
 
 def wiki_md_files():
-    return [p for p in WIKI.rglob("*.md")]
+    files = [p for p in WIKI.rglob("*.md")]
+    if EXPAND.exists():
+        files += [p for p in EXPAND.rglob("*.md")]
+    return files
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--report", default=".lint-report.md")
     ap.add_argument("--issues", default=".lint-issues.md")
-    ap.add_argument("--log", default=None, help="wiki/log.md 路径，传入则追加巡检摘要")
+    ap.add_argument("--log", default=None, help="expand/log.md 路径，传入则追加巡检摘要")
     args = ap.parse_args()
 
     files = wiki_md_files()
@@ -170,7 +174,7 @@ def main():
         issues.append(f"### 积压告警：raw/ 有 {stale_7} 条素材超过 7 天未处理")
 
     # ---- 5. index 同步 ----
-    idx = read_text(WIKI / "index.md")
+    idx = read_text(EXPAND / "index.md")
     missing = []
     for p in files:
         if p.name in INFRA:

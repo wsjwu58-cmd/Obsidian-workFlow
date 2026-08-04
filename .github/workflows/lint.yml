@@ -22,14 +22,14 @@ jobs:
           python-version: '3.12'
 
       - name: 运行巡检
-        run: python scripts/lint.py --log wiki/log.md
+        run: python scripts/lint.py --log expand/log.md
 
       - name: 提交巡检报告
         run: |
           if [ -n "$(git status --porcelain)" ]; then
             git config user.name "kb-bot"
             git config user.email "kb-bot@users.noreply.github.com"
-            git add wiki/log.md
+            git add expand/log.md
             git commit -m "lint: $(date +%F) 巡检报告"
             git push
           fi

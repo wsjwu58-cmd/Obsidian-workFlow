@@ -35,7 +35,7 @@ jobs:
         run: |
           BRANCH="ai-ingest/$(date +%Y%m%d)"
           git checkout -b "$BRANCH"
-          git add wiki/ raw/
+          git add expand/ raw/
           if [ -n "$(git status --porcelain)" ]; then
             git config user.name "kb-bot"
             git config user.email "kb-bot@users.noreply.github.com"
