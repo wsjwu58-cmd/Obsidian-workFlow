@@ -8,6 +8,12 @@ tags: [知识库, 日志]
 
 > 时间倒序排列
 
+## [2026-08-04] maintenance | P3 模式 B 上线：自动六维加工 + PR 审阅
+
+- 新增：`scripts/ingest.py`（raw pending → DeepSeek 六维生成 wiki 条目 → 自动分类 / 索引 / 日志 / 状态机）、`scripts/count_pending.py`、`.github/workflows/ingest.yml`（每天 08:00，改动提交 `ai-ingest` 分支并开 PR）
+- 设计：确定性逻辑在脚本（分类校验 / 幂等 / 索引写入），创造性交给 LLM；`私密/` 不离开本地；PR 人工审阅闭环；git 全程可回滚
+- 验证：本地 dry-run 通过（六维条目生成 + JSON 解析 + 分类校验）；远端待触发验证
+
 ## [2026-08-04] ingest | 六维加工框架落地 + 首批条目重写
 
 - 更新：`agents.md` 知识条目格式新增「六维加工框架」（结构化提炼 / 深度追问 / 联想缝合 / 场景转译 / 媒介转换 / 元数据标签）
