@@ -95,7 +95,7 @@ tags: [知识库, 索引]
 - [[ECC]]：面向编程代理的"代理工具操作系统"（技能 / 记忆 / 安全）
 - [[Hermes-Agent]]：Nous 的自我改进 AI 代理——闭环学习与跨会话记忆
 - [[n8n]]：AI 原生工作流自动化平台（可视化画布 + 1500+ 集成）
-- [[MarkItDown]]：微软文档转 Markdown 工具（PDF / Office / 图片 / 音视频）
+- [[MarkItDown]]：深度解析——任意文件转 LLM 友好 Markdown（架构 / 插件 / Azure 集成 / 安全实践）
 
 ## 07-Linux与工具链
 

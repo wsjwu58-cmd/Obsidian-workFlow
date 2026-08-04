@@ -25,6 +25,7 @@ import os
 import pathlib
 import re
 import sys
+import time
 import urllib.request
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -56,7 +57,7 @@ def rewrite_fm(p, fm, body):
     p.write_text("---\n" + "\n".join(lines) + "\n---\n" + body, encoding="utf-8")
 
 
-def llm_json(system, user, max_tokens=6000):
+def llm_json(system, user, max_tokens=6000, retries=3):
     key = os.environ.get("LLM_API_KEY", "")
     if not key:
         return None
@@ -77,9 +78,17 @@ def llm_json(system, user, max_tokens=6000):
         data=body.encode("utf-8"),
         headers={"Content-Type": "application/json", "Authorization": f"Bearer {key}"},
     )
-    with urllib.request.urlopen(req, timeout=240) as r:
-        data = json.loads(r.read())
-    return data["choices"][0]["message"]["content"].strip()
+    last_err = None
+    for attempt in range(retries):
+        try:
+            with urllib.request.urlopen(req, timeout=240) as r:
+                data = json.loads(r.read())
+            return data["choices"][0]["message"]["content"].strip()
+        except Exception as e:
+            last_err = e
+            print(f"  LLM 调用失败（第 {attempt + 1} 次）：{type(e).__name__}，重试中…")
+            time.sleep(3 * (attempt + 1))
+    raise RuntimeError(f"LLM 调用失败：{last_err}")
 
 
 def extract_json(text):
