@@ -8,6 +8,11 @@ tags: [知识库, 日志]
 
 > 时间倒序排列
 
+## [2026-08-04] lint | 巡检报告
+
+- 巡检时间：2026-08-04 | 条目数：120 | 断链：0 | 孤立：0 | 重复对：0 | pending：0 | index 缺失：0 | 空笔记：6
+
+
 ## [2026-08-04] maintenance | 接入 Bing Search API（[补充] 联网检索）
 
 - 新增：`scripts/bing_search.py`（Bing Web Search API v7 封装，未配置密钥时优雅降级）
