@@ -8,6 +8,10 @@ tags: [知识库, 日志]
 
 > 时间倒序排列
 
+## [2026-08-04] maintenance | README 文档重写
+
+- 更新：`README.md` 完整重写——项目简介、架构图、目录结构、6 条 GitHub Actions 流水线与 2 个 Codex 定时任务、核心脚本表、快速开始（依赖 / 密钥 / 使用）、Obsidian 配置、质量指标与安全说明
+
 ## [2026-08-04] maintenance | 自动化四件套落地（模式A / 周报·告警 / F10·F11 / RSSHub）
 
 - 模式 A：Codex 定时任务上线——Windows 任务计划程序 `Codex-KB-Weekly-Ingest`（周一 06:30 周加工）与 `Codex-KB-Daily-Lint`（每天 09:00 日巡检），经 `scripts/codex_task.ps1` 调用 Codex CLI（workspace-write 沙箱）
