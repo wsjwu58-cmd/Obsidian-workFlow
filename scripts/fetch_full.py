@@ -18,14 +18,18 @@ Google 免费翻译 → DeepSeek LLM 兜底；用环境变量 TRANSLATE_BACKEND=
 """
 import argparse
 import datetime
+import hashlib
 import io
 import json
 import os
 import pathlib
 import re
+import subprocess
 import urllib.request
 
+import media
 import translator
+import firecrawl_cli
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 RAW = ROOT / "raw"
@@ -36,6 +40,36 @@ def http_get(url, timeout=30, headers=None, binary=False):
     with urllib.request.urlopen(req, timeout=timeout) as r:
         data = r.read()
     return data if binary else data.decode("utf-8", "ignore")
+
+
+def firecrawl_scrape(url, timeout=120):
+    """调用 Firecrawl CLI 抓取全文 Markdown；失败返回 None。"""
+    out_dir = ROOT / ".firecrawl"
+    out_dir.mkdir(exist_ok=True)
+    digest = hashlib.sha256(url.encode("utf-8")).hexdigest()[:12]
+    tmp = out_dir / f"scrape-{digest}.md"
+    prefix = firecrawl_cli.firecrawl_args()
+    if not prefix:
+        print("  未找到 firecrawl CLI（请先安装/配置）")
+        return None
+    cmd = prefix + ["scrape", url, "-f", "markdown",
+                    "--only-main-content", "-o", str(tmp)]
+    try:
+        r = subprocess.run(cmd, capture_output=True, text=True,
+                           encoding="utf-8", errors="replace", timeout=timeout)
+        if r.returncode == 0 and tmp.exists():
+            text = tmp.read_text(encoding="utf-8", errors="replace")
+            if text.strip():
+                return text
+        tail = (r.stderr or "")[-300:]
+        if tail:
+            print(f"  Firecrawl 抓取失败：{tail}")
+    except Exception as e:
+        print(f"  Firecrawl 抓取失败：{type(e).__name__}: {e}")
+    finally:
+        if tmp.exists():
+            tmp.unlink(missing_ok=True)
+    return None
 
 
 def read_text(p):
@@ -72,7 +106,8 @@ def fetch_github_readme(url):
     return http_get(api, headers=headers)
 
 
-def fetch_article(url):
+def fetch_article_local(url):
+    """本地抓取（trafilatura），作为 arXiv 默认路径与通用抓取的兜底。"""
     import trafilatura
     # 用带超时的下载，避免外部站点无响应时挂死整个流水线
     downloaded = http_get(url, timeout=30)
@@ -82,10 +117,17 @@ def fetch_article(url):
                                include_tables=True, output_format="markdown")
 
 
+def fetch_article(url):
+    text = firecrawl_scrape(url)
+    if text:
+        return text
+    return fetch_article_local(url)
+
+
 def fetch_arxiv(url):
     html_url = url.replace("arxiv.org/abs/", "ar5iv.labs.arxiv.org/html/")
     try:
-        text = fetch_article(html_url)
+        text = fetch_article_local(html_url)
         if text and len(text) > 500:
             return text
     except Exception as e:
@@ -126,6 +168,9 @@ def fetch_bilibili(url):
 
 
 def fetch_pdf(url):
+    text = firecrawl_scrape(url, timeout=180)
+    if text:
+        return text
     from pypdf import PdfReader
     data = http_get(url, timeout=90, binary=True)
     reader = PdfReader(io.BytesIO(data))
@@ -218,6 +263,7 @@ def main():
             else:
                 print("  翻译失败，保留原文")
         if content:
+            content = media.localize_images(content, url, p)
             write_full(p, fm, body, content)
             ok += 1
             print(f"  完成：{p.name}")

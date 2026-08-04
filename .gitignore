@@ -27,3 +27,6 @@ Desktop.ini
 # 语义检索索引与 Codex 定时任务运行日志（本地产物，不入仓）
 .semantic/
 .codex-runs/
+
+# Firecrawl CLI 临时输出
+.firecrawl/

@@ -28,7 +28,8 @@ import sys
 import time
 import urllib.request
 
-import bing_search
+import firecrawl_search
+import media
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 WIKI = ROOT / "wiki"
@@ -138,26 +139,30 @@ def rules_snippet():
     return "\n".join(out)
 
 
-def search_context(title, max_results=5):
-    """用素材标题检索 Bing，返回可注入 Prompt 的文本"""
-    if not os.environ.get("BING_SEARCH_API_KEY"):
+def search_context(title, max_results=None):
+    """用素材标题经 Firecrawl 检索，返回可注入 Prompt 的完整原文（不截取）"""
+    if os.environ.get("FIRECRAWL_SEARCH_DISABLED") == "1":
         return ""
     q = re.sub(r"\s+", " ", title or "")[:100]
     if not q:
         return ""
-    results = bing_search.search(q, count=max_results)
+    max_results = max_results or int(os.environ.get("FIRECRAWL_SEARCH_COUNT", "3"))
+    results = firecrawl_search.search(q, count=max_results)
     if not results:
         return ""
     lines = [
-        "## 联网检索补充（Bing Search，仅用于 [补充] 章节）",
-        "以下为真实检索结果；引用时标注 [补充] 并附上来源 URL：",
+        "## 联网检索补充（Firecrawl Search，仅用于 [补充] 章节）",
+        "以下为真实检索结果的完整原文（未截取）；引用时标注 [补充] 并附上来源 URL：",
         "",
     ]
     for i, r in enumerate(results, 1):
         lines.append(f"{i}. **{r['title']}**")
         lines.append(f"   URL: {r['url']}")
-        if r.get("snippet"):
-            lines.append(f"   摘要: {r['snippet'][:400]}")
+        content = r.get("markdown") or r.get("snippet") or ""
+        if content:
+            lines.append(f"   全文（{len(content)} 字符）：")
+            lines.append(content)
+        lines.append("")
     return "\n".join(lines)
 
 
@@ -322,7 +327,9 @@ def process_one(p, dry_run, force, no_search):
     today = datetime.date.today().isoformat()
     tags = data.get("tags", [])
     tags_line = "[" + ", ".join(tags) + "]" if tags else "[]"
-    entry_md = f"---\ncreated: {today}\nupdated: {today}\nsources: [{p.name}]\ntags: {tags_line}\n---\n\n{data['entry'].strip()}\n"
+    entry = media.localize_images(
+        (data.get("entry") or "").strip(), fm.get("url", ""), target)
+    entry_md = f"---\ncreated: {today}\nupdated: {today}\nsources: [{p.name}]\ntags: {tags_line}\n---\n\n{entry}\n"
 
     if dry_run:
         return target, f"[dry-run] 将写入 {target.relative_to(ROOT)}\n{entry_md[:400]}"

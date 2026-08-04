@@ -29,7 +29,8 @@ KEYWORDS = [
 
 # 垃圾/广告特征：命中即丢弃
 JUNK = ["discount", "sale now", "促销", "特惠", "免费领取", "兼职", "刷单",
-        "click here", "sign up now"]
+        "click here", "sign up now",
+        "娱乐", "八卦", "综艺", "明星", "绯闻", "星座", "运势", "探店", "穿搭"]
 
 UA = {"User-Agent": "Mozilla/5.0 (compatible; kb-collector/1.0)"}
 
