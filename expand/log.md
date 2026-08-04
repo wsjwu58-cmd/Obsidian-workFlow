@@ -8,6 +8,13 @@ tags: [知识库, 日志]
 
 > 时间倒序排列
 
+## [2026-08-04] maintenance | AI 加工升级：深度技术笔记模板
+
+- 更新：`agents.md` AI 生成条目标准由六维框架升级为「深度技术笔记模板」（角色设定 / 强制补全 `[补充]` 溯源 / 人话解释 / 代码规范 / 工程视角 / 表格化排版）
+- 更新：`scripts/ingest.py` Prompt 接入新模板；`自动化工作流设计.md` 与 `自动化工作流功能与实现方案.md` 同步
+- 实测：MarkItDown 素材按新模板生成成功——含方案对比表、带版本代码示例、Top3 报错、知识关联地图（自动链接知识库真实条目）
+- 说明：自动化管道中 `[补充]` 内容来自模型内部知识，建议人工抽检；实时联网检索为后续增强项
+
 ## [2026-08-04] maintenance | P3 模式 B 上线：自动六维加工 + PR 审阅
 
 - 新增：`scripts/ingest.py`（raw pending → DeepSeek 六维生成 wiki 条目 → 自动分类 / 索引 / 日志 / 状态机）、`scripts/count_pending.py`、`.github/workflows/ingest.yml`（每天 08:00，改动提交 `ai-ingest` 分支并开 PR）
