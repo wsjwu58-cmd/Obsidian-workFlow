@@ -8,10 +8,20 @@ tags: [知识库, 日志]
 
 > 时间倒序排列
 
+## [2026-08-04] maintenance | 自动化四件套落地（模式A / 周报·告警 / F10·F11 / RSSHub）
+
+- 模式 A：Codex 定时任务上线——Windows 任务计划程序 `Codex-KB-Weekly-Ingest`（周一 06:30 周加工）与 `Codex-KB-Daily-Lint`（每天 09:00 日巡检），经 `scripts/codex_task.ps1` 调用 Codex CLI（workspace-write 沙箱）
+- F08：新增 `scripts/weekly_report.py` + `weekly-report.yml`（每周五 19:00），首次生成 [[知识库周报]]
+- F09：新增 `failure-notify.yml`，任一 workflow 失败经 `NOTIFY_WEBHOOK` 告警（未配置则跳过）
+- F10：安装 Dataview / Templater 插件，新增 [[动态索引]] 与 `templates/新条目模板.md`
+- F11：新增 `scripts/semantic_search.py`（sentence-transformers + SQLite，TF-IDF 降级），已建 110 篇索引，embedding 检索实测通过
+- RSSHub：`collect.py` 接入掘金分类 / 知乎热榜（`RSSHUB_BASE` 可配置；公共实例建议替换为自建）
+- 配置：`scripts/setup_secrets.py` 一键同步密钥到 GitHub Secrets（已同步 LLM_API_KEY / LLM_BASE_URL / LLM_MODEL / BING_SEARCH_ENDPOINT）
+- 文案：`ingest.yml` / `ingest.py` 由「六维」统一改为「深度技术笔记模板」
+
 ## [2026-08-04] lint | 巡检报告
 
 - 巡检时间：2026-08-04 | 条目数：120 | 断链：0 | 孤立：0 | 重复对：0 | pending：0 | index 缺失：0 | 空笔记：6
-
 
 ## [2026-08-04] maintenance | 接入 Bing Search API（[补充] 联网检索）
 
