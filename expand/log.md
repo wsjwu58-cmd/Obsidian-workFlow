@@ -8,6 +8,11 @@ tags: [知识库, 日志]
 
 > 时间倒序排列
 
+## [2026-08-05] lint | 巡检报告
+
+- 巡检时间：2026-08-05 | 条目数：120 | 断链：0 | 孤立：0 | 重复对：0 | pending：0 | index 缺失：0 | 空笔记：6
+
+
 ## [2026-08-04] maintenance | 翻译后端去 LLM 化——本地 MarianMT / Google / LLM 兜底
 
 - 新增：`scripts/translator.py` 可插拔翻译后端——`TRANSLATE_BACKEND=local|google|llm|auto`（默认 auto：本地 MarianMT 零 token → Google 免费 → DeepSeek 兜底；已中文内容自动跳过）
