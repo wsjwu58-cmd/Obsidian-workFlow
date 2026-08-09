@@ -14,7 +14,7 @@
   2. 疑似重复：内容相似度高的一对条目（建议：合并去重）
   3. 空笔记：正文过短的条目（建议：补全或移除）
   4. 过期条目：updated 字段距今天超过 N 天的条目（建议：标记过时/重访）
-  5. 待办积压：raw/ pending 超过 N 天的素材（建议：加工或拒绝）
+  5. 待办积压：references/raw/ pending 超过 N 天的素材（建议：加工或拒绝）
   6. 断链/死链：指向不存在条目的 [[链接]]（建议：修复引用）
   7. 未完成行动：列表中未勾选的 [[任务]]（建议：重访或移除）
 
@@ -30,7 +30,7 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 WIKI = ROOT / "wiki"
 EXPAND = ROOT / "expand"
-RAW = ROOT / "raw"
+RAW = ROOT / "references" / "raw"
 
 INFRA = {"index.md", "log.md", "知识图谱.md",
          "自动化工作流设计.md", "自动化工作流功能与实现方案.md",

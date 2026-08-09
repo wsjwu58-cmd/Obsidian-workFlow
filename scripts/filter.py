@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""过滤层：对 raw/ 中 status=pending 的素材执行
+"""过滤层：对 references/raw/ 中 status=pending 的素材执行
 1) 标题相似度去重（4-gram Jaccard >= 0.85 视为重复，标记 rejected）
 2) 可选 LLM 三维打分（相关性/深度/新鲜度，pass 且 total>=threshold 才保留）
    LLM 不可用时回退启发式 score（collect.py 已写入）。
@@ -15,7 +15,7 @@ import re
 import urllib.request
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-RAW = ROOT / "raw"
+RAW = ROOT / "references" / "raw"
 
 
 def read_text(p):

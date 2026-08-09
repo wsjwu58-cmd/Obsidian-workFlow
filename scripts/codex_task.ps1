@@ -19,7 +19,7 @@ $log = Join-Path $logDir "$Mode-$stamp.log"
 $outFile = Join-Path $logDir "$Mode-$stamp.out.txt"
 
 if ($Mode -eq 'ingest') {
-    $prompt = 'Ingest all materials with status=pending in raw/ following the rules in agents.md: write AI-generated entries into expand/ under the matching category (wiki/ is read-only), build bidirectional links, sync expand/index.md, expand/log.md and expand/知识图谱.md, then mark raw/ materials as processed. Finish with a concise Chinese summary of what was added or updated.'
+    $prompt = 'Ingest all materials with status=pending in references/raw/ following the rules in agents.md: write AI-generated entries into expand/ under the matching category (wiki/ is read-only), build bidirectional links, sync expand/index.md, expand/log.md and expand/知识图谱.md, then mark references/raw/ materials as processed. Finish with a concise Chinese summary of what was added or updated.'
 } else {
     $prompt = 'Run the knowledge base lint: broken links, orphan nodes, duplicate entries, pending backlog, index sync, empty notes. Fix issues that can be safely auto-fixed, then append a lint report summary to expand/log.md. Finish with a concise Chinese summary and recommendations.'
 }

@@ -4,7 +4,7 @@
 1. 断链检查：[[链接]] 是否可解析到 wiki/ 下的 .md 文件
 2. 孤立节点：没有任何其他条目链接到它
 3. 重复检测：内容相似度 >= 0.85 的条目对
-4. 积压检查：raw/ 中 pending 素材超时未处理
+4. 积压检查：references/raw/ 中 pending 素材超时未处理
 5. index 同步：每个条目是否出现在 index.md
 6. 空笔记提示：正文过短的条目
 输出：Markdown 报告 + 可选 issue 文件；--log 时追加摘要到 wiki/log.md。
@@ -19,7 +19,7 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 WIKI = ROOT / "wiki"
 EXPAND = ROOT / "expand"
-RAW = ROOT / "raw"
+RAW = ROOT / "references" / "raw"
 
 # 基础设施文件不计入孤立/同步检查
 INFRA = {"index.md", "log.md", "知识图谱.md",
@@ -172,7 +172,7 @@ def main():
                         pass
     report.append(f"\n## 4. 积压检查：pending={pending}（>24h: {stale_24}，>7d: {stale_7}）")
     if stale_7:
-        issues.append(f"### 积压告警：raw/ 有 {stale_7} 条素材超过 7 天未处理")
+        issues.append(f"### 积压告警：references/raw/ 有 {stale_7} 条素材超过 7 天未处理")
 
     # ---- 5. index 同步 ----
     idx = read_text(EXPAND / "index.md")

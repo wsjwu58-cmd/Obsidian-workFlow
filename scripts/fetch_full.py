@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """全文抓取与翻译：
-对 raw/ 中 status=pending 的素材，按来源/URL 类型抓取完整内容并翻译成简体中文，
+对 references/raw/ 中 status=pending 的素材，按来源/URL 类型抓取完整内容并翻译成简体中文，
 回写为 Markdown 格式。
 
 类型分发：
@@ -32,7 +32,7 @@ import translator
 import firecrawl_cli
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-RAW = ROOT / "raw"
+RAW = ROOT / "references" / "raw"
 UA = {"User-Agent": "Mozilla/5.0 (compatible; kb-collector/1.0)"}
 MAX_TRANSLATE_CHARS = 60000
 def http_get(url, timeout=30, headers=None, binary=False):

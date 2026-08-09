@@ -4,7 +4,7 @@
 
 汇总最近 7 天：
 - 新增/更新条目（解析 expand/log.md 的 ingest / maintenance 记录）
-- 采集量（raw/ 中 collected 在窗口内、status=processed/rejected 的数量）
+- 采集量（references/raw/ 中 collected 在窗口内、status=processed/rejected 的数量）
 - 通过率（processed / (processed + rejected)）
 - 积压（pending 数量与超时）
 - 链接健康度 / 孤立 / 重复 / 空笔记（运行 lint.py 获取最新巡检结果）
@@ -21,7 +21,7 @@ import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 EXPAND = ROOT / "expand"
-RAW = ROOT / "raw"
+RAW = ROOT / "references" / "raw"
 LOG = EXPAND / "log.md"
 REPORT = EXPAND / "知识库周报.md"
 LINT_REPORT = ROOT / ".lint-report.md"
@@ -137,7 +137,7 @@ def build_report(events, proc, rej, pend, names, lint_summary):
     lines.append(f"| 更新条目 | {upd_entries} |")
     lines.append(f"| 采集素材（窗口内） | {total}（processed {proc} / rejected {rej}） |")
     lines.append(f"| 通过率 | {pass_rate} |")
-    lines.append(f"| 当前 pending（raw/） | {pend} |")
+    lines.append(f"| 当前 pending（references/raw/） | {pend} |")
     for k, v in lint_summary.items():
         lines.append(f"| 巡检：{k} | {v} |")
     lines.append("")
