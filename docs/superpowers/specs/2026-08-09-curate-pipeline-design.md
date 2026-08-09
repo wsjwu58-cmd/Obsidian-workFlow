@@ -18,7 +18,8 @@
 | 人类闸门形态 | 候选分支 + 评审 PR |
 | 候选产出物 | 完整三件套（sources/ + translations/ 过程稿 + works-ready/ + review.md） |
 | 暂存区 | `candidates/<batch>/` tracked（随候选分支进 git） |
-| 触发方式 | 自动每 3h 轮询 + 每次 1 条候选 |
+| 触发方式 | 自动每 3h 轮询；curate 攒批 3–4 篇候选后统一并行评审，开一个评审 PR |
+| 自动评审 | 全自动评审：单 codex exec 对 3–4 篇候选依次串行评审（统一打分维度），汇总「候选×定性×去向」表 |
 | 产出边界 | codex = working/ 翻译草稿 + references/ 索引条目 + 归属建议；thinking 只给观点建议不写正文 |
 | thinking 归属 | 归人，codex 只建议 |
 | 收录执行者 | 候选 PR 合并后开「收录 PR」，你 approve 合并 |
@@ -40,27 +41,33 @@
 
 ③curate.py（服务器，新）
    ├─ git pull --rebase origin main
-   ├─ 取 1 条待处理
-   ├─ codex exec 产出 candidates/<batch>/ 三件套：
+   ├─ 攒批：取 3–4 条待处理（不足则取现有）
+   ├─ codex exec 为每篇产出 candidates/<batch>/ 三件套：
    │    sources/<slug>.md               原文快照（+ source-full.md 论文/长文）
    │    translations/<slug>/{01-analysis,02-prompt,translation}.md
    │    works-ready/<slug>-translation.md  发布候选
-   │    review.md                       候选×定性×去向汇总表
+   ├─ 全自动评审扇出：单个 codex exec 内对每篇候选依次评审
+   │    （模型串行逐篇，统一打分维度，避免多进程并发限流）：
+   │    ① 原文价值：原创洞察密度 / 长文实质 vs 产品页·发布稿·摘要 → 高/中/低
+   │    ② 翻译质量：完整逐译 / 压缩摘要 / 首轮粗稿；通顺度、术语到位度 → 精品/合格/需返工
+   │    ③ 与知识库契合度：补薄弱环节还是重复
+   │    ④ 一句话定性 + 建议去向：working/ 正式收录 / articles.md 观察项一行 / 淘汰
+   ├─ 汇总 review.md「候选 × 定性 × 去向」表
    ├─ 轻量校验（frontmatter/文件名）
-   ├─ 更新 articles.md：该条 → 评审中
-   ├─ push 分支 candidates/<slug>
-   └─ 开评审 PR「候选：<标题>」
+   ├─ 更新 articles.md：各条 → 评审中
+   ├─ push 分支 candidates/<batch>
+   └─ 开一个评审 PR「候选：<batch> N 篇」（body = review.md 全文）
 
-④你 review（人类闸门）：approve / 请求修改 / close
-   │ 合并候选 PR
+④你 review（人类闸门）：对评审表逐条 approve / 请求修改 / close
+   │ 合并候选 PR（若某篇需返工，可 close 后单独重跑该篇）
    ▼
 ⑤finalize.yml（新增，监听候选 PR 合并）→ finalize.py（Actions）
-   ├─ 读 review.md 收录标记
+   ├─ 读 review.md 收录标记（每篇独立判定）
    ├─ 落位：works-ready/ → working/<slug>-translation.md
    ├─ 回写 articles.md：评审中 → 已收录（归属）/ 已淘汰（留 URL）
    ├─ 同步 expand/index.md、log.md、知识图谱.md
    ├─ 清理 candidates/<batch>/
-   └─ 开「收录：<标题>」PR → 你 approve → 合并 → 正式 K1-K7 校验
+   └─ 开「收录：<batch>」PR → 你 approve → 合并 → 正式 K1-K7 校验
 ```
 
 ## 状态机（articles.md）
@@ -93,10 +100,11 @@
 | 文件 | 类型 | 位置 | 职责 |
 |---|---|---|---|
 | research.py | 新增 | scripts/ | 情报分析师提示词组装 + codex 搜索 + 去重入队 |
-| curate.py | 新增 | scripts/ | 取待处理 → codex 产三件套 → 开评审 PR |
+| curate.py | 新增 | scripts/ | 攒批 3–4 篇 → codex 产三件套 → 并行评审扇出 → 汇总评审表 → 开评审 PR |
 | finalize.py | 新增 | scripts/ | 落位 + 回写 + 同步 + 清理 → 开收录 PR |
 | prompts/research-tracker.md | 新增 | prompts/ | 情报分析师提示词资产（注入日期/已知内容） |
 | prompts/curate.md | 新增 | prompts/ | codex 产三件套操作约定 |
+| prompts/curate-review.md | 新增 | prompts/ | 自动评审 prompt 模板（原文价值/翻译质量/契合度/定性去向） |
 | worker.py | 退役 | scripts/ | 被 curate.py 取代 |
 | collect.py | 退役 | scripts/ | codex 深度搜索替代 |
 | .github/workflows/research.yml | 新增 | workflows/ | 每周 + 手动触发 research.py |
