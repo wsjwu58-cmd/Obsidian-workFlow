@@ -47,15 +47,21 @@ def known_content_block():
 def run_codex(prompt, root):
     prompt_file = pathlib.Path(__import__("tempfile").gettempdir(), ".research_prompt.md")
     prompt_file.write_text(prompt, encoding="utf-8")
-    r = subprocess.run(
+    cmd = (
         f"set -a; source /etc/environment; set +a; "
-        f"codex exec -C {root} "
+        f"codex exec -C {shlex.quote(str(root))} "
         f"--sandbox workspace-write -c sandbox_workspace_write.network_access=true "
-        f"< {shlex.quote(str(prompt_file))}",
-        shell=True, cwd=root, capture_output=True, text=True,
-        encoding="utf-8", errors="replace", timeout=900,
+        f"< {shlex.quote(str(prompt_file))}"
     )
-    return r.stdout, r.returncode
+    try:
+        r = subprocess.run(
+            cmd, shell=True, cwd=root, capture_output=True, text=True,
+            encoding="utf-8", errors="replace", timeout=900,
+        )
+        return r.stdout, r.returncode
+    except Exception as e:
+        print(f"[research] codex 调用失败：{type(e).__name__}: {e}")
+        return "", 1
 
 
 def parse_candidates(stdout):
@@ -67,7 +73,8 @@ def parse_candidates(stdout):
         data = json.loads(m.group(0))
     except json.JSONDecodeError:
         return []
-    return data.get("candidates", [])
+    cands = data.get("candidates", [])
+    return cands if isinstance(cands, list) else []
 
 
 def main():
