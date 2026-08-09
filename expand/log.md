@@ -8,6 +8,12 @@ tags: [知识库, 日志]
 
 > 时间倒序排列
 
+## [2026-08-09] maintenance | Ingest 提示词与 agents.md 模板方向聚焦（Track 3）
+
+- 更新：`agents.md` AI 生成条目模板——角色设定改为聚焦两大追踪方向（AI Agent 开发 / 跨平台开发），新增「质量门槛」三段式（必须满足/加分项/直接排除）与 `skip` 机制（不达标标记 `rejected`），知识关联地图补充去重检查
+- 更新：`技术说明` 由 Bing Search API 修正为 Firecrawl Search（含 `FIRECRAWL_SEARCH_DISABLED` 开关），与 `ingest.py` 实际行为保持一致
+- 更新：`scripts/ingest.py` 提示词——角色聚焦 Agent / 跨平台、质量门槛 + skip 跳过、已知条目升级为「去重权威」段、LLM 返回 `skip: true` 时素材标 `rejected` 而非硬生成
+
 ## [2026-08-09] maintenance | 一致性门禁上线（Track 1：不变量检查 K1-K7）
 
 - 新增：`scripts/check_consistency.py`——K1 raw 状态机 / K2 index 计数声明 / K3 expand frontmatter 完整 / K4 双链可解析 / K5 条目均入 index / K6 表格形状 / K7 孤立节点（仅警告）。退出码供 CI / 钩子使用
