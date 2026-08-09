@@ -34,7 +34,7 @@ jobs:
           echo "count=$COUNT"
           echo "count=$COUNT" >> "$GITHUB_OUTPUT"
 
-      - name: 触发服务器执行引擎（SSH 远程执行，worker 凭据存服务器本地）
+      - name: 触发服务器候选加工（SSH，curate 攒批）
         if: steps.queue.outputs.count != '0'
         env:
           SERVER_HOST: ${{ secrets.WORKER_HOST }}
@@ -46,5 +46,5 @@ jobs:
           ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
               -o ConnectTimeout=15 -i /tmp/worker_key \
               "${SERVER_USER}@${SERVER_HOST}" \
-              'cd /root/note-worker && /usr/bin/python3 scripts/worker.py --limit 3'
+              'cd /root/note-worker && /usr/bin/python3 scripts/curate.py --limit 4'
         timeout-minutes: 30
