@@ -8,6 +8,12 @@ tags: [知识库, 日志]
 
 > 时间倒序排列
 
+## [2026-08-09] ingest | Rust 2025 官方博客：Rust 1.85 版本说明（Move 语义 / Borrow Checker 演进）
+
+- 处理：`references/articles.md` 待处理 → 已收录（编号 15，归属 `expand/thinking/`）
+- 新增：[[Rust2024版次的语义收紧与异步闭合]]——Rust 1.85 / 2024 版次判值思考（采集器「Move 语义」标签纠偏；edition ≈ 语义债务清偿机制；unsafe 边界从 lint 升级为语言规则；async closures 补齐「闭包 × 借用 × await」三角；版本号不承载语义里程碑）
+- 更新：[[index]]（thinking 段 + 计数 132→133）、[[知识图谱]]（编程语言簇补 Rust 思考节点）、`references/articles.md`（待处理清空 + 编号 15 + 统计 11→12）
+
 ## [2026-08-09] ingest | MCP 官方文档：Model Context Protocol 介绍
 
 - 处理：`references/articles.md` 待处理 → 已收录（编号 14）

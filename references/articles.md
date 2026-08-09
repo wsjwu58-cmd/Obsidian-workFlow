@@ -19,8 +19,7 @@
 
 <!-- pending:start -->
 <!-- 采集自动化维护，按 `| 标题 | 链接 | 来源 | 日期 |` 追加一行；处理完移入编号正文 -->
-<!-- 当前：1 条待处理 -->
-| Rust 2025 官方博客：Rust 1.85 版本说明（Move 语义 / Borrow Checker 演进） | https://blog.rust-lang.org/2025/02/20/Rust-1.85.0.html | dispatch-e2e | 2026-08-09 |
+<!-- 当前：0 条待处理 -->
 <!-- pending:end -->
 
 ## 已收录（编号正文）
@@ -151,10 +150,19 @@
 - **核心：** 官方入门与架构——「AI 应用的 USB-C」定位、数据层/传输层双层、2026-07-28 版增量（MCP Apps / Agent Skills / Registry / server/discover）。思考：协议只标准化「连接信封」，工具语义仍靠 server 自治，M×N 适配成本转移而非消失。
 - **关联：** MCP / Agent 工具生态；既有笔记 [[MCP协议与工具调用]]、Claude Code [[12-mcp-xie-yi-ji-cheng]]
 
+### 15. Rust 2025 官方博客：Rust 1.85 版本说明（Move 语义 / Borrow Checker 演进）
+
+- **标题：** Rust 2025 官方博客：Rust 1.85 版本说明（Move 语义 / Borrow Checker 演进）
+- **链接：** [blog.rust-lang.org/2025/02/20/Rust-1.85.0.html](https://blog.rust-lang.org/2025/02/20/Rust-1.85.0.html)
+- **作者：** The Rust Release Team（blog.rust-lang.org） | **日期：** 2025-02-20（采集 2026-08-09）
+- **状态：** 已收录 | **归属：** `expand/thinking/Rust2024版次的语义收紧与异步闭合.md`
+- **核心：** Rust 1.85.0 同步稳定 2024 Edition（官方口径「史上最大版次」）：RPIT 生命周期捕获规则、临时作用域/drop 顺序、match 擦除保留、unsafe extern/属性/static mut 收缩、set_var 转 unsafe、async closures（AsyncFn）稳定、元组 collect 扩展至 12 元。思考：采集器「Move 语义」标签失焦——真正主线是「版次语义收紧 + unsafe 显式化 + 异步借用补课」，edition 约三年一拍是 Rust 的语义债务清偿机制。
+- **关联：** Rust / 版次 / 借用检查；对照 [[c++核心编程]]、思考层 [[MCP协议标准化的增量与边界]]
+
 ## 统计
 
-- **正式收录：** 11 篇（编号 01-10、14）｜**已淘汰隔离：** 3 篇（编号 11-13，不计入收录数，仅防重复采集）
+- **正式收录：** 12 篇（编号 01-10、14、15）｜**已淘汰隔离：** 3 篇（编号 11-13，不计入收录数，仅防重复采集）
 
 ## 待补充
 
-- [ ] 占位：外部新文章先查编号 01-14 确认未收，再由采集层写入「待处理」队列
+- [ ] 占位：外部新文章先查编号 01-15 确认未收，再由采集层写入「待处理」队列
