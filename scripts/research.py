@@ -78,6 +78,18 @@ def parse_candidates(stdout):
 
 
 def main():
+    lock = pathlib.Path(__import__("tempfile").gettempdir(), ".research.lock")
+    if lock.exists():
+        print("[research] 检测到运行中的 research 实例（锁存在），退出")
+        return 0
+    lock.touch()
+    try:
+        return _run()
+    finally:
+        lock.unlink(missing_ok=True)
+
+
+def _run():
     ap = argparse.ArgumentParser()
     ap.add_argument("--days", type=int, default=14)
     ap.add_argument("--max", type=int, default=10)

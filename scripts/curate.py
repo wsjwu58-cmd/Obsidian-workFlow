@@ -111,6 +111,18 @@ def create_pr(head, base, title, body):
 
 
 def main():
+    lock = pathlib.Path(__import__("tempfile").gettempdir(), ".curate.lock")
+    if lock.exists():
+        print("[curate] 检测到运行中的 curate 实例（锁存在），退出")
+        return 0
+    lock.touch()
+    try:
+        return _run()
+    finally:
+        lock.unlink(missing_ok=True)
+
+
+def _run():
     ap = argparse.ArgumentParser()
     ap.add_argument("--limit", type=int, default=4)
     ap.add_argument("--dry-run", action="store_true")
@@ -119,6 +131,11 @@ def main():
     pull = sh("git pull --rebase origin main", check=False)
     if pull.returncode != 0:
         print(f"[curate] git pull 警告：{pull.stderr[-300:]}")
+
+    # 每次运行都从 origin/main 干净起步，避免批间分支叠分支污染 PR
+    sh("git checkout main", check=False)
+    sh("git reset --hard origin/main", check=False)
+    sh("git clean -fd candidates 2>/dev/null || true", check=False)
 
     text = sh("cat references/articles.md", check=False).stdout
     queue = parse_queue(text, args.limit)
@@ -137,6 +154,7 @@ def main():
 
     # 1) 每篇产三件套
     curate_prompt = (ROOT / "prompts" / "curate.md").read_text(encoding="utf-8")
+    ok_slugs = []
     for i, item in enumerate(queue, 1):
         slug = make_slug(item["title"])
         p = curate_prompt + (
@@ -152,24 +170,32 @@ def main():
         if rc != 0:
             print(f"[curate] 加工失败 {item['title'][:30]}，继续")
             continue
+        ok_slugs.append(slug)
 
-    # 2) 串行评审
+    if not ok_slugs:
+        print("[curate] 全部条目加工失败，不标记、不推送，保留队列待重试")
+        return 0
+
+    # 2) 串行评审（仅评审加工成功的条目）
     review_prompt = (ROOT / "prompts" / "curate-review.md").read_text(encoding="utf-8")
-    items_block = "\n".join(f"- {q['title']} | {q['url']}" for q in queue)
+    ok_items = [q for q in queue if make_slug(q["title"]) in ok_slugs]
+    items_block = "\n".join(f"- {q['title']} | {q['url']}" for q in ok_items)
     review_prompt = review_prompt.replace("{ITEMS}", items_block) \
                                  .replace("<batch>", batch.split("/")[-1])
-    print(f"[curate] 评审 {len(queue)} 篇…")
+    print(f"[curate] 评审 {len(ok_items)} 篇…")
     stdout, rc = run_codex(review_prompt, ROOT, ".curate_review_prompt.md")
     if rc == 0:
         (batch_dir / "review.md").write_text(stdout, encoding="utf-8")
     else:
         (batch_dir / "review.md").write_text("评审失败，请人工查看。\n" + stdout[-2000:], encoding="utf-8")
 
-    # 3) 回写 articles.md：待处理 → 评审中（状态并入 row cell，并同步计数）
+    # 3) 回写 articles.md：待处理 → 评审中（仅标记加工成功的条目，状态并入 row cell，并同步计数）
     art = ROOT / "references" / "articles.md"
     t = art.read_text(encoding="utf-8")
     marked = 0
     for item in queue:
+        if make_slug(item["title"]) not in ok_slugs:
+            continue
         url = re.escape(item["url"])
         t, subs = re.subn(
             rf"(\|[^\n]*\| {url} \|[^\n]*\|)(\s*\n)",
@@ -196,7 +222,7 @@ def main():
     sh('git commit -m "curate: 候选批次（待人工评审）"')
     sh(f"git push origin {branch}")
     review_text = (batch_dir / "review.md").read_text(encoding="utf-8", errors="replace")
-    title = f"候选：{batch}（{len(queue)} 篇）"
+    title = f"候选：{batch}（{len(ok_items)} 篇）"
     create_pr(branch, "main", title, review_text[:3000])
     print(f"[curate] 完成：{branch}")
     return 0

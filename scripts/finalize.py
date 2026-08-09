@@ -20,6 +20,7 @@ import json
 import os
 import pathlib
 import re
+import subprocess
 import sys
 import urllib.request
 
@@ -277,9 +278,19 @@ def main():
         print("[finalize] 无落位变更（全淘汰），直接提交")
     # 提交变更到分支 + 开收录 PR（main 受保护，不能直推）
     branch = f"finalize/{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}"
-    os.system(f"cd {ROOT} && git checkout -b {branch} && git add -A && "
-              f"git config user.name kb-bot && git config user.email kb-bot@users.noreply.github.com && "
-              f"git commit -m 'finalize: 收录候选批次' && git push origin {branch}")
+    for cmd in [
+        "git checkout -b " + branch,
+        "git add -A",
+        "git config user.name kb-bot",
+        "git config user.email kb-bot@users.noreply.github.com",
+        "git commit -m 'finalize: 收录候选批次'",
+        "git push origin " + branch,
+    ]:
+        r = subprocess.run(cmd, shell=True, cwd=ROOT, capture_output=True, text=True,
+                           encoding="utf-8", errors="replace")
+        if r.returncode != 0:
+            print(f"[finalize] git 命令失败: {cmd}\n{r.stderr[-300:]}")
+            return 1
     create_pr(branch, "main", "收录：curate 候选批次", "AI 落位 + 索引回写，请 review 合并。")
     print("[finalize] 完成")
     return 0
