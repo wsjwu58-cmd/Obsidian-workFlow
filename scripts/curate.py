@@ -27,6 +27,9 @@ import sys
 import urllib.request
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "scripts"))
+
+from kb_common import make_slug
 
 
 def sh(cmd, cwd=None, check=True):
@@ -135,7 +138,7 @@ def main():
     # 1) 每篇产三件套
     curate_prompt = (ROOT / "prompts" / "curate.md").read_text(encoding="utf-8")
     for i, item in enumerate(queue, 1):
-        slug = re.sub(r"[^\w\u4e00-\u9fff-]+", "-", item["title"])[:40].strip("-") or f"item{i}"
+        slug = make_slug(item["title"])
         p = curate_prompt + (
             f"\n\n## 本次条目\n标题：{item['title']}\nURL：{item['url']}\n"
             f"来源：{item['source']} | 日期：{item['date']}\n"
@@ -154,7 +157,7 @@ def main():
     review_prompt = (ROOT / "prompts" / "curate-review.md").read_text(encoding="utf-8")
     items_block = "\n".join(f"- {q['title']} | {q['url']}" for q in queue)
     review_prompt = review_prompt.replace("{ITEMS}", items_block) \
-                                 .replace("<batch>", batch)
+                                 .replace("<batch>", batch.split("/")[-1])
     print(f"[curate] 评审 {len(queue)} 篇…")
     stdout, rc = run_codex(review_prompt, ROOT, ".curate_review_prompt.md")
     if rc == 0:

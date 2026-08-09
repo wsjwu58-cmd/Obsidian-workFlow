@@ -24,6 +24,9 @@ import sys
 import urllib.request
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "scripts"))
+
+from kb_common import make_slug
 
 
 def list_batches():
@@ -31,13 +34,6 @@ def list_batches():
     if not c.exists():
         return []
     return sorted([p for p in c.iterdir() if p.is_dir()])
-
-
-def read_review(batch):
-    rv = batch / "review.md"
-    if not rv.exists():
-        return ""
-    return rv.read_text(encoding="utf-8", errors="replace")
 
 
 def _parse_pending_rows(text, batch_name):
@@ -64,17 +60,46 @@ def _next_number(art_text):
     return (max(nums) + 1) if nums else 1
 
 
-def _fmt_entry(n, row, moved_file, core):
+def _fmt_entry(n, row, status="已收录", moved_file=None, core=None):
     display = row["url"].replace("https://", "").replace("http://", "")
+    if status == "已淘汰":
+        own = "—"
+        core = core or "评审判定无加工价值，保留 URL 防重复采集"
+    else:
+        own = f"`working/{moved_file}`" if moved_file else "—"
+        core = core or (row["title"] if len(row["title"]) <= 80 else row["title"][:80] + "…")
     return "\n".join([
         f"### {n:02d}. {row['title']}",
         "",
         f"- **标题：** {row['title']}",
         f"- **链接：** [{display}]({row['url']})",
         f"- **作者：** {row['source']} | **日期：** {row['date']}",
-        f"- **状态：** 已收录 | **归属：** `working/{moved_file}`",
+        f"- **状态：** {status} | **归属：** {own}",
         f"- **核心：** {core}",
     ])
+
+
+def _pair_rows(moved, batch_rows):
+    """把 works-ready 落位文件匹配回队列行。
+
+    优先按 slug（与 curate.py 传给 codex 的文件名 slug 一致）匹配：
+    `make_slug(标题)` 出现在文件名中即命中；匹配不到则退回剩余行的行序。
+    返回 (pairs, dropped)：pairs=[(row, filename)] 收录；dropped=[row] 淘汰。
+    """
+    remaining = list(batch_rows)
+    pairs = []
+    for f in moved:
+        idx = None
+        for i, row in enumerate(remaining):
+            if make_slug(row["title"]) in f:
+                idx = i
+                break
+        if idx is None:
+            idx = 0 if remaining else None
+        if idx is None:
+            break
+        pairs.append((remaining.pop(idx), f))
+    return pairs, remaining
 
 
 def _append_entries(art_text, entries):
@@ -167,25 +192,28 @@ def finalize_batch(batch):
 
     # 回写 articles.md：先写收录条目到编号正文，再移除本批次已处理的行
     art = ROOT / "references" / "articles.md"
+    dropped = []
     if art.exists():
         t = art.read_text(encoding="utf-8")
 
         # 收录条目 → 编号正文（须在移除队列行之前捕获行元数据）。
-        # 收录 vs 淘汰启发式：moved 数 = 收录数；把收录标记给队列中前 len(moved)
-        # 行（与 curate.py 串行加工顺序一致，每个 slug 对应该行队列位次；标题→
-        # 文件名的精确映射不可靠，故用行序而非文件名匹配）。
-        if moved:
-            batch_rows = [r for r in _parse_pending_rows(t, batch.name)]
-            incl_rows = batch_rows[:len(moved)]
-            n = _next_number(t)
-            entries = []
-            for row, mf in zip(incl_rows, moved):
-                core = row["title"] if len(row["title"]) <= 80 else row["title"][:80] + "…"
-                entries.append(_fmt_entry(n, row, mf, core))
-                n += 1
-            if entries:
-                t = _append_entries(t, entries)
-                print(f"[finalize] 编号正文写入 {len(entries)} 条（收录）")
+        # 配对：works-ready 文件名按 slug 匹配回队列行（与 curate.py 传给 codex
+        # 的 slug 一致）；匹配不到退回行序。未配到的行 → 淘汰，同样写编号正文
+        # 保留 URL 防重复采集。
+        batch_rows = [r for r in _parse_pending_rows(t, batch.name)]
+        pairs, dropped = _pair_rows(moved, batch_rows)
+        n = _next_number(t)
+        entries = []
+        for row, mf in pairs:
+            core = row["title"] if len(row["title"]) <= 80 else row["title"][:80] + "…"
+            entries.append(_fmt_entry(n, row, "已收录", mf, core))
+            n += 1
+        for row in dropped:
+            entries.append(_fmt_entry(n, row, "已淘汰"))
+            n += 1
+        if entries:
+            t = _append_entries(t, entries)
+            print(f"[finalize] 编号正文写入 {len(entries)} 条（收录 {len(pairs)} / 淘汰 {len(dropped)}）")
 
         out_lines = []
         removed = 0
@@ -226,7 +254,7 @@ def finalize_batch(batch):
     import shutil
     shutil.rmtree(batch, ignore_errors=True)
     print(f"[finalize] 清理 {batch.name}")
-    return bool(moved)
+    return bool(moved) or bool(dropped)
 
 
 def main():

@@ -131,6 +131,21 @@ def main():
             known.add(url)
             new_count += 1
     print(f"[research] 完成：新增 {new_count} 条候选")
+    # 入队后必须推送 main，否则 dispatch-worker.yml（读 main 队列计数）与
+    # curate.py（git pull --rebase）都看不到新行，研究腿会死循环空转。
+    if new_count > 0:
+        for cmd in [
+            "git add references/articles.md",
+            "git config user.name note-worker || true",
+            "git config user.email note-worker@users.noreply.github.com || true",
+            "git commit -m 'research: 情报搜索新增候选条目'",
+            "git push origin main",
+        ]:
+            r = subprocess.run(cmd, shell=True, cwd=ROOT, capture_output=True, text=True,
+                               encoding="utf-8", errors="replace")
+            if r.returncode != 0:
+                print(f"[research] git 命令失败: {cmd}\n{r.stderr[-300:]}")
+                break
     return 0
 
 
