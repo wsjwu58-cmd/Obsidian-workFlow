@@ -195,3 +195,6 @@ tags: [知识库, 日志]
 - 隔离：`c++/密码管理.md` → `私密/密码管理.md`（含真实凭据，不进入知识图谱）
 - 修复：移除 `wiki/08-逆向与安全/.obsidian` 嵌套库配置（已备份至临时目录）
 - 待办：去重 Free-fs 两份笔记；补全 4 个空笔记；重命名不规范文件名（详见 [[index]] 待办清单）
+
+## [2026-08-09] curate-finalize | 20260809-180901
+- 收录：The-new-rules-of-context-engineering-for-translation.md, Six-Agent-Orchestration-Patterns-translation.md, One-shotting-a-Raccoon-Heist-game-using-translation.md, Making-production-ready-agents-the-defau-translation.md
