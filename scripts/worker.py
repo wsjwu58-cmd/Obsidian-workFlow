@@ -18,11 +18,13 @@
 仅依赖标准库 + 服务器上的 codex CLI / gh CLI。
 """
 import argparse
-import hashlib
+import json
+import os
 import pathlib
 import re
 import subprocess
 import sys
+import urllib.request
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
@@ -58,6 +60,46 @@ def parse_queue(text):
             rows.append({"title": cells[0], "url": cells[1],
                          "source": cells[2], "date": cells[3]})
     return rows
+
+
+def create_pr(head, base="main"):
+    """用 GitHub REST API 开 PR（服务器不依赖 gh CLI）。需 GH_TOKEN 环境变量。"""
+    token = os.environ.get("GH_TOKEN", os.environ.get("GITHUB_TOKEN", ""))
+    if not token:
+        print("[worker] 缺少 GH_TOKEN，跳过开 PR（分支已推送）")
+        return None
+    remote = sh("git config --get remote.origin.url", check=False).stdout.strip()
+    m = re.search(r"github\.com[:/]([^/]+)/([^/.]+)", remote)
+    if not m:
+        print(f"[worker] 无法从 remote 解析仓库：{remote}，跳过 PR")
+        return None
+    owner, repo = m.group(1), m.group(2)
+    title = f"worker: 服务器 codex 加工 {__import__('datetime').datetime.now().strftime('%Y%m%d')}"
+    payload = {
+        "title": title,
+        "head": head,
+        "base": base,
+        "body": "服务器执行引擎 auto-generated，请 review 合并",
+    }
+    req = urllib.request.Request(
+        f"https://api.github.com/repos/{owner}/{repo}/pulls",
+        data=json.dumps(payload).encode(),
+        headers={
+            "Authorization": f"token {token}",
+            "Accept": "application/vnd.github+json",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            pr = json.loads(resp.read().decode())
+            print(f"[worker] PR 已创建: {pr['html_url']}")
+            return pr["html_url"]
+    except urllib.error.HTTPError as e:
+        body = e.read().decode("utf-8", "replace")[:500]
+        print(f"[worker] 开 PR 失败（HTTP {e.code}）：{body}")
+        return None
 
 
 def main():
@@ -118,15 +160,9 @@ def main():
     sh("git config user.email note-worker@users.noreply.github.com || true")
     sh('git commit -m "worker: 服务器 codex 加工结果（待 review）"')
     sh(f"git push origin {branch}")
-    # 开 PR（服务器 gh CLI 已登录）
-    pr = sh(
-        f"gh pr create --base main --head {branch} "
-        f"--title 'worker: 服务器 codex 加工 $(date +%Y%m%d)' "
-        "--body '服务器执行引擎 auto-generated，请 review 合并'",
-        check=False,
-    )
-    print(pr.stdout.strip() or pr.stderr.strip())
-    print(f"[worker] 完成：{branch} 已 push，PR 待 review")
+    # 开 PR（GitHub API，服务器无需 gh CLI）
+    create_pr(branch)
+    print(f"[worker] 完成：{branch} 已 push")
     return 0
 
 
