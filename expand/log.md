@@ -8,6 +8,20 @@ tags: [知识库, 日志]
 
 > 时间倒序排列
 
+## [2026-08-09] maintenance | 素材层迁移：raw/ → references/raw/ + working/ + Codex 情报追踪
+
+- 迁移：`raw/`（14 个素材）物理移入 `references/raw/`，`references/` 成为 Phase 0 顶层（素材库 + 去重索引）
+- 新增：`references/agents.md`——references 层规则（raw 素材状态机 + articles.md 去重权威双层约定）
+- 新增：`references/articles.md`——文章去重索引表（模板，`scripts/retrack.py --list/--url` 查询）
+- 新增：`working/` + `working/AGENTS.md`——Phase 4 作品输出层（译文/工具/模板，可独立理解）
+- 新增：`scripts/retrack.py`——文章去重权威查询 CLI
+- 更新：`scripts/check_consistency.py` K1 改为检查 `references/raw/` 状态机
+- 更新：`scripts/collect.py` existing_urls 合并 `references/articles.md` URL 作为去重输入
+- 更新：`scripts/ingest.py` build_prompt 注入 `{art_titles}`（references/articles.md 去重权威段）
+- 更新：9 个脚本 + codex_task.ps1 + 2 个 workflow（collect.yml / ingest.yml）+ pre-commit 的 `raw/` 路径批量改为 `references/raw/`
+- 新增：`.github/workflows/research.yml` + `prompts/deep-research-tracker.md`——Codex 情报追踪自动化（三层 prompt：广度/分析/注入，术语每周 1-2 次）
+- agents.md 目录结构同步（raw/ 迁入 references/、新增 working/、Phase 0-4 映射表）
+
 ## [2026-08-09] maintenance | prompts/ 有效提示词积累目录落地
 
 - 新增：`prompts/AGENTS.md`——目录规则（只收录验证有效的提示词，两种形态，效果评价闭环）

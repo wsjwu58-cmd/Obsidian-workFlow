@@ -29,6 +29,7 @@ if [ -z "$PY" ]; then
 fi
 
 # Only run when relevant files are staged.
+#   references/ 是 Phase 0 素材层，K1 检查其状态机，须纳入触发范围。
 CHANGED=$(git -c core.quotepath=false diff --cached --name-only 2>/dev/null || true)
 if [ -z "$CHANGED" ]; then
     echo "pre-commit: nothing staged; skipping" >&2
@@ -38,7 +39,7 @@ fi
 needs_check=false
 for f in $CHANGED; do
     case "$f" in
-        expand/*|wiki/*|scripts/*|.githooks/*|.github/workflows/*)
+        expand/*|wiki/*|scripts/*|references/*|.githooks/*|.github/workflows/*)
             needs_check=true; break ;;
     esac
 done

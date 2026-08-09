@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""采集层：从 GitHub Search / HackerNews / ArXiv 抓取候选素材，写入 raw/。
+"""采集层：从 GitHub Search / HackerNews / ArXiv 抓取候选素材，写入 references/raw/。
 粗滤（相关性关键词 + 垃圾特征）与 URL 去重在此完成；
 内容去重与 LLM 打分由 filter.py 负责。
 仅依赖标准库，可在 Actions（Linux）与本地（Windows）直接运行。
@@ -16,7 +16,7 @@ import urllib.request
 import uuid
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-RAW = ROOT / "raw"
+RAW = ROOT / "references" / "raw"
 
 # 相关性关键词：标题/描述命中任一即通过粗滤
 KEYWORDS = [
@@ -56,6 +56,11 @@ def existing_urls():
             m = re.search(r"^url:\s*(.+)$", txt, re.M)
             if m:
                 urls.add(m.group(1).strip())
+    # references/articles.md 索引（去重权威）
+    art = ROOT / "references" / "articles.md"
+    if art.exists():
+        t = art.read_text(encoding="utf-8", errors="ignore")
+        urls.update(set(re.findall(r"https?://[^\s|]+", t)))
     return urls
 
 

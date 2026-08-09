@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""统计 raw/ 中 status=pending 的素材数量（供 ingest.yml 判断是否需要加工）。"""
+"""统计 references/raw/ 中 status=pending 的素材数量（供 ingest.yml 判断是否需要加工）。"""
 import pathlib
 import re
 import sys
 
-RAW = pathlib.Path(__file__).resolve().parent.parent / "raw"
+RAW = pathlib.Path(__file__).resolve().parent.parent / "references" / "raw"
 
 
 def main():

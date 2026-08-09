@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """AI 加工（Ingest，深度技术笔记模板）。
 
-对 raw/ 中 status=pending 的素材，调用 LLM（默认 DeepSeek）按 agents.md 的
+对 references/raw/ 中 status=pending 的素材，调用 LLM（默认 DeepSeek）按 agents.md 的
 「深度技术笔记模板」生成 expand 条目，写入对应分类目录，并同步 index.md / log.md /
 raw 状态（status → processed + processed_hash）。
 
@@ -34,7 +34,7 @@ import media
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 WIKI = ROOT / "wiki"
 EXPAND = ROOT / "expand"
-RAW = ROOT / "raw"
+RAW = ROOT / "references" / "raw"
 INFRA = {"index.md", "log.md", "知识图谱.md",
          "自动化工作流设计.md", "自动化工作流功能与实现方案.md"}
 INFRA |= {"动态索引.md", "知识库周报.md"}
@@ -234,7 +234,7 @@ def build_prompt(fm, body, search_text=""):
 ### 本周素材盲区与知识增量
 - 原文盲区 → 转化为「下周探索方向」（候选选题）/ 知识增量总结（2-3 条额外收获）
 ### 参考素材与官方链接
-- 原始素材：raw/xxx.md（来源 URL）
+- 原始素材：references/raw/xxx.md（来源 URL）
 - 官方文档 / 网站链接列表（带用途说明）
 ### 本周行动清单
 - [ ] 行动描述（预计耗时：xx分钟，关联知识点：xxx）✅ Done when：完成标准

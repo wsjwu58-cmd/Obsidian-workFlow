@@ -1,0 +1,45 @@
+name: 情报追踪（Research）
+
+on:
+  schedule:
+    - cron: '0 21 * * 1,4'   # 每周一、周四 05:00（UTC+8）= 周日/周三 21:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 安装 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 使用 Codex 做深度情报分析
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          # 调用 Codex CLI 执行情报追踪 prompt（prompts/deep-research-tracker.md 三层结构）
+          # 先注入去重权威清单，再执行分析
+          DEDUP="$(python scripts/retrack.py --list 2>/dev/null || true)"
+          PROMPT="$(cat prompts/deep-research-tracker.md)"$'\n---\n已收录去重清单（去重权威）：\n'"$DEDUP"
+          codex exec --dangerously-bypass-approvals-and-sandbox \
+            -s "$PROMPT" \
+            -o .research-findings.md 2>&1 || echo "Codex 不可用或未配置 OPENAI_API_KEY，跳过"
+
+      - name: 提交追踪结果（若有）
+        run: |
+          if [ -s .research-findings.md ]; then
+            git config user.name "kb-bot"
+            git config user.email "kb-bot@users.noreply.github.com"
+            cp .research-findings.md references/research-$(date +%Y%m%d).md
+            git add references/
+            git commit -m "research: $(date +%F) 情报追踪结果" || echo "无变更"
+            git push
+          fi
+        if: hashFiles('.research-findings.md') != ''

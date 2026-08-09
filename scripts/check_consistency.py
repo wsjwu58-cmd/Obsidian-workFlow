@@ -7,7 +7,7 @@
 链接腐坏、索引/图谱/日志与磁盘不一致。
 
 检查清单：
-  K1  状态机合法：raw/*.md 的 status ∈ {pending, processed}；processed 且含
+  K1  状态机合法：references/raw/*.md 的 status ∈ {pending, processed}；processed 且含
       processed_hash 的素材正文 hash 必须命中（防状态与内容错位）
   K2  引用一致：expand/index.md 声明的"全库共 N 个 Markdown 文件" == 磁盘实际
       .md 数（wiki + expand），防索引悄悄腐烂
@@ -41,7 +41,7 @@ if sys.platform == "win32":
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 WIKI = ROOT / "wiki"
 EXPAND = ROOT / "expand"
-RAW = ROOT / "raw"
+RAW = ROOT / "references" / "raw"
 
 # 基建文件：不计入孤立/索引同步检查
 INFRA = {
@@ -113,7 +113,7 @@ def run_checks(verbose: bool) -> int:
         return f"  {green('PASS') if ok else red('FAIL')} — {msg}"
 
     # ─── K1 状态机 ───────────────────────────────────────
-    print("[K1] raw/ 状态机合法")
+    print("[K1] references/raw/ 状态机合法")
     k1_fail = 0
     k1_warn = 0
     LEGACY_STATES = {"pending", "processed", "rejected"}
@@ -137,7 +137,7 @@ def run_checks(verbose: bool) -> int:
         print(report(False, f"{k1_fail} 处状态机异常"))
     else:
         warn = f"，{k1_warn} 处存量警告" if k1_warn else ""
-        print(report(True, f"raw/ 状态机一致{warn}"))
+        print(report(True, f"references/raw/ 状态机一致{warn}"))
 
     # ─── K2 索引计数 ─────────────────────────────────────────
     print("[K2] expand/index.md 全库计数声明")
