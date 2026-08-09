@@ -1,0 +1,49 @@
+name: 熵管理巡检（GC）
+
+on:
+  schedule:
+    - cron: '0 22 * * 0'      # 每周日 06:00（UTC+8）22:00 UTC 前
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  gc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 安装 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 运行 GC 熵检测
+        run: python scripts/gc_report.py --markdown .gc-report.md
+
+      - name: 提交 GC 建议清单
+        run: |
+          if [ -s .gc-report.md ]; then
+            git config user.name "kb-bot"
+            git config user.email "kb-bot@users.noreply.github.com"
+            cp .gc-report.md expand/gc-report.md
+            git add expand/gc-report.md
+            git commit -m "gc: $(date +%F) 熵管理建议清单" || echo "无变更，跳过"
+            git push
+          fi
+
+      - name: 生成 Issue 正文（有 high 严重度时）
+        if: hashFiles('.gc-report.json') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          python scripts/gc_report.py --markdown .gc-report.md --issue .gc-issues.md
+          if [ -s .gc-issues.md ]; then
+            gh issue create --title "GC 高风险项 $(date +%F)" --body-file .gc-issues.md
+          else
+            echo "无高风险项，不开 Issue"
+          fi
