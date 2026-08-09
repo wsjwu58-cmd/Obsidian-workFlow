@@ -1,0 +1,31 @@
+name: consistency
+
+# 在服务端镜像本地 pre-commit 钩子：本地钩子只在开发者 git config core.hooksPath .githooks
+# 启用后才生效，所以这条 CI job 才是合并前的真正质量门。
+#
+# 两个刻意选择（对齐分支保护）：
+# 1. 不做路径过滤。分支保护把本检查标记为必需，一个"Expected — Waiting for status"
+#    从未被上报的必需检查（因为 PR 没改过滤路径）会永久卡住合并。脚本秒级完成，全跑。
+# 2. job 显示名固定为 "consistency / check"。分支保护按 *check run 名* 匹配必需检查，
+#    Actions 里就是 job 名（PR 页上的 "workflow / job" 文本只是显示用）。改名会让所有 PR
+#    重新被 "Expected" 卡住。
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    name: "consistency / check"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run consistency checks
+        run: python scripts/check_consistency.py

@@ -1,0 +1,58 @@
+#!/bin/sh
+# pre-commit: knowledge-graph consistency gate.
+#     Only fires when staged files touch expand/, wiki/, scripts/, .githooks/
+#     or .github/workflows/. Uses scripts/check_consistency.py to enforce
+#     invariants (K1-K7) before a commit is allowed.
+#
+#     NOTE: Git for Windows runs hooks from the git install dir, so never
+#     resolve paths from CWD or $0 -- always use `git rev-parse`.
+
+set -e
+
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+if [ -z "$REPO_ROOT" ]; then
+    echo "pre-commit: not inside a git work tree; skipping" >&2
+    exit 0
+fi
+
+# Determine candidate python interpreters in order of preference.
+PY=""
+for c in python python3 py; do
+    if command -v "$c" >/dev/null 2>&1; then
+        PY="$c"
+        break
+    fi
+done
+if [ -z "$PY" ]; then
+    echo "pre-commit: python not found on PATH; skipping consistency checks" >&2
+    exit 0
+fi
+
+# Only run when relevant files are staged.
+CHANGED=$(git -c core.quotepath=false diff --cached --name-only 2>/dev/null || true)
+if [ -z "$CHANGED" ]; then
+    echo "pre-commit: nothing staged; skipping" >&2
+    exit 0
+fi
+
+needs_check=false
+for f in $CHANGED; do
+    case "$f" in
+        expand/*|wiki/*|scripts/*|.githooks/*|.github/workflows/*)
+            needs_check=true; break ;;
+    esac
+done
+
+if [ "$needs_check" != true ]; then
+    echo "pre-commit: staged changes do not affect knowledge graph; skipping" >&2
+    exit 0
+fi
+
+echo "pre-commit: knowledge graph files staged; running consistency checks..." >&2
+"$PY" "$REPO_ROOT/scripts/check_consistency.py"
+rc=$?
+
+if [ "$rc" -ne 0 ]; then
+    echo "pre-commit: KB consistency gate FAILED (see above). Commit blocked." >&2
+fi
+exit "$rc"

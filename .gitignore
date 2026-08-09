@@ -30,3 +30,6 @@ Desktop.ini
 
 # Firecrawl CLI 临时输出
 .firecrawl/
+
+# 参考仓库（harness-engineering 研究素材，不入知识库）
+harness-engineering-main/
