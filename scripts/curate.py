@@ -47,6 +47,8 @@ def parse_queue(text, limit):
         line = line.strip()
         if not line.startswith("|"):
             continue
+        if "评审中" in line:
+            continue
         cells = [c.strip() for c in line.strip("|").split("|")]
         if len(cells) >= 4 and not cells[0].startswith("标题"):
             rows.append({"title": cells[0], "url": cells[1],
@@ -152,7 +154,7 @@ def main():
     review_prompt = (ROOT / "prompts" / "curate-review.md").read_text(encoding="utf-8")
     items_block = "\n".join(f"- {q['title']} | {q['url']}" for q in queue)
     review_prompt = review_prompt.replace("{ITEMS}", items_block) \
-                                 .replace("{BATCH}", batch)
+                                 .replace("<batch>", batch)
     print(f"[curate] 评审 {len(queue)} 篇…")
     stdout, rc = run_codex(review_prompt, ROOT, ".curate_review_prompt.md")
     if rc == 0:
@@ -163,16 +165,18 @@ def main():
     # 3) 回写 articles.md：待处理 → 评审中（状态并入 row cell，并同步计数）
     art = ROOT / "references" / "articles.md"
     t = art.read_text(encoding="utf-8")
+    marked = 0
     for item in queue:
         url = re.escape(item["url"])
-        t = re.sub(
+        t, subs = re.subn(
             rf"(\|[^\n]*\| {url} \|[^\n]*\|)(\s*\n)",
             rf"\1 🔄评审中 {batch}/\2",
             t,
         )
+        marked += subs
     cm = re.search(r"<!-- 当前：(\d+) 条待处理 -->", t)
     if cm:
-        n = max(0, int(cm.group(1)) - len(queue))
+        n = max(0, int(cm.group(1)) - marked)
         t = t.replace(cm.group(0), f"<!-- 当前：{n} 条待处理 -->")
     art.write_text(t, encoding="utf-8")
 
