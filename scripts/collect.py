@@ -5,6 +5,7 @@
 内容去重与 LLM 打分由 filter.py 负责。
 仅依赖标准库，可在 Actions（Linux）与本地（Windows）直接运行。
 """
+# 部分废弃：固定源采集（github/hn/arxiv）被 research.py 替代；existing_urls / save_item 仍被 research.py 复用。
 import argparse
 import datetime
 import json

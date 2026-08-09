@@ -1,4 +1,5 @@
 name: 采集与过滤
+# 废弃：由 research.yml（codex 深度搜索）替代固定源采集。保留历史，不再计划触发。
 
 on:
   schedule:
