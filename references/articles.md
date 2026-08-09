@@ -19,7 +19,8 @@
 
 <!-- pending:start -->
 <!-- 采集自动化维护，按 `| 标题 | 链接 | 来源 | 日期 |` 追加一行；处理完移入编号正文 -->
-<!-- 当前：0 条待处理 -->
+<!-- 当前：1 条待处理 -->
+| Rust 2025 官方博客：Rust 1.85 版本说明（Move 语义 / Borrow Checker 演进） | https://blog.rust-lang.org/2025/02/20/Rust-1.85.0.html | dispatch-e2e | 2026-08-09 |
 <!-- pending:end -->
 
 ## 已收录（编号正文）
