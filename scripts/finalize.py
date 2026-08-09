@@ -8,7 +8,7 @@
 1. 遍历 candidates/<batch>/，读各篇 review.md 收录标记
 2. 收录：works-ready/*.md → working/；淘汰：仅回写状态
 3. 回写 articles.md：评审中 → 已收录（归属 working/<slug>）/ 已淘汰
-4. 同步 expand/index.md、expand/log.md、知识图谱.md
+4. 同步 working/AGENTS.md（作品索引）、expand/log.md、知识图谱.md
 5. 清理 candidates/<batch>/
 6. 开「收录：<batch>」PR（供人类合并 → CI K1-K7）
 
@@ -38,6 +38,43 @@ def read_review(batch):
     if not rv.exists():
         return ""
     return rv.read_text(encoding="utf-8", errors="replace")
+
+
+def _sync_working_index(moved):
+    """登记落位作品到 working/AGENTS.md（working 目录索引）。"""
+    p = ROOT / "working" / "AGENTS.md"
+    if not p.exists() or not moved:
+        return
+    t = p.read_text(encoding="utf-8")
+    rows = "\n".join(f"| [[working/{name}]] | curate 收录译文作品 |" for name in moved)
+    if re.search(r"^\s*\|", t, flags=re.M):
+        lines = t.rstrip("\n").splitlines()
+        last = max(i for i, ln in enumerate(lines) if re.match(r"^\s*\|", ln))
+        lines.insert(last + 1, rows)
+        t = "\n".join(lines) + "\n"
+    else:
+        block = f"## 已有作品\n\n| 作品 | 说明 |\n| --- | --- |\n{rows}"
+        if re.search(r"^## 已有作品", t, flags=re.M):
+            t = re.sub(r"^## 已有作品[^\n]*$", lambda m: block, t, flags=re.M, count=1)
+            t = t.rstrip() + "\n"
+        else:
+            t = t.rstrip() + "\n\n" + block + "\n"
+    p.write_text(t, encoding="utf-8")
+
+
+def _sync_knowledge_graph(moved):
+    """把落位作品记入 expand/知识图谱.md 关系中枢。"""
+    g = ROOT / "expand" / "知识图谱.md"
+    if not g.exists() or not moved:
+        return
+    t = g.read_text(encoding="utf-8")
+    lines = "\n".join(f"- `working/{name}`：curate 收录译文作品（Phase 4 输出）" for name in moved)
+    header = "## 作品输出（working/）"
+    if header in t:
+        t = t.rstrip() + "\n" + lines + "\n"
+    else:
+        t = t.rstrip() + "\n\n" + header + "\n\n" + lines + "\n"
+    g.write_text(t, encoding="utf-8")
 
 
 def create_pr(head, base, title, body):
@@ -78,14 +115,15 @@ def finalize_batch(batch):
             moved.append(f.name)
             print(f"[finalize] 落位 {f.name} → working/")
 
-    # 回写 articles.md：评审中 → 已收录/已淘汰
+    # 回写 articles.md：评审中 → 已收录/已淘汰（锚定本批次，防跨批污染）
     art = ROOT / "references" / "articles.md"
     if art.exists():
         t = art.read_text(encoding="utf-8")
+        marker = rf"🔄评审中 candidates/{re.escape(batch.name)}/"
         if moved:
             for name in moved:
-                t = re.sub(r"(🔄评审中 candidates/\S+/)", f"已收录（归属 working/{name}）", t)
-        t = re.sub(r"🔄评审中 candidates/\S+/", "已淘汰（留 URL 防重复）", t)
+                t, _ = re.subn(marker, f"已收录（归属 working/{name}）", t, count=1)
+        t = re.sub(marker, "已淘汰（留 URL 防重复）", t)
         art.write_text(t, encoding="utf-8")
 
     # 同步 log.md
@@ -95,6 +133,10 @@ def finalize_batch(batch):
                  f"- 收录：{', '.join(moved) if moved else '无'}\n")
         with log.open("a", encoding="utf-8") as fh:
             fh.write(entry)
+
+    # 同步 working/AGENTS.md（作品索引）与知识图谱关系中枢
+    _sync_working_index(moved)
+    _sync_knowledge_graph(moved)
 
     # 清理 candidates/<batch>/
     import shutil
