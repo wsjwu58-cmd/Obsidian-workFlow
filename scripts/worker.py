@@ -17,6 +17,7 @@
   python3 scripts/worker.py --dry-run  # 只打印待处理清单，不执行 codex
 仅依赖标准库 + 服务器上的 codex CLI / gh CLI。
 """
+# 废弃：由 scripts/curate.py 取代（候选三件套 + 人类闸门）。保留仅供参考，不再由 workflow 调用。
 import argparse
 import json
 import os

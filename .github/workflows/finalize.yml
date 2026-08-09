@@ -1,0 +1,27 @@
+name: 收录落位（Finalize）
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  finalize:
+    if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'candidates/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出合并后 main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: 运行 finalize
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          python3 scripts/finalize.py
