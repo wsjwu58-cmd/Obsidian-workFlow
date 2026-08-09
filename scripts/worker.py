@@ -22,6 +22,7 @@ import json
 import os
 import pathlib
 import re
+import shlex
 import subprocess
 import sys
 import urllib.request
@@ -133,10 +134,13 @@ def main():
                "完成后告知变更摘要。")
 
     print(f"[worker] 调用 codex exec 处理 {len(batch)} 条…")
+    prompt_file = ROOT / ".worker_prompt.md"
+    prompt_file.write_text(prompt, encoding="utf-8")
     r = sh(
-        f"codex exec -C {ROOT} -s workspace-write "
-        f"-c sandbox_workspace_write.network_access=true "
-        f"'{prompt}'",
+        f"set -a; source /etc/environment; set +a; "
+        f"codex exec -C {ROOT} "
+        f"--sandbox workspace-write -c sandbox_workspace_write.network_access=true "
+        f"< {shlex.quote(str(prompt_file))}",
         check=False,
     )
     print(r.stdout[-4000:] if r.stdout else "")
