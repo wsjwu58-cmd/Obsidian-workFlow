@@ -34,7 +34,7 @@ jobs:
           echo "count=$COUNT"
           echo "count=$COUNT" >> "$GITHUB_OUTPUT"
 
-      - name: 触发服务器候选加工（SSH，curate 攒批）
+      - name: 触发服务器候选加工（SSH 后台启动，curate 自行完成）
         if: steps.queue.outputs.count != '0'
         env:
           SERVER_HOST: ${{ secrets.WORKER_HOST }}
@@ -46,5 +46,5 @@ jobs:
           ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
               -o ConnectTimeout=15 -i /tmp/worker_key \
               "${SERVER_USER}@${SERVER_HOST}" \
-              'cd /root/note-worker && /usr/bin/python3 scripts/curate.py --limit 4'
-        timeout-minutes: 30
+              'cd /root/note-worker && nohup /usr/bin/python3 scripts/curate.py --limit 4 > /tmp/curate.log 2>&1 & echo "curate 已后台启动 PID=$!"'
+        timeout-minutes: 5
