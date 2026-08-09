@@ -104,16 +104,43 @@ def run_codex(prompt, root):
 
 
 def parse_candidates(stdout):
-    """从 codex 输出提取 JSON 候选清单（容忍前后杂质）。"""
-    m = re.search(r"\{.*\}", stdout, re.S)
-    if not m:
-        return []
-    try:
-        data = json.loads(m.group(0))
-    except json.JSONDecodeError:
-        return []
-    cands = data.get("candidates", [])
-    return cands if isinstance(cands, list) else []
+    """从 codex 输出提取候选 JSON。定位模型回复区的 JSON 块，容忍日志/提示词回显。"""
+    text = stdout or ""
+    # 1) 尝试从 `codex\n` 之后的模型回复区取 JSON（codex exec 的输出格式：助手回复前有 codex 标记行）
+    m = re.search(r"codex\n(.*)", text, re.S)
+    if m:
+        text = m.group(1)
+    # 2) 优先取 ```json ... ``` 围栏块
+    fences = re.findall(r"```json\s*(.*?)```", text, re.S)
+    for f in fences:
+        try:
+            data = json.loads(f.strip())
+            cands = data.get("candidates", [])
+            if isinstance(cands, list):
+                return cands
+        except json.JSONDecodeError:
+            continue
+    # 3) 否则从左到右找第一个完整可解析的 JSON 对象（raw_decode 按括号平衡截取，
+    #    模型回复区内的真实回复先于回显/日志中的示例出现，首个命中即真实候选）
+    dec = json.JSONDecoder()
+    for m in re.finditer(r"\{", text):
+        try:
+            obj, _ = dec.raw_decode(text, m.start())
+        except json.JSONDecodeError:
+            continue
+        cands = obj.get("candidates", [])
+        if isinstance(cands, list):
+            return cands
+    # 4) 最后兜底：老的贪婪正则 + 类型守卫
+    m = re.search(r"\{.*\}", stdout or "", re.S)
+    if m:
+        try:
+            data = json.loads(m.group(0))
+            cands = data.get("candidates", [])
+            return cands if isinstance(cands, list) else []
+        except json.JSONDecodeError:
+            return []
+    return []
 
 
 def main():
