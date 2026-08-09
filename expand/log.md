@@ -8,30 +8,34 @@ tags: [知识库, 日志]
 
 > 时间倒序排列
 
+## [2026-08-09] maintenance | 一致性门禁上线（Track 1：不变量检查 K1-K7）
+
+- 新增：`scripts/check_consistency.py`——K1 raw 状态机 / K2 index 计数声明 / K3 expand frontmatter 完整 / K4 双链可解析 / K5 条目均入 index / K6 表格形状 / K7 孤立节点（仅警告）。退出码供 CI / 钩子使用
+- 新增：`.githooks/pre-commit`——本地提交前触发 K1-K7，staging 涉及 `expand/` `wiki/` `scripts/` `.githooks/` `.github/workflows/` 才运行，不合格阻断 commit
+- 新增：`.github/workflows/consistency.yml`——CI 门禁，job 名固定 `consistency / check`（分支保护按 check run 匹配），不做路径过滤
+- 经验：PS 5.1 `Set-Content -Encoding UTF8` 会写 BOM 破坏 shebang，钩子必须 BOM-free 写入；Git for Windows 钩子 CWD 在 git 安装目录，须用 `git rev-parse --show-toplevel` 定位仓库根
+- 配置：`git config core.hooksPath .githooks`
+- 实测：违规条目提交被拦截（K2/K3/K5 报错）；无关文件与全绿提交均放行
+
 ## [2026-08-09] lint | 巡检报告
 
 - 巡检时间：2026-08-09 | 条目数：120 | 断链：0 | 孤立：0 | 重复对：0 | pending：0 | index 缺失：0 | 空笔记：6
-
 
 ## [2026-08-08] lint | 巡检报告
 
 - 巡检时间：2026-08-08 | 条目数：120 | 断链：0 | 孤立：0 | 重复对：0 | pending：0 | index 缺失：0 | 空笔记：6
 
-
 ## [2026-08-07] lint | 巡检报告
 
 - 巡检时间：2026-08-07 | 条目数：120 | 断链：0 | 孤立：0 | 重复对：0 | pending：0 | index 缺失：0 | 空笔记：6
-
 
 ## [2026-08-06] lint | 巡检报告
 
 - 巡检时间：2026-08-06 | 条目数：120 | 断链：0 | 孤立：0 | 重复对：0 | pending：0 | index 缺失：0 | 空笔记：6
 
-
 ## [2026-08-05] lint | 巡检报告
 
 - 巡检时间：2026-08-05 | 条目数：120 | 断链：0 | 孤立：0 | 重复对：0 | pending：0 | index 缺失：0 | 空笔记：6
-
 
 ## [2026-08-04] maintenance | 翻译后端去 LLM 化——本地 MarianMT / Google / LLM 兜底
 

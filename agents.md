@@ -61,6 +61,17 @@ D:\note\
 3. 标记可能过时的信息
 4. 报告发现的问题和建议
 
+### 一致性门禁（Consistency Gate）
+> 自动执行，无需手动触发。`scripts/check_consistency.py` 实现 K1-K7 不变量检查；`.githooks/pre-commit` 本地提交前运行，`.github/workflows/consistency.yml` 在 CI 运行（分支保护下为必需检查）。
+
+**K1-K7 违规自动修正原则（AI 在 Ingest / 编辑时需遵守）**：
+1. 新增 `expand/` 条目**必须**同时更新 `expand/index.md`（计数 + 条目表），否则 K2/K5 拦截
+2. AI 条目 frontmatter 必须含 `created / updated / sources / tags`（K3）
+3. 只能在真实存在的条目之间建立 `[[]]` 链接，禁止对不存在目标链接（K4）
+4. `expand/` 必检文档中的 markdown 表格必须形状对齐（K6）
+5. 新增 `raw/` 素材若标记 `processed` 必须带 `processed_hash`（K1）
+- 本地校验：`python scripts/check_consistency.py`（需 `git config core.hooksPath .githooks`）
+
 ## 知识条目格式
 
 每个 wiki 条目遵循以下格式（注意：**现有个人笔记内容保持不变**，仅在末尾追加 `## 相关条目`）：
