@@ -7,7 +7,7 @@ product: null
 source: curate-research 六阶段
 ---
 
-# curate 候选加工约数
+# curate 候选加工操作约定
 
 > 运行器：服务器 codex，由 curate.py 调用。每篇候选产三件套 + 串行评审。
 
