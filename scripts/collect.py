@@ -16,7 +16,7 @@ import urllib.request
 import uuid
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-RAW = ROOT / "references" / "raw"
+ARTICLES = ROOT / "references" / "articles.md"
 
 # 相关性关键词：标题/描述命中任一即通过粗滤
 KEYWORDS = [
@@ -49,47 +49,44 @@ def coarse_filter(text):
 
 
 def existing_urls():
+    """去重权威：articles.md 编号正文全部 URL + 待处理队列 URL（防重复采集）"""
     urls = set()
-    if RAW.exists():
-        for p in RAW.rglob("*.md"):
-            txt = p.read_text(encoding="utf-8", errors="ignore")
-            m = re.search(r"^url:\s*(.+)$", txt, re.M)
-            if m:
-                urls.add(m.group(1).strip())
-    # references/articles.md 索引（去重权威）
     art = ROOT / "references" / "articles.md"
     if art.exists():
         t = art.read_text(encoding="utf-8", errors="ignore")
-        urls.update(set(re.findall(r"https?://[^\s|]+", t)))
+        urls.update(set(re.findall(r"https?://[^\s)\]|]+", t)))
     return urls
 
 
 def save_item(source, item):
+    """把新素材追加到 references/articles.md 的「待处理」队列（纯索引，不存正文）。
+
+    返回 None（成功）或错误字符串。队列行格式（机器可读）：
+      `| {标题} | {URL} | {来源} | {日期} |`
+    """
     url = item["url"]
-    title = item["title"]
-    desc = item.get("desc", "")
+    title = item["title"].strip().replace("|", "/")[:120]
     today = datetime.date.today().isoformat()
-    fname = f"{source}-{today}-{uuid.uuid4().hex[:8]}.md"
-    text = title + " " + desc
-    hits = [k for k in KEYWORDS if k.lower() in text.lower()]
-    score = min(5 + len(hits), 10)
-    content = (
-        f"---\n"
-        f"source: {source}\n"
-        f"url: {url}\n"
-        f"title: {title}\n"
-        f"collected: {today}\n"
-        f"status: pending\n"
-        f"score: {score}\n"
-        f"tags: [{', '.join(hits[:5])}]\n"
-        f"---\n\n"
-        f"# {title}\n\n"
-        f"> 来源：{source} | 采集日期：{today}\n\n"
-        f"{desc}\n"
-    )
-    out = RAW / fname
-    out.write_text(content, encoding="utf-8")
-    return out
+    row = f"| {title} | {url} | {source} | {today} |"
+    art = ARTICLES
+    if not art.exists():
+        return "references/articles.md 不存在，跳过"
+    text = art.read_text(encoding="utf-8", errors="ignore")
+    # 定位待处理队列区（<!-- pending:start --> ... <!-- pending:end -->）
+    m_start = re.search(r"<!-- pending:start -->", text)
+    m_end = re.search(r"<!-- pending:end -->", text)
+    if not m_start or not m_end:
+        return "articles.md 缺待处理队列标记，跳过"
+    queue = text[m_start.end():m_end.start()]
+    if url in existing_urls():
+        return "URL 已在索引，跳过"
+    # 追加一行，并更新队列计数「当前：N 条待处理」
+    content = text[:m_end.start()] + row + "\n" + text[m_end.start():]
+    cm = re.search(r"当前：(\d+) 条待处理", content)
+    if cm:
+        content = content.replace(cm.group(0), f"当前：{int(cm.group(1)) + 1} 条待处理", 1)
+    art.write_text(content, encoding="utf-8")
+    return f"入队 {url}"
 
 
 def fetch_github(max_items, token):
@@ -220,7 +217,6 @@ def main():
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
-    RAW.mkdir(exist_ok=True)
     known = existing_urls()
     token = os.environ.get("GH_PAT") or os.environ.get("GITHUB_TOKEN") or ""
     new_count = skip_count = 0
@@ -247,10 +243,13 @@ def main():
             if args.dry_run:
                 print(f"[dry-run] {src}: {it['title'][:70]}")
             else:
-                p = save_item(src, it)
-                print(f"[{src}] 入库 {p.name}: {it['title'][:60]}")
-                known.add(it["url"])
-                new_count += 1
+                msg = save_item(src, it)
+                print(f"[{src}] {msg}")
+                if msg and msg.startswith("入队"):
+                    known.add(it["url"])
+                    new_count += 1
+                elif msg and msg.startswith("URL"):
+                    skip_count += 1
     print(f"采集完成：新增 {new_count} 条，URL 重复跳过 {skip_count} 条")
 
 

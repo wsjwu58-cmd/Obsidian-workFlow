@@ -1,0 +1,48 @@
+name: 调度中枢 → 服务器执行引擎
+
+on:
+  schedule:
+    - cron: '0 */3 * * *'      # 每 3 小时轮询一次待处理队列
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  poll-and-dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 检查待处理队列
+        id: queue
+        run: |
+          COUNT=$(sed -n '/在        */n;p' references/articles.md 2>/dev/null | grep -c '^| ' || true)
+          # 权威判断：读取「待处理」段中的表格行（非表头/分隔行）
+          COUNT=$(python - <<'EOF'
+import re
+t=open('references/articles.md',encoding='utf-8').read()
+m=re.search(r'<!-- pending:start -->(.*?)<!-- pending:end -->', t, re.S)
+if not m: print(0); raise SystemExit
+rows=[l for l in m.group(1).splitlines() if l.strip().startswith('|') and '标题' not in l and l.strip()!='|']
+print(len(rows))
+EOF
+          )
+          echo "count=$COUNT"
+          echo "count=$COUNT" >> "$GITHUB_OUTPUT"
+
+      - name: 触发服务器执行引擎（SSH 远程执行，worker 凭据存服务器本地）
+        if: steps.queue.outputs.count != '0'
+        env:
+          SERVER_HOST: ${{ secrets.WORKER_HOST }}
+          SERVER_SSH_KEY: ${{ secrets.WORKER_SSH_KEY }}
+          SERVER_USER: ${{ secrets.WORKER_USER }}
+        run: |
+          echo "$SERVER_SSH_KEY" > /tmp/worker_key
+          chmod 600 /tmp/worker_key
+          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+              -o ConnectTimeout=15 -i /tmp/worker_key \
+              "${SERVER_USER}@${SERVER_HOST}" \
+              'cd /root/note-worker && /usr/bin/python3 scripts/worker.py --limit 3'
+        timeout-minutes: 30

@@ -81,6 +81,14 @@ def frontmatter(text: str) -> dict:
     return fm
 
 
+def is_infra(p: pathlib.Path) -> bool:
+    """目录约定/基建文件豁免：各目录的 AGENTS.md + INFRA 名"""
+    name = p.name
+    if name == "AGENTS.md":
+        return True
+    return name in INFRA
+
+
 def all_files():
     files = [p for p in WIKI.rglob("*.md")]
     if EXPAND.exists():
@@ -113,31 +121,37 @@ def run_checks(verbose: bool) -> int:
         return f"  {green('PASS') if ok else red('FAIL')} — {msg}"
 
     # ─── K1 状态机 ───────────────────────────────────────
-    print("[K1] references/raw/ 状态机合法")
+    print("[K1] references/articles.md 索引状态机合法")
     k1_fail = 0
     k1_warn = 0
-    LEGACY_STATES = {"pending", "processed", "rejected"}
-    if RAW.exists():
-        for p in RAW.rglob("*.md"):
-            fm = frontmatter(read_text(p))
-            status = fm.get("status", "").lower()
-            h = fm.get("processed_hash", "")
-            if p.name == "README.md":
-                continue
-            if status and status not in LEGACY_STATES:
-                print(red(f"  [K1] {p.name}: 非法 status '{status}'（仅允许 pending/processed/rejected）"))
-                k1_fail += 1
-                continue
-            if status == "processed" and not h:
-                # 允许存量（2026-08-04 hash 特性上线前处理的素材无 hash）；新增必须带
-                print(yellow(f"  [K1-warn] {p.name}: processed 但无 processed_hash（存量素材放行）"))
+    ART_STATES = {"已收录", "已淘汰", "待处理"}
+    art = ROOT / "references" / "articles.md"
+    art_text = read_text(art) if art.exists() else ""
+    # 解析编号条目「### N. …」中的状态/归属行
+    entry_re = re.compile(r"^### (\d+)\s*\.", re.M)
+    starts = [m for m in entry_re.finditer(art_text)]
+    for i, m in enumerate(starts):
+        next_entry = starts[i + 1].start() if i + 1 < len(starts) else len(art_text)
+        segment = art_text[m.end():next_entry]
+        st = re.search(r"- \*\*状态：\*\*\s*(.+)$", segment, re.M)
+        if not st:
+            k1_fail += 1
+            print(red(f"  [K1] 编号 {m.group(1)}：缺「状态：」字段"))
+        elif st.group(1).strip().split("|")[0].strip() not in ART_STATES:
+            k1_fail += 1
+            print(red(f"  [K1] 编号 {m.group(1)}：非法状态 {st.group(1).strip()[:40]}"))
+        own = re.search(r"- \*\*归属：\*\*\s*(.+)$", segment, re.M)
+        if own and own.group(1).strip() not in ("—", "-", "") and "等待" not in own.group(1):
+            own_path = own.group(1).strip().split("`")[1] if "`" in own.group(1) else own.group(1).strip().split("（")[0].strip()
+            if not (ROOT / own_path).exists():
                 k1_warn += 1
+                print(yellow(f"  [K1-warn] 编号 {m.group(1)}：归属 '{own_path}' 磁盘不存在（可能是路径透灭，仅警示）"))
     if k1_fail:
         fail += 1
-        print(report(False, f"{k1_fail} 处状态机异常"))
+        print(report(False, f"{k1_fail} 处索引状态机异常"))
     else:
-        warn = f"，{k1_warn} 处存量警告" if k1_warn else ""
-        print(report(True, f"references/raw/ 状态机一致{warn}"))
+        warn = f"，{k1_warn} 处归属警示" if k1_warn else ""
+        print(report(True, f"references/articles.md 状态机一致{warn}"))
 
     # ─── K2 索引计数 ─────────────────────────────────────────
     print("[K2] expand/index.md 全库计数声明")
@@ -163,7 +177,7 @@ def run_checks(verbose: bool) -> int:
     k3_fail = 0
     if EXPAND.exists():
         for p in EXPAND.rglob("*.md"):
-            if p.name in INFRA:
+            if is_infra(p):
                 continue
             fm = frontmatter(read_text(p))
             missing = [k for k in ("created", "updated", "sources", "tags") if k not in fm]
@@ -205,7 +219,7 @@ def run_checks(verbose: bool) -> int:
     if EXPAND.exists():
         idx = read_text(EXPAND / "index.md")
         for p in files:
-            if p.name in INDEX_CHECK_EXEMPT:
+            if is_infra(p):
                 continue
             if f"[[{p.stem}]]" in idx:
                 continue
@@ -274,7 +288,7 @@ def run_checks(verbose: bool) -> int:
             base = t.split("/")[-1]
             for q in by_name.get(base, []):
                 incoming[str(q)] += 1
-    orphans = [p for p in files if incoming[str(p)] == 0 and p.name not in INFRA]
+    orphans = [p for p in files if incoming[str(p)] == 0 and not is_infra(p)]
     if orphans:
         print(yellow(f"  [K7-warn] {len(orphans)} 个孤立节点："))
         for p in sorted(orphans)[:20]:
