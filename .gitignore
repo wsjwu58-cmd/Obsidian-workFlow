@@ -33,3 +33,7 @@ Desktop.ini
 
 # 参考仓库（harness-engineering 研究素材，不入知识库）
 harness-engineering-main/
+
+# 服务器执行引擎运行时产物（每次 worker 批处理的临时 prompt/上下文）
+.worker_prompt.md
+.worker-*.cmd
