@@ -189,7 +189,7 @@ D:\note\
 
 ## 维护待办（当前）
 
-1. 去重：`09-源码解读/Free-fs` 与 `09-源码解读/Free-fs（网盘项目的解析）` 内容几乎相同
-2. 补全空笔记：`python`、`redis分布式缓存`、Claude Code `8-queryengine-bian-pai-ji-zhi`、`16-auto-mode-zi-dong-mo-shi`
-3. 重命名不规范文件名：`x #include iostream...`、`x #includestdio`、`Untitled.md`、`未命名.md`
+1. 补全空笔记（均在 `wiki/`，只读，需用户确认后由 AI 提炼或由用户补充）：`09-源码解读/Claude Code源码解读/8-queryengine-bian-pai-ji-zhi.md`、`09-源码解读/Claude Code源码解读/16-auto-mode-zi-dong-mo-shi.md`
+2. 确认 `08-逆向与安全/未命名/` 目录残留（疑似已改名清理后的空壳，可删除）
+3. 周期任务：`gc_report.py` 每周日跑（孤立/重复/空笔记/过期/断链/积压），`feedback_capture.py` 在 CI 失败时落盘 log.md
 4. 安全提醒：`私密/密码管理.md` 中的 GitHub Token 建议立即吊销
