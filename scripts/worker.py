@@ -139,7 +139,7 @@ def main():
                "完成后告知变更摘要。")
 
     print(f"[worker] 调用 codex exec 处理 {len(batch)} 条…")
-    prompt_file = ROOT / ".worker_prompt.md"
+    prompt_file = pathlib.Path(__import__('tempfile').gettempdir(), ".worker_prompt.md")
     prompt_file.write_text(prompt, encoding="utf-8")
     r = sh(
         f"set -a; source /etc/environment; set +a; "
