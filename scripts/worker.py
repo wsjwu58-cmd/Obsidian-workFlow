@@ -109,6 +109,11 @@ def main():
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
+    # 启动时同步权威仓库（服务器 cron/Actions 触发前默认旧，需先拉最新队列）
+    pull = sh("git pull --rebase origin main", check=False)
+    if pull.returncode != 0:
+        print(f"[worker] git pull 警告（可能无分支跟踪或网络），继续：\n{pull.stderr[-300:]}")
+
     text = read_articles()
     queue = parse_queue(text)
     print(f"[worker] 待处理 {len(queue)} 条（本次上限 {args.limit}）")
