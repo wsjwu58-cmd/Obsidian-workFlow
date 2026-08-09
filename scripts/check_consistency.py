@@ -217,7 +217,7 @@ def run_checks(verbose: bool) -> int:
                 continue
             k5_missing.append(p)
     if k5_missing:
-        print(report(5, f"{len(k5_missing)} 个条目未出现在 index.md"))
+        print(report(False, f"{len(k5_missing)} 个条目未出现在 index.md"))
         for p in k5_missing[:20]:
             print(f"    `{p.relative_to(ROOT)}`")
         fail += 1
