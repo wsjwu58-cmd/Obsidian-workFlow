@@ -40,6 +40,56 @@ def read_review(batch):
     return rv.read_text(encoding="utf-8", errors="replace")
 
 
+def _parse_pending_rows(text, batch_name):
+    """解析待处理队列中属于本批次的行（含评审中标记）。"""
+    m = re.search(r"<!-- pending:start -->(.*?)<!-- pending:end -->", text, re.S)
+    if not m:
+        return []
+    rows = []
+    for line in m.group(1).splitlines():
+        line = line.strip()
+        if not line.startswith("|"):
+            continue
+        if f"candidates/{batch_name}" not in line:
+            continue
+        cells = [c.strip() for c in line.strip("|").split("|")]
+        if len(cells) >= 4 and not cells[0].startswith("标题"):
+            rows.append({"title": cells[0], "url": cells[1],
+                         "source": cells[2], "date": cells[3]})
+    return rows
+
+
+def _next_number(art_text):
+    nums = [int(m) for m in re.findall(r"^### (\d+)\s*\.", art_text, re.M)]
+    return (max(nums) + 1) if nums else 1
+
+
+def _fmt_entry(n, row, moved_file, core):
+    display = row["url"].replace("https://", "").replace("http://", "")
+    return "\n".join([
+        f"### {n:02d}. {row['title']}",
+        "",
+        f"- **标题：** {row['title']}",
+        f"- **链接：** [{display}]({row['url']})",
+        f"- **作者：** {row['source']} | **日期：** {row['date']}",
+        f"- **状态：** 已收录 | **归属：** `working/{moved_file}`",
+        f"- **核心：** {core}",
+    ])
+
+
+def _append_entries(art_text, entries):
+    """把编号条目追加到「## 已收录（编号正文）」段末尾（下一个二级标题前）。"""
+    hm = re.search(r"^## 已收录（编号正文）\s*$", art_text, re.M)
+    if not hm:
+        print("[finalize] 找不到编号正文 header，跳过编号写入")
+        return art_text
+    after = hm.end()
+    nxt = re.search(r"^## ", art_text[after:], re.M)
+    pos = after + nxt.start() if nxt else len(art_text)
+    block = "\n\n" + "\n\n".join(entries)
+    return art_text[:pos].rstrip("\n") + block + "\n\n" + art_text[pos:].lstrip("\n")
+
+
 def _sync_working_index(moved):
     """登记落位作品到 working/AGENTS.md（working 目录索引）。"""
     p = ROOT / "working" / "AGENTS.md"
@@ -115,10 +165,28 @@ def finalize_batch(batch):
             moved.append(f.name)
             print(f"[finalize] 落位 {f.name} → working/")
 
-    # 回写 articles.md：移除本批次已处理的行，并同步待处理计数
+    # 回写 articles.md：先写收录条目到编号正文，再移除本批次已处理的行
     art = ROOT / "references" / "articles.md"
     if art.exists():
         t = art.read_text(encoding="utf-8")
+
+        # 收录条目 → 编号正文（须在移除队列行之前捕获行元数据）。
+        # 收录 vs 淘汰启发式：moved 数 = 收录数；把收录标记给队列中前 len(moved)
+        # 行（与 curate.py 串行加工顺序一致，每个 slug 对应该行队列位次；标题→
+        # 文件名的精确映射不可靠，故用行序而非文件名匹配）。
+        if moved:
+            batch_rows = [r for r in _parse_pending_rows(t, batch.name)]
+            incl_rows = batch_rows[:len(moved)]
+            n = _next_number(t)
+            entries = []
+            for row, mf in zip(incl_rows, moved):
+                core = row["title"] if len(row["title"]) <= 80 else row["title"][:80] + "…"
+                entries.append(_fmt_entry(n, row, mf, core))
+                n += 1
+            if entries:
+                t = _append_entries(t, entries)
+                print(f"[finalize] 编号正文写入 {len(entries)} 条（收录）")
+
         out_lines = []
         removed = 0
         in_block = False
