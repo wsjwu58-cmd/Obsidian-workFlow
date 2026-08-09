@@ -87,3 +87,4 @@ flowchart TB
 - [[22-skills-ji-neng-kai-fa]]
 - [[21-zi-ding-yi-agents]]
 - [[Hermes-Agent]]
+- [[MCP协议标准化的增量与边界]]（harness 工具接入层对照：MCP 解决「连接」，ECC 解决「编排」）

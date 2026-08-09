@@ -141,10 +141,19 @@
 - **核心：** 官方营销博文，技术增量有限
 - **关联：** —
 
+### 14. MCP 官方文档：Model Context Protocol 介绍
+
+- **标题：** MCP 官方文档：Model Context Protocol 介绍
+- **链接：** [modelcontextprotocol.io/introduction](https://modelcontextprotocol.io/introduction)
+- **作者：** MCP 官方文档（modelcontextprotocol.io） | **日期：** 2026-08-09
+- **状态：** 已收录 | **归属：** `expand/thinking/MCP协议标准化的增量与边界.md`
+- **核心：** 官方入门与架构——「AI 应用的 USB-C」定位、数据层/传输层双层、2026-07-28 版增量（MCP Apps / Agent Skills / Registry / server/discover）。思考：协议只标准化「连接信封」，工具语义仍靠 server 自治，M×N 适配成本转移而非消失。
+- **关联：** MCP / Agent 工具生态；既有笔记 [[MCP协议与工具调用]]、Claude Code [[12-mcp-xie-yi-ji-cheng]]
+
 ## 统计
 
-- **正式收录：** 10 篇（编号 01-10）｜**已淘汰隔离：** 3 篇（编号 11-13，不计入收录数，仅防重复采集）
+- **正式收录：** 11 篇（编号 01-10、14）｜**已淘汰隔离：** 3 篇（编号 11-13，不计入收录数，仅防重复采集）
 
 ## 待补充
 
-- [ ] 占位：外部新文章先查编号 01-13 确认未收，再由采集层写入「待处理」队列
+- [ ] 占位：外部新文章先查编号 01-14 确认未收，再由采集层写入「待处理」队列

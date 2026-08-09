@@ -1,12 +1,18 @@
 ---
 created: 2026-08-03
-updated: 2026-08-03
+updated: 2026-08-09
 tags: [知识库, 日志]
 ---
 
 # 变更日志
 
 > 时间倒序排列
+
+## [2026-08-09] ingest | MCP 官方文档：Model Context Protocol 介绍
+
+- 处理：`references/articles.md` 待处理 → 已收录（编号 14）
+- 新增：[[MCP协议标准化的增量与边界]]——expand/thinking/ 首条独立思考条目（USB-C 类比只到接口层 / 语义适配 M×N / 2026-07-28 版增量：MCP Apps、Agent Skills、Registry、server/discover）
+- 更新：[[index]]（thinking 段 + 计数 131→132）、[[知识图谱]]（AI 主题簇补 MCP 思考节点）、[[ECC]]（相关条目回链）
 
 ## [2026-08-09] maintenance | 素材层迁移：raw/ → references/raw/ + working/ + Codex 情报追踪
 
