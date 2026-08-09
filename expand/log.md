@@ -8,6 +8,13 @@ tags: [知识库, 日志]
 
 > 时间倒序排列
 
+## [2026-08-09] maintenance | prompts/ 有效提示词积累目录落地
+
+- 新增：`prompts/AGENTS.md`——目录规则（只收录验证有效的提示词，两种形态，效果评价闭环）
+- 新增：`prompts/ingest.md`——ingest 深度加工提示词沉淀（权威源 `scripts/ingest.py:176`，含质量门槛/skip/补充溯源设计说明）
+- 新增：`prompts/feedback/README.md`——提示词效果反馈台账
+- 更新：`agents.md` 目录结构加入 `prompts/` 说明（不属知识图谱、不参与一致性门禁）
+
 ## [2026-08-09] maintenance | Ingest 提示词与 agents.md 模板方向聚焦（Track 3）
 
 - 更新：`agents.md` AI 生成条目模板——角色设定改为聚焦两大追踪方向（AI Agent 开发 / 跨平台开发），新增「质量门槛」三段式（必须满足/加分项/直接排除）与 `skip` 机制（不达标标记 `rejected`），知识关联地图补充去重检查
