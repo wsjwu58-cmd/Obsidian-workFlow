@@ -128,12 +128,26 @@ def _run():
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
+    if args.dry_run:
+        text = sh("cat references/articles.md", check=False).stdout
+        queue = parse_queue(text, args.limit)
+        print(f"[curate] 待处理 {len(queue)} 条（本次上限 {args.limit}）")
+        if not queue:
+            print("[curate] 队列为空，退出")
+            return 0
+        for q in queue:
+            print(f"  [dry] {q['title'][:60]} | {q['url']}")
+        return 0
+
     pull = sh("git pull --rebase origin main", check=False)
     if pull.returncode != 0:
         print(f"[curate] git pull 警告：{pull.stderr[-300:]}")
 
     # 每次运行都从 origin/main 干净起步，避免批间分支叠分支污染 PR
-    sh("git checkout main", check=False)
+    co = sh("git checkout main", check=False)
+    if co.returncode != 0:
+        print("[curate] 无法切到 main 分支，终止")
+        return 1
     sh("git reset --hard origin/main", check=False)
     sh("git clean -fd candidates 2>/dev/null || true", check=False)
 
@@ -142,10 +156,6 @@ def _run():
     print(f"[curate] 待处理 {len(queue)} 条（本次上限 {args.limit}）")
     if not queue:
         print("[curate] 队列为空，退出")
-        return 0
-    if args.dry_run:
-        for q in queue:
-            print(f"  [dry] {q['title'][:60]} | {q['url']}")
         return 0
 
     batch = f"candidates/{datetime.datetime.now().strftime('%Y%m%d-%H%M%S')}"
