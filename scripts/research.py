@@ -97,7 +97,7 @@ def run_codex(prompt, root):
             cmd, shell=True, cwd=root, capture_output=True, text=True,
             encoding="utf-8", errors="replace", timeout=900,
         )
-        return r.stdout, r.returncode
+        return r.stdout + "\n" + r.stderr, r.returncode
     except Exception as e:
         print(f"[research] codex 调用失败：{type(e).__name__}: {e}")
         return "", 1
