@@ -21,6 +21,7 @@ import re
 import shlex
 import subprocess
 import sys
+import urllib.request
 
 import firecrawl_search
 
@@ -42,6 +43,44 @@ def known_content_block():
     lines.append("URL 清单（已收录 + 待处理，去重用）：")
     lines += [f"  - {u}" for u in sorted(urls)[:120]]
     return "\n".join(lines)
+
+
+def sh(cmd, cwd=None, check=True):
+    r = subprocess.run(cmd, shell=True, cwd=cwd or ROOT,
+                       capture_output=True, text=True, encoding="utf-8", errors="replace")
+    if check and r.returncode != 0:
+        print(f"[research] 命令失败: {cmd}\n{r.stdout}\n{r.stderr}")
+        sys.exit(r.returncode)
+    return r
+
+
+def create_pr(head, base, title, body):
+    token = os.environ.get("GH_TOKEN", os.environ.get("GITHUB_TOKEN", ""))
+    if not token:
+        print("[research] 缺少 GH_TOKEN，跳过开 PR")
+        return None
+    remote = sh("git config --get remote.origin.url", check=False).stdout.strip()
+    m = re.search(r"github\.com[:/]([^/]+)/([^/.]+)", remote)
+    if not m:
+        return None
+    owner, repo = m.group(1), m.group(2)
+    payload = {"title": title, "head": head, "base": base, "body": body}
+    req = urllib.request.Request(
+        f"https://api.github.com/repos/{owner}/{repo}/pulls",
+        data=json.dumps(payload).encode(),
+        headers={"Authorization": f"token {token}",
+                 "Accept": "application/vnd.github+json",
+                 "Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            pr = json.loads(resp.read().decode())
+            print(f"[research] 情报搜索 PR: {pr['html_url']}")
+            return pr["html_url"]
+    except urllib.error.HTTPError as e:
+        print(f"[research] 开 PR 失败（HTTP {e.code}）：{e.read().decode('utf-8', 'replace')[:400]}")
+        return None
 
 
 def run_codex(prompt, root):
@@ -98,6 +137,9 @@ def _run():
 
     today = datetime.date.today()
     start = today - datetime.timedelta(days=args.days)
+    if not args.dry_run:
+        subprocess.run("git checkout main", shell=True, cwd=ROOT, capture_output=True, text=True)
+        subprocess.run("git pull --rebase origin main", shell=True, cwd=ROOT, capture_output=True, text=True)
     template = (ROOT / "prompts" / "research-tracker.md").read_text(encoding="utf-8")
     known = known_content_block()
     prompt = template.replace("{START_DATE}", start.isoformat()) \
@@ -142,22 +184,26 @@ def _run():
         if msg and msg.startswith("入队"):
             known.add(url)
             new_count += 1
+    body = "情报搜索候选清单，请 review 合并后进入待处理队列：\n\n" + \
+           "\n".join(f"- {c.get('title', '')} | {c.get('url', '')}" for c in cands)
     print(f"[research] 完成：新增 {new_count} 条候选")
-    # 入队后必须推送 main，否则 dispatch-worker.yml（读 main 队列计数）与
-    # curate.py（git pull --rebase）都看不到新行，研究腿会死循环空转。
+    # main 受保护不可直推：改为 research/<ts> 分支 + PR，与 curate.py 一致
     if new_count > 0:
+        branch = f"research/{__import__('datetime').datetime.now().strftime('%Y%m%d-%H%M%S')}"
         for cmd in [
+            "git checkout -b " + branch,
             "git add references/articles.md",
             "git config user.name note-worker || true",
             "git config user.email note-worker@users.noreply.github.com || true",
             "git commit -m 'research: 情报搜索新增候选条目'",
-            "git push origin main",
+            "git push origin " + branch,
         ]:
             r = subprocess.run(cmd, shell=True, cwd=ROOT, capture_output=True, text=True,
                                encoding="utf-8", errors="replace")
             if r.returncode != 0:
                 print(f"[research] git 命令失败: {cmd}\n{r.stderr[-300:]}")
-                break
+                return 1
+        create_pr(branch, "main", "研究：情报搜索候选条目", body)
     return 0
 
 
