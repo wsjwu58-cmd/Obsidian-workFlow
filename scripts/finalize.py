@@ -103,6 +103,56 @@ def _pair_rows(moved, batch_rows):
     return pairs, remaining
 
 
+def _classify_verdict(text):
+    """把评审「建议去向」文本归入 include / observation / reject / tools。
+
+    排除必须依赖清晰信号：只有明确出现 淘汰 / 观察项 / tools（待实测）才不落位；
+    无法识别/缺失的去向默认收录（保守回退——评审缺表或格式漂移时不丢内容，
+    与「解析失败默认全收录」一致）。
+    """
+    t = text or ""
+    if "淘汰" in t:
+        return "reject"
+    if "观察项" in t:
+        return "observation"
+    if "tools/" in t or "待实测" in t:
+        return "tools"
+    if "working/" in t and "收录" in t:
+        return "include"
+    return "include"
+
+
+def _parse_review_verdicts(review_text):
+    """解析 review.md 汇总表，返回 {篇名: 收录判定}。
+
+    review.md 是 codex 自由输出，汇总表可能缺失/错位。只认同时含「篇名」
+    与「建议去向」（且为末列）的 markdown 表头，其后 `|` 开头行解析到表
+    结束（空行/非表格行即止）；跳过分隔行。表缺失/无法解析时返回空 dict，
+    调用方按「默认全收录」处理。
+    """
+    verdicts = {}
+    for i, line in enumerate(review_text.splitlines()):
+        if not line.lstrip().startswith("|"):
+            continue
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if "篇名" not in cells or "建议去向" not in cells:
+            continue
+        if cells.index("建议去向") != len(cells) - 1:
+            continue  # 建议去向不是末列 → 不是汇总表
+        ti = cells.index("篇名")
+        for row in review_text.splitlines()[i + 1:]:
+            rs = row.strip()
+            if not rs.startswith("|"):
+                break
+            rc = [c.strip() for c in rs.strip().strip("|").split("|")]
+            if len(rc) < 2 or all(re.fullmatch(r"[-:\s]*", c) for c in rc):
+                continue  # 分隔行
+            title, cell = rc[ti], rc[-1]
+            if title and cell:
+                verdicts[title] = _classify_verdict(cell)
+    return verdicts
+
+
 def _append_entries(art_text, entries):
     """把编号条目追加到「## 已收录（编号正文）」段末尾（下一个二级标题前）。"""
     hm = re.search(r"^## 已收录（编号正文）\s*$", art_text, re.M)
@@ -181,15 +231,43 @@ def create_pr(head, base, title, body):
 
 def finalize_batch(batch):
     """处理单个候选批次。返回是否产生变更。"""
-    # 落位 works-ready → working/
+    # 评审建议去向 → 判定 收录/观察项/淘汰；解析失败或缺失默认全收录（保守回退）。
+    # 落位规则：仅「已收录」进 working/；观察项/tools/淘汰 → 写编号条目但不落位。
+    verdicts = {}
+    review_p = batch / "review.md"
+    if review_p.exists():
+        verdicts = _parse_review_verdicts(review_p.read_text(encoding="utf-8"))
+    verdict_by_slug = {make_slug(t): v for t, v in verdicts.items()}
+
+    def verdict_for(name):
+        """按 works-ready 文件名（含 make_slug(篇名) 前缀，同 _pair_rows）匹配评审判定。"""
+        best_v, best_len = "include", -1
+        for slug, v in verdict_by_slug.items():
+            if slug and slug in name and len(slug) > best_len:
+                best_v, best_len = v, len(slug)
+        return best_v
+
+    # 落位 works-ready → working/（仅已收录）；观察项/淘汰的草稿删除不残留
     wr = batch / "works-ready"
-    moved = []
-    if wr.exists():
-        for f in wr.glob("*-translation.md"):
-            dest = ROOT / "working" / f.name
-            dest.write_text(f.read_text(encoding="utf-8"), encoding="utf-8")
-            moved.append(f.name)
-            print(f"[finalize] 落位 {f.name} → working/")
+    all_wr = sorted(f.name for f in wr.glob("*-translation.md")) if wr.exists() else []
+    moved, obs, rej = [], [], []
+    for name in all_wr:
+        v = verdict_for(name)
+        if v == "include":
+            dest = ROOT / "working" / name
+            dest.write_text((wr / name).read_text(encoding="utf-8"), encoding="utf-8")
+            moved.append(name)
+            print(f"[finalize] 落位 {name} → working/（已收录）")
+            continue
+        p = wr / name
+        if p.exists():
+            p.unlink()
+        if v == "reject":
+            rej.append(name)
+            print(f"[finalize] {name} → 已淘汰（不落位 working/）")
+        else:
+            obs.append(name)
+            print(f"[finalize] {name} → 观察项（不落位 working/）")
 
     # 回写 articles.md：先写收录条目到编号正文，再移除本批次已处理的行
     art = ROOT / "references" / "articles.md"
@@ -197,24 +275,31 @@ def finalize_batch(batch):
     if art.exists():
         t = art.read_text(encoding="utf-8")
 
-        # 收录条目 → 编号正文（须在移除队列行之前捕获行元数据）。
         # 配对：works-ready 文件名按 slug 匹配回队列行（与 curate.py 传给 codex
         # 的 slug 一致）；匹配不到退回行序。未配到的行 → 淘汰，同样写编号正文
         # 保留 URL 防重复采集。
         batch_rows = [r for r in _parse_pending_rows(t, batch.name)]
-        pairs, dropped = _pair_rows(moved, batch_rows)
+        pairs, dropped = _pair_rows(all_wr, batch_rows)
         n = _next_number(t)
         entries = []
         for row, mf in pairs:
-            core = row["title"] if len(row["title"]) <= 80 else row["title"][:80] + "…"
-            entries.append(_fmt_entry(n, row, "已收录", mf, core))
+            v = verdict_for(mf)
+            if v == "include":
+                core = row["title"] if len(row["title"]) <= 80 else row["title"][:80] + "…"
+                entries.append(_fmt_entry(n, row, "已收录", mf, core))
+            elif v == "reject":
+                entries.append(_fmt_entry(n, row, "已淘汰"))
+            else:
+                entries.append(_fmt_entry(n, row, "已收录", None,
+                                          "观察项：评审建议仅作观察项（防重复采集），译文不收录"))
             n += 1
         for row in dropped:
             entries.append(_fmt_entry(n, row, "已淘汰"))
             n += 1
         if entries:
             t = _append_entries(t, entries)
-            print(f"[finalize] 编号正文写入 {len(entries)} 条（收录 {len(pairs)} / 淘汰 {len(dropped)}）")
+            print(f"[finalize] 编号正文写入 {len(entries)} 条"
+                  f"（收录 {len(moved)} / 观察项 {len(obs)} / 淘汰 {len(rej) + len(dropped)}）")
 
         out_lines = []
         removed = 0
@@ -243,11 +328,13 @@ def finalize_batch(batch):
     log = ROOT / "expand" / "log.md"
     if log.exists():
         entry = (f"\n## [{datetime.date.today().isoformat()}] curate-finalize | {batch.name}\n"
-                 f"- 收录：{', '.join(moved) if moved else '无'}\n")
+                 f"- 收录：{', '.join(moved) if moved else '无'}\n"
+                 f"- 观察项：{', '.join(obs) if obs else '无'}\n"
+                 f"- 淘汰：{', '.join(rej) if rej else '无'}\n")
         with log.open("a", encoding="utf-8") as fh:
             fh.write(entry)
 
-    # 同步 working/AGENTS.md（作品索引）与知识图谱关系中枢
+    # 同步 working/AGENTS.md（作品索引）与知识图谱关系中枢（仅含实际落位文件）
     _sync_working_index(moved)
     _sync_knowledge_graph(moved)
 
@@ -255,7 +342,7 @@ def finalize_batch(batch):
     import shutil
     shutil.rmtree(batch, ignore_errors=True)
     print(f"[finalize] 清理 {batch.name}")
-    return bool(moved) or bool(dropped)
+    return bool(moved) or bool(dropped) or bool(obs) or bool(rej)
 
 
 def main():
