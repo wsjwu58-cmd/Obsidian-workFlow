@@ -115,15 +115,31 @@ def finalize_batch(batch):
             moved.append(f.name)
             print(f"[finalize] 落位 {f.name} → working/")
 
-    # 回写 articles.md：评审中 → 已收录/已淘汰（锚定本批次，防跨批污染）
+    # 回写 articles.md：移除本批次已处理的行，并同步待处理计数
     art = ROOT / "references" / "articles.md"
     if art.exists():
         t = art.read_text(encoding="utf-8")
-        marker = rf"🔄评审中 candidates/{re.escape(batch.name)}/"
-        if moved:
-            for name in moved:
-                t, _ = re.subn(marker, f"已收录（归属 working/{name}）", t, count=1)
-        t = re.sub(marker, "已淘汰（留 URL 防重复）", t)
+        out_lines = []
+        removed = 0
+        in_block = False
+        for line in t.splitlines(keepends=True):
+            if "<!-- pending:start -->" in line:
+                in_block = True
+                out_lines.append(line)
+                continue
+            if "<!-- pending:end -->" in line:
+                in_block = False
+                out_lines.append(line)
+                continue
+            if in_block and f"candidates/{batch.name}" in line:
+                removed += 1
+                continue
+            out_lines.append(line)
+        t = "".join(out_lines)
+        cm = re.search(r"<!-- 当前：(\d+) 条待处理 -->", t)
+        if cm:
+            n = max(0, int(cm.group(1)) - removed)
+            t = t.replace(cm.group(0), f"<!-- 当前：{n} 条待处理 -->")
         art.write_text(t, encoding="utf-8")
 
     # 同步 log.md
