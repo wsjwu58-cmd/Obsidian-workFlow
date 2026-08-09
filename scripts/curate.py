@@ -137,16 +137,16 @@ def main():
         p = curate_prompt + (
             f"\n\n## 本次条目\n标题：{item['title']}\nURL：{item['url']}\n"
             f"来源：{item['source']} | 日期：{item['date']}\n"
-            f"批次目录：{batch}/\nslu：{slug}\n"
+            f"批次目录：{batch}/\nslug：{slug}\n"
         )
         print(f"[curate] 加工 {i}/{len(queue)}：{item['title'][:40]}…")
+        (batch_dir / "sources").mkdir(exist_ok=True)
+        (batch_dir / "works-ready").mkdir(exist_ok=True)
+        (batch_dir / "translations" / slug).mkdir(parents=True, exist_ok=True)
         stdout, rc = run_codex(p, ROOT, ".curate_prompt.md")
         if rc != 0:
             print(f"[curate] 加工失败 {item['title'][:30]}，继续")
             continue
-        (batch_dir / "sources").mkdir(exist_ok=True)
-        (batch_dir / "works-ready").mkdir(exist_ok=True)
-        (batch_dir / "translations" / slug).mkdir(parents=True, exist_ok=True)
 
     # 2) 串行评审
     review_prompt = (ROOT / "prompts" / "curate-review.md").read_text(encoding="utf-8")
@@ -160,12 +160,20 @@ def main():
     else:
         (batch_dir / "review.md").write_text("评审失败，请人工查看。\n" + stdout[-2000:], encoding="utf-8")
 
-    # 3) 回写 articles.md：待处理 → 评审中
+    # 3) 回写 articles.md：待处理 → 评审中（状态并入 row cell，并同步计数）
     art = ROOT / "references" / "articles.md"
     t = art.read_text(encoding="utf-8")
     for item in queue:
         url = re.escape(item["url"])
-        t = re.sub(rf"(\|.*\| {url} \|[^\n]*)", rf"\1 🔄评审中→{batch}/", t)
+        t = re.sub(
+            rf"(\|[^\n]*\| {url} \|[^\n]*\|)(\s*\n)",
+            rf"\1 🔄评审中 {batch}/\2",
+            t,
+        )
+    cm = re.search(r"<!-- 当前：(\d+) 条待处理 -->", t)
+    if cm:
+        n = max(0, int(cm.group(1)) - len(queue))
+        t = t.replace(cm.group(0), f"<!-- 当前：{n} 条待处理 -->")
     art.write_text(t, encoding="utf-8")
 
     # 4) push + 开评审 PR
