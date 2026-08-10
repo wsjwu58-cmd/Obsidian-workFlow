@@ -93,6 +93,9 @@ def all_files():
     files = [p for p in WIKI.rglob("*.md")]
     if EXPAND.exists():
         files += [p for p in EXPAND.rglob("*.md")]
+    working = ROOT / "working"
+    if working.exists():
+        files += [p for p in working.glob("*.md") if p.name != "AGENTS.md"]
     return files
 
 

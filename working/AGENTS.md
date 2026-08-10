@@ -13,4 +13,8 @@
 - `expand/` 是内部加工稿（concepts 层），`working/` 是最终对外输出
 - 加工稿 → 打磨 → 移到 working/ 即"毕业"
 
-## 已有作品 ｜（待建设）
+## 已有作品
+
+| 作品 | 说明 |
+| --- | --- |
+| [[working/Meta-launches-Muse-Code-for-complex-soft-translation.md]] | curate 收录译文作品 |
