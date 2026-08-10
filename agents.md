@@ -8,22 +8,23 @@
 
 ```
 D:\note\
-├── references/  ← 第一层：持续输入源头（Phase 0）——纯索引，非内容（原 raw/ 素材已回填索引后删除）
-│   ├── agents.md   ← references 规则（分拣引导 + 状态机）
-│   └── articles.md ← 文章收录权威索引（### N. 编号正文 + 待处理队列，harness 格式，状态/归属字段机器可读）
-├── wiki/          ← 第二层：个人学习笔记（只读，仅用户本人修改；AI 不写入）
-│   └── 01-编程语言/ ... 11-生活杂项/   ← 个人笔记分类目录
-├── expand/        ← 第三层：AI 加工产物（thinking 思考主导 + 存量概念/深度笔记 + 索引与自动化文档）
-│   ├── index.md   ← 内容总目录（AI 维护）
-│   ├── log.md     ← 变更日志（AI 维护）
-│   ├── 知识图谱.md ← 关系中枢（AI 维护）
-│   ├── thinking/   ← 独立思考/观点类条目（AI 主导；新加工的对外观点统一放这里）
-│   └── 01-编程语言/ ... 11-生活杂项/   ← AI 生成条目按分类存放（存量保留）
-├── working/       ← Phase 4：作品输出（译文/工具/模板，可独立理解）
-├── scripts/       ← 自动化管线：collect.py（采集入队）/ worker.py（服务器执行引擎）等
-├── prompts/       ← 有效提示词积累（只收录验证有效的；不属知识图谱，不参与一致性门禁）
-│   └── feedback/  ← 提示词实测效果反馈（好/中/差/翻车），驱动积累闭环
-├── 私密/          ← 敏感信息（密码/令牌等，禁止进入知识图谱）
+├── references/  ← Phase 0：持续输入源头——纯索引，非正文
+│   ├── agents.md   ← references 规则（分流 + 状态机）
+│   └── articles.md ← 权威索引（编号正文 + 待处理 + 观察项；状态/归属机器可读）
+├── wiki/          ← Phase 1：个人学习笔记（只读，仅用户本人修改；AI 不写入）
+│   └── 01-编程语言/ ... 11-生活杂项/
+├── expand/        ← Phase 2：AI 加工产物（thinking + 存量概念/深度笔记 + 索引）
+│   ├── index.md   ← 全库总目录（含 working/ 作品；AI 维护；K2/K5）
+│   ├── log.md     ← 变更日志
+│   ├── 知识图谱.md ← 关系中枢
+│   ├── thinking/   ← 独立思考/观点（新观点默认放这里）
+│   └── 01-编程语言/ ... 11-生活杂项/
+├── working/       ← Phase 4：译文作品（可独立理解；计入一致性图谱）
+├── candidates/    ← 批次暂存（sources / research 分析落盘）
+├── scripts/       ← research.py / curate.py / kb_common.py / 门禁与巡检
+├── prompts/       ← research-search / research-tracker / curate（有效提示词）
+│   └── feedback/
+├── 私密/          ← 敏感信息（禁止进入知识图谱）
 └── agents.md      ← 本规则文件
 ```
 
@@ -45,25 +46,46 @@ D:\note\
 
 ## 核心操作
 
-### 知识流水线（学习型体系，仿经典 Phase 结构）
+### 知识流水线（学习型体系 + 自动化主路径）
 
 ```
-Phase 0 references/  ← 持续输入源头（采集 + 去重权威 articles.md）
+Phase 0 references/  ← 情报入队与状态机（articles.md）
 Phase 1 wiki/        ← 个人学习笔记（只读）
-Phase 2 expand/      ← AI 加工产物（概念/深度笔记 = concepts 层）
-Phase 3 prompts/     ← 验证有效提示词（另含 feedback/ 效果台账）
-Phase 4 working/     ← 作品输出（译文/工具/模板）
+Phase 2 expand/      ← AI 思考/概念 + 全库 index/log/图谱
+Phase 3 prompts/     ← 验证有效提示词
+Phase 4 working/     ← 译文作品输出
 ```
 
-读完一篇文章后的去处：判值 → `references/articles.md`（编号正文标记 已收录/已淘汰/归属）→ 有观点进 `expand/thinking/`；想输出 → `working/`；有有效提示词 → `prompts/`。
+**自动化主路径（2026-08-10 起，整库只开一次人工 PR）：**
 
-### Ingest（摄入）
-当我说"摄入 [索引条目]"时：
+```
+research.yml → SSH research.py
+  ├─ Prompt A（prompts/research-search.md）：强制 Firecrawl 搜索
+  ├─ Prompt B（prompts/research-tracker.md）：长分析 + translate|index|observe
+  └─ 写 articles.md → push origin/pipeline/queue（不开 PR）
+
+dispatch-worker.yml → SSH curate.py（待处理 > 0）
+  ├─ 合并 pipeline/queue
+  ├─ Codex（prompts/curate.md）产三件套 → 落位 working/
+  ├─ 同步 expand/index.md、log.md、知识图谱.md、working/AGENTS.md
+  └─ 开唯一终审 PR：review/<timestamp> → 人工合并 main
+```
+
+| research 分流 | 机器动作 |
+|---------------|----------|
+| `translate` | 入「待处理」→ curate 翻译 → `working/` + 编号「已收录」 |
+| `index` | 直接编号「已收录」（核心含 `脉络:…`），不翻译 |
+| `observe` | 「观察项」表，防重复采集 |
+
+读完一篇后的人工去处（与自动化互补）：观点 → `expand/thinking/`；可展示译文 → `working/`；有效 prompt → `prompts/`。
+
+### Ingest（摄入，手动 / 旁路）
+当我说"摄入 [索引条目]"时（手动加工，非 curate 主路径）：
 1. 读取 `references/articles.md` 的「待处理」队列或编号条目（含 URL/标题，不存素材正文）
 2. 抓取原文后按「AI 生成条目模板」加工（含强制补全与 `[补充]` 溯源）
 3. 检查 `expand/` 与 `wiki/` 中相关条目；**AI 生成/更新的条目一律写入 `expand/`**（`wiki/` 只读，绝不写入）——独立思考/观点统一写 `expand/thinking/`
 4. 在 `expand/` 条目之间建立双向链接 `[[]]`，并更新相关条目的 `## 相关条目` 段；链接 `wiki/` 个人笔记为单向，回链由用户自行决定
-5. 更新 `expand/index.md` 内容目录
+5. 更新 `expand/index.md` 内容目录（含作品节时用 stem 双链）
 6. 在 `expand/log.md` 中追加变更记录
 7. 更新 `expand/知识图谱.md` 关系描述
 8. 回写 `references/articles.md` 该条目的「状态/归属」字段
@@ -84,12 +106,12 @@ Phase 4 working/     ← 作品输出（译文/工具/模板）
 ### 一致性门禁（Consistency Gate）
 > 自动执行，无需手动触发。`scripts/check_consistency.py` 实现 K1-K7 不变量检查；`.githooks/pre-commit` 本地提交前运行，`.github/workflows/consistency.yml` 在 CI 运行（分支保护下为必需检查）。
 
-**K1-K7 违规自动修正原则（AI 在 Ingest / 编辑时需遵守）**：
-1. 新增 `expand/` 条目**必须**同时更新 `expand/index.md`（计数 + 条目表），否则 K2/K5 拦截
+**K1-K7 违规自动修正原则（AI 在 Ingest / curate 落位 / 编辑时需遵守）**：
+1. 新增 `expand/` 或 `working/` 条目**必须**同步 `expand/index.md`（计数 + 条目表）；`working/` 计入全库文件数（K2/K5）
 2. AI 条目 frontmatter 必须含 `created / updated / sources / tags`（K3）
-3. 只能在真实存在的条目之间建立 `[[]]` 链接，禁止对不存在目标链接（K4）
+3. 只能在真实存在的条目之间建立 `[[]]` 链接；作品用 `[[stem]]`（勿写无法解析的 `[[working/…]]` 路径链）（K4）
 4. `expand/` 必检文档中的 markdown 表格必须形状对齐（K6）
-5. `references/articles.md` 编号条目的「状态：」必须 ∈ {待处理, 已收录, 已淘汰}；归属字段若指向 `expand/` 必须真实存在（K1）
+5. `references/articles.md` 编号条目的「状态：」必须 ∈ {待处理, 已收录, 已淘汰}；归属若指向磁盘路径须真实存在（K1）
 - 本地校验：`python scripts/check_consistency.py`（需 `git config core.hooksPath .githooks`）
 
 ## 知识条目格式
@@ -179,11 +201,13 @@ Phase 4 working/     ← 作品输出（译文/工具/模板）
 
 ## index.md 格式
 
-内容目录应列出所有 wiki 条目及其一句话摘要，按分类目录组织：
+`expand/index.md` 是**全库总目录**（wiki + expand + working），按分类组织，文首声明「全库共 N 个 Markdown 文件」须与磁盘一致：
 
     ## 01-编程语言
     - [[条目A]]：一句话描述
-    - [[条目B]]：一句话描述
+
+    ## 作品输出（working/）
+    - [[某译文-stem]]：一句话摘要
 
 ## log.md 格式
 
