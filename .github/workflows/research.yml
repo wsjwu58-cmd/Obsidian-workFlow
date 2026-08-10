@@ -1,30 +1,77 @@
-name: 情报追踪（Research）
+name: 情报追踪（Research → 全量 Curate）
 
+# research 完成后立即一次性处理全部待处理条目（不再用每 3h dispatch）
 on:
   schedule:
     - cron: '0 22 * * 0'      # 每周日 22:00 UTC = 周一 06:00（UTC+8）
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      research_max:
+        description: research 最多候选条数
+        default: "10"
+        required: false
 
 permissions:
   contents: read
 
 jobs:
-  research:
+  research-and-curate:
     runs-on: ubuntu-latest
+    timeout-minutes: 180
     steps:
-      - name: 检出仓库
-        uses: actions/checkout@v4
-
-      - name: 触发服务器情报搜索
+      - name: 后台启动 research → curate（全量）并轮询
         env:
           SERVER_HOST: ${{ secrets.WORKER_HOST }}
           SERVER_SSH_KEY: ${{ secrets.WORKER_SSH_KEY }}
           SERVER_USER: ${{ secrets.WORKER_USER }}
+          RESEARCH_MAX: ${{ github.event.inputs.research_max || '10' }}
         run: |
+          set -euo pipefail
           echo "$SERVER_SSH_KEY" > /tmp/worker_key
           chmod 600 /tmp/worker_key
-          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-              -o ConnectTimeout=15 -i /tmp/worker_key \
-              "${SERVER_USER}@${SERVER_HOST}" \
-              'cd /root/note-worker && /usr/bin/python3 scripts/research.py --max 10'
-        timeout-minutes: 30
+          ssh_base=(ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
+                    -o ConnectTimeout=20 -o ServerAliveInterval=30 -o ServerAliveCountMax=10
+                    -i /tmp/worker_key "${SERVER_USER}@${SERVER_HOST}")
+
+          "${ssh_base[@]}" "bash -s" <<REMOTE
+          set -euo pipefail
+          cd /root/note-worker
+          export NOTE_GIT_REF=main
+          git fetch origin main
+          git checkout main
+          git reset --hard origin/main
+          rm -f /tmp/pipeline.log /tmp/pipeline.exit /tmp/.research.lock /tmp/.curate.lock
+          nohup env NOTE_GIT_REF=main bash -c '
+            set +e
+            cd /root/note-worker
+            echo "=== research.py --max ${RESEARCH_MAX} ==="
+            /usr/bin/python3 scripts/research.py --max ${RESEARCH_MAX}
+            rc1=\$?
+            echo "=== research exit \$rc1 ==="
+            if [ \$rc1 -ne 0 ]; then echo \$rc1 > /tmp/pipeline.exit; exit \$rc1; fi
+            echo "=== curate.py --limit 0（全部待处理）==="
+            /usr/bin/python3 scripts/curate.py --limit 0
+            rc2=\$?
+            echo "=== curate exit \$rc2 ==="
+            echo "=== done ==="
+            echo \$rc2 > /tmp/pipeline.exit
+            exit \$rc2
+          ' > /tmp/pipeline.log 2>&1 &
+          echo "pipeline started pid=\$!"
+          REMOTE
+
+          for i in $(seq 1 160); do
+            echo "---- poll $i ----"
+            "${ssh_base[@]}" 'tail -n 50 /tmp/pipeline.log 2>/dev/null || echo "(log not ready)"'
+            if "${ssh_base[@]}" 'test -f /tmp/pipeline.exit'; then
+              echo '==== full log ===='
+              "${ssh_base[@]}" 'cat /tmp/pipeline.log'
+              CODE=$("${ssh_base[@]}" 'cat /tmp/pipeline.exit')
+              echo "exit=$CODE"
+              exit "$CODE"
+            fi
+            sleep 60
+          done
+          echo 'timeout waiting for pipeline'
+          "${ssh_base[@]}" 'tail -n 100 /tmp/pipeline.log 2>/dev/null || true'
+          exit 1

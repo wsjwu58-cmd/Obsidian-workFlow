@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""候选加工层：攒批 → codex 产三件套 → 内联落位 → 唯一终审 PR。
+"""候选加工层：一次处理全部待处理 → codex 产三件套 → 内联落位 → 唯一终审 PR。
 
-由 dispatch-worker.yml（每 3h）触发，运行在服务器。
+由 research.yml 在情报搜索后串行触发（不再每 3h dispatch）。
 
 职责：
-1. git pull main；合并 origin/pipeline/queue 的 articles 变更
-2. 解析待处理队列，取前 N（默认 4）条
+1. git pull；合并 origin/pipeline/queue 的 articles 变更
+2. 解析待处理队列（默认 --limit 0 = 全部）
 3. codex 为每篇产 candidates/<batch>/ 三件套（sources + translations + works-ready）
 4. 内联落位：works-ready → working/；回写 articles；同步 index/log/图谱/AGENTS
-5. 开**唯一**终审 PR（人工评审后合并 main）——不再开 research/finalize 中间 PR
+5. 开**唯一**终审 PR（人工评审后合并 main）
 6. 取消 curate-review 后置 AI 打分
 
 仅依赖标准库 + codex CLI。
@@ -40,7 +40,8 @@ def sh(cmd, cwd=None, check=True):
     return r
 
 
-def parse_queue(text, limit):
+def parse_queue(text, limit=None):
+    """解析待处理队列。limit=None 或 <=0 表示取全部。"""
     m = re.search(r"<!-- pending:start -->(.*?)<!-- pending:end -->", text, re.S)
     if not m:
         return []
@@ -55,7 +56,7 @@ def parse_queue(text, limit):
         if len(cells) >= 4 and not cells[0].startswith("标题"):
             rows.append({"title": cells[0], "url": cells[1],
                          "source": cells[2], "date": cells[3]})
-        if len(rows) >= limit:
+        if limit is not None and limit > 0 and len(rows) >= limit:
             break
     return rows
 
@@ -140,15 +141,18 @@ def main():
 
 def _run():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--limit", type=int, default=4)
+    ap.add_argument("--limit", type=int, default=0,
+                    help="本批最多处理条数；0 或负数=一次处理全部待处理（默认）")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
+    limit = None if args.limit <= 0 else args.limit
 
     if args.dry_run:
         art = ROOT / "references" / "articles.md"
         text = art.read_text(encoding="utf-8") if art.exists() else ""
-        queue = parse_queue(text, args.limit)
-        print(f"[curate] 待处理 {len(queue)} 条（本次上限 {args.limit}）")
+        queue = parse_queue(text, limit)
+        cap = "全部" if limit is None else str(limit)
+        print(f"[curate] 待处理 {len(queue)} 条（本次上限 {cap}）")
         for q in queue:
             print(f"  [dry] {q['title'][:60]} | {q['url']}")
         return 0
@@ -172,8 +176,9 @@ def _run():
     merged_queue = merge_pipeline_queue()
 
     text = (ROOT / "references" / "articles.md").read_text(encoding="utf-8")
-    queue = parse_queue(text, args.limit)
-    print(f"[curate] 待处理 {len(queue)} 条（本次上限 {args.limit}）")
+    queue = parse_queue(text, limit)
+    cap = "全部" if limit is None else str(limit)
+    print(f"[curate] 待处理 {len(queue)} 条（本次上限 {cap}）")
 
     batch_id = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     batch = f"candidates/{batch_id}"

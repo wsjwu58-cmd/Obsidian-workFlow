@@ -13,8 +13,8 @@ on:
         default: "2"
         required: false
       curate_limit:
-        description: curate 本批翻译上限
-        default: "1"
+        description: curate 上限（0=全部待处理）
+        default: "0"
         required: false
 
 permissions:
@@ -32,7 +32,7 @@ jobs:
           SERVER_USER: ${{ secrets.WORKER_USER }}
           GIT_REF: ${{ github.event.inputs.git_ref || 'main' }}
           RESEARCH_MAX: ${{ github.event.inputs.research_max || '2' }}
-          CURATE_LIMIT: ${{ github.event.inputs.curate_limit || '1' }}
+          CURATE_LIMIT: ${{ github.event.inputs.curate_limit || '0' }}
         run: |
           set -euo pipefail
           echo "$SERVER_SSH_KEY" > /tmp/worker_key

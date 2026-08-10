@@ -19,18 +19,17 @@
 ## 数据流
 
 ```
-research.yml → SSH → research.py
-  ├─ Prompt A（Firecrawl MCP）→ candidates/research-<ts>/search.md
-  ├─ Prompt B（长分析）→ analyze.md + JSON triage
-  ├─ 写 articles.md（待处理 / 编号 / 观察项）
-  └─ push origin/pipeline/queue（无 PR）
-
-dispatch-worker.yml → SSH → curate.py
-  ├─ merge pipeline/queue articles
-  ├─ codex 产三件套 → land_translations（内联落位 + 同步索引）
-  └─ 开唯一 PR review/<ts> → 人工合并 main
+research.yml → SSH 同一次作业：
+  research.py
+    ├─ Prompt A（Firecrawl MCP）→ search.md
+    ├─ Prompt B（长分析）→ analyze.md + JSON triage
+    ├─ 写 articles.md（待处理 / 编号 / 观察项）
+    └─ push origin/pipeline/queue（无 PR）
+  curate.py --limit 0（全部待处理；无 3h dispatch）
+    ├─ merge pipeline/queue
+    ├─ codex 产三件套 → land_translations
+    └─ 开唯一 PR review/<ts> → 人工合并 main
 ```
-
 ## 组件
 
 | 文件 | 职责 |
