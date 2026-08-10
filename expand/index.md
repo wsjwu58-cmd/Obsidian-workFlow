@@ -199,7 +199,7 @@ tags: [知识库, 索引]
 
 ## 作品输出（working/）
 
-- [[working/Meta-launches-Muse-Code-for-complex-soft-translation]]：Meta 推出 Muse Code：以持久化 AI 智能体处理复杂软件工程
+- [[Meta-launches-Muse-Code-for-complex-soft-translation]]：Meta 推出 Muse Code：以持久化 AI 智能体处理复杂软件工程
 
 ## 待办清单（维护提醒）
 

@@ -173,10 +173,10 @@ def sync_expand_index(moved, summaries=None):
     for name in moved:
         stem = name[:-3] if name.endswith(".md") else name
         summary = summaries.get(name) or "curate 收录译文作品"
-        # 避免重复追加
-        if f"[[working/{stem}]]" in t or f"[[working/{name}]]" in t:
+        # 用 stem 双链（K4 按 stem 解析；working/ 已纳入 all_files）
+        if f"[[{stem}]]" in t or f"[[working/{stem}]]" in t:
             continue
-        lines.append(f"- [[working/{stem}]]：{summary}")
+        lines.append(f"- [[{stem}]]：{summary}")
     if not lines:
         return
     block = "\n".join(lines) + "\n"
@@ -195,7 +195,7 @@ def sync_expand_index(moved, summaries=None):
             t = t[:todo.start()] + insert + t[todo.start():]
         else:
             t = t.rstrip() + "\n" + insert
-    # 更新文首计数（兼容「条目」与「文件」两种措辞）
+    # 更新文首计数（working 计入全库文件数）
     m = re.search(r"全库共 (\d+) 个 Markdown (?:条目|文件)", t)
     if m:
         t = t.replace(m.group(0), f"全库共 {int(m.group(1)) + len(lines)} 个 Markdown 文件", 1)
