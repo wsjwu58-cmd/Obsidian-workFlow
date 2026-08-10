@@ -49,7 +49,7 @@ jobs:
           git fetch origin '${GIT_REF}'
           git checkout -B '${GIT_REF}' 'origin/${GIT_REF}'
           git reset --hard 'origin/${GIT_REF}'
-          rm -f /tmp/e2e.log /tmp/e2e.exit
+          rm -f /tmp/e2e.log /tmp/e2e.exit /tmp/.research.lock /tmp/.curate.lock
           nohup env NOTE_GIT_REF='${GIT_REF}' bash -c '
             set -euo pipefail
             cd /root/note-worker
