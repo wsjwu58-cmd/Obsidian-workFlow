@@ -198,8 +198,12 @@ def push_queue_branch():
 def main():
     lock = pathlib.Path(__import__("tempfile").gettempdir(), ".research.lock")
     if lock.exists():
-        print("[research] 检测到运行中的 research 实例（锁存在），退出")
-        return 0
+        age = time.time() - lock.stat().st_mtime
+        if age < 7200:  # 2h 内视为占用
+            print("[research] 检测到运行中的 research 实例（锁存在），退出")
+            return 0
+        print(f"[research] 清除过期锁（age={int(age)}s）")
+        lock.unlink(missing_ok=True)
     lock.touch()
     try:
         return _run()
