@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""情报搜索层：Firecrawl 深度搜索 → codex 综合为候选清单 → 机械去重 → 入队列。
+"""情报层：Prompt A（Firecrawl 搜索）→ Prompt B（长分析三档分流）→ 分档写入 articles。
 
-由 research.yml（每周 + 手动）触发，运行在服务器。替代 collect.py 的固定源采集。
+由 research.yml（每周 + 手动）SSH 触发，运行在服务器。
 
 职责：
-1. 用 firecrawl_search.search() 按情报分析师提示词的信源/关键词搜索真实结果
-2. 组装 prompt（prompts/research-tracker.md + 注入已知内容去重段 + 日期窗口 + 搜索结果）
-3. codex exec 综合为候选清单（JSON）
-4. 机械去重（URL 精确比对 existing_urls + 队列查重）→ collect.save_item 入队
+1. 注入已知内容（retrack.py --list）
+2. codex × Prompt A（提示词内强制调用 Firecrawl MCP/search）→ 搜索条目卡
+3. codex × Prompt B（长分析）→ index | translate | observe
+4. 按档写入 references/articles.md（编号 / 待处理 / 观察项）
+5. 不开 PR；commit 后 push 到长期分支 pipeline/queue（供 curate 合并）
 
-仅依赖标准库 + firecrawl_search + codex CLI。
+仅依赖标准库 + codex CLI（需能调用 Firecrawl）。
 """
 import argparse
 import datetime
@@ -21,28 +22,17 @@ import re
 import shlex
 import subprocess
 import sys
-import urllib.request
-
-import firecrawl_search
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import collect
-
-
-def known_content_block():
-    """从 articles.md 抽已收录标题+URL，构造去重注入段。"""
-    art = ROOT / "references" / "articles.md"
-    if not art.exists():
-        return "（暂无）"
-    t = art.read_text(encoding="utf-8", errors="replace")
-    titles = re.findall(r"### \d+\. (.+)", t)
-    urls = collect.existing_urls()
-    lines = [f"- {x}" for x in titles[:80]]
-    lines.append("URL 清单（已收录 + 待处理，去重用）：")
-    lines += [f"  - {u}" for u in sorted(urls)[:120]]
-    return "\n".join(lines)
+from kb_common import (
+    append_numbered_entries,
+    append_observe_row,
+    fmt_article_entry,
+    next_article_number,
+)
 
 
 def sh(cmd, cwd=None, check=True):
@@ -54,48 +44,39 @@ def sh(cmd, cwd=None, check=True):
     return r
 
 
-def create_pr(head, base, title, body):
-    token = os.environ.get("GH_TOKEN", os.environ.get("GITHUB_TOKEN", ""))
-    if not token:
-        print("[research] 缺少 GH_TOKEN，跳过开 PR")
-        return None
-    remote = sh("git config --get remote.origin.url", check=False).stdout.strip()
-    m = re.search(r"github\.com[:/]([^/]+)/([^/.]+)", remote)
-    if not m:
-        return None
-    owner, repo = m.group(1), m.group(2)
-    payload = {"title": title, "head": head, "base": base, "body": body}
-    req = urllib.request.Request(
-        f"https://api.github.com/repos/{owner}/{repo}/pulls",
-        data=json.dumps(payload).encode(),
-        headers={"Authorization": f"token {token}",
-                 "Accept": "application/vnd.github+json",
-                 "Content-Type": "application/json"},
-        method="POST",
+def known_content_block():
+    """优先 retrack --list；失败则回退标题/URL 拼装。"""
+    r = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "retrack.py"), "--list"],
+        cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace",
     )
-    try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            pr = json.loads(resp.read().decode())
-            print(f"[research] 情报搜索 PR: {pr['html_url']}")
-            return pr["html_url"]
-    except urllib.error.HTTPError as e:
-        print(f"[research] 开 PR 失败（HTTP {e.code}）：{e.read().decode('utf-8', 'replace')[:400]}")
-        return None
+    if r.returncode == 0 and r.stdout.strip():
+        return r.stdout.strip()
+    art = ROOT / "references" / "articles.md"
+    if not art.exists():
+        return "（暂无）"
+    t = art.read_text(encoding="utf-8", errors="replace")
+    titles = re.findall(r"### \d+\. (.+)", t)
+    urls = collect.existing_urls()
+    lines = [f"- {x}" for x in titles[:80]]
+    lines.append("URL 清单（已收录 + 待处理，去重用）：")
+    lines += [f"  - {u}" for u in sorted(urls)[:120]]
+    return "\n".join(lines) or "（暂无）"
 
 
-def run_codex(prompt, root):
-    prompt_file = pathlib.Path(__import__("tempfile").gettempdir(), ".research_prompt.md")
+def run_codex(prompt, prompt_name, timeout=1200):
+    prompt_file = pathlib.Path(__import__("tempfile").gettempdir(), prompt_name)
     prompt_file.write_text(prompt, encoding="utf-8")
     cmd = (
         f"set -a; source /etc/environment; set +a; "
-        f"codex exec -C {shlex.quote(str(root))} "
+        f"codex exec -C {shlex.quote(str(ROOT))} "
         f"--sandbox workspace-write -c sandbox_workspace_write.network_access=true "
         f"< {shlex.quote(str(prompt_file))}"
     )
     try:
         r = subprocess.run(
-            cmd, shell=True, cwd=root, capture_output=True, text=True,
-            encoding="utf-8", errors="replace", timeout=900,
+            cmd, shell=True, cwd=ROOT, capture_output=True, text=True,
+            encoding="utf-8", errors="replace", timeout=timeout,
         )
         return r.stdout + "\n" + r.stderr, r.returncode
     except Exception as e:
@@ -103,44 +84,115 @@ def run_codex(prompt, root):
         return "", 1
 
 
-def parse_candidates(stdout):
-    """从 codex 输出提取候选 JSON。定位模型回复区的 JSON 块，容忍日志/提示词回显。"""
+def extract_json_obj(stdout):
+    """从 codex 输出提取 JSON 对象。"""
     text = stdout or ""
-    # 1) 尝试从 `codex\n` 之后的模型回复区取 JSON（codex exec 的输出格式：助手回复前有 codex 标记行）
     m = re.search(r"codex\n(.*)", text, re.S)
     if m:
         text = m.group(1)
-    # 2) 优先取 ```json ... ``` 围栏块
     fences = re.findall(r"```json\s*(.*?)```", text, re.S)
     for f in fences:
         try:
-            data = json.loads(f.strip())
-            cands = data.get("candidates", [])
-            if isinstance(cands, list):
-                return cands
+            return json.loads(f.strip())
         except json.JSONDecodeError:
             continue
-    # 3) 否则从左到右找第一个完整可解析的 JSON 对象（raw_decode 按括号平衡截取，
-    #    模型回复区内的真实回复先于回显/日志中的示例出现，首个命中即真实候选）
     dec = json.JSONDecoder()
     for m in re.finditer(r"\{", text):
         try:
             obj, _ = dec.raw_decode(text, m.start())
+            if isinstance(obj, dict):
+                return obj
         except json.JSONDecodeError:
             continue
-        cands = obj.get("candidates", [])
-        if isinstance(cands, list):
-            return cands
-    # 4) 最后兜底：老的贪婪正则 + 类型守卫
-    m = re.search(r"\{.*\}", stdout or "", re.S)
-    if m:
-        try:
-            data = json.loads(m.group(0))
-            cands = data.get("candidates", [])
-            return cands if isinstance(cands, list) else []
-        except json.JSONDecodeError:
-            return []
-    return []
+    return {}
+
+
+def apply_triage(candidates):
+    """按 verdict 写入 articles.md。返回 (translate_n, index_n, observe_n)。"""
+    art = ROOT / "references" / "articles.md"
+    if not art.exists():
+        print("[research] articles.md 不存在")
+        return 0, 0, 0
+    known = collect.existing_urls()
+    t = art.read_text(encoding="utf-8")
+    tn = ix = ob = 0
+    today = datetime.date.today().isoformat()
+    for c in candidates:
+        url = (c.get("url") or "").strip()
+        title = (c.get("title") or "").strip()
+        if not url or not title:
+            continue
+        verdict = (c.get("verdict") or "observe").strip().lower()
+        if verdict not in ("index", "translate", "observe"):
+            verdict = "observe"
+        lineage = (c.get("lineage") or "general").strip()
+        reason = (c.get("reason") or "").strip()
+        row = {
+            "title": title,
+            "url": url,
+            "source": c.get("source") or "research",
+            "date": c.get("date") or today,
+        }
+        if url in known and verdict != "translate":
+            # 已在索引：跳过 index/observe；translate 仍可能已在队列
+            print(f"[research] 去重跳过（{verdict}）：{title[:50]}")
+            continue
+        if verdict == "translate":
+            if url in known:
+                print(f"[research] 去重跳过（translate）：{title[:50]}")
+                continue
+            msg = collect.save_item("research", {**row, "title": title, "url": url})
+            print(f"[research] translate → {msg}")
+            if msg and msg.startswith("入队"):
+                known.add(url)
+                tn += 1
+                t = art.read_text(encoding="utf-8")  # save_item 已写盘
+            continue
+        if url in known:
+            print(f"[research] 去重跳过（{verdict}）：{title[:50]}")
+            continue
+        if verdict == "index":
+            n = next_article_number(t)
+            entry = fmt_article_entry(
+                n, row, "已收录", moved_file=None,
+                core=reason or title[:80], lineage=lineage,
+            )
+            t = append_numbered_entries(t, [entry])
+            art.write_text(t, encoding="utf-8")
+            known.add(url)
+            ix += 1
+            print(f"[research] index → #{n:02d} {title[:40]} ({lineage})")
+            continue
+        # observe
+        t = append_observe_row(t, row, reason)
+        art.write_text(t, encoding="utf-8")
+        known.add(url)
+        ob += 1
+        print(f"[research] observe → {title[:40]}")
+    return tn, ix, ob
+
+
+def push_queue_branch():
+    """把 articles（及 research 落盘）推到 pipeline/queue，不开 PR。"""
+    sh("git add references/articles.md candidates 2>/dev/null || git add references/articles.md",
+       check=False)
+    changed = sh("git status --porcelain", check=False).stdout.strip()
+    if not changed:
+        print("[research] 无变更，跳过 push")
+        return 0
+    sh("git config user.name note-worker || true", check=False)
+    sh("git config user.email note-worker@users.noreply.github.com || true", check=False)
+    # 在当前 HEAD 上提交，再推送到 pipeline/queue
+    r = sh('git commit -m "research: 情报搜索分流入队（无 PR）"', check=False)
+    if r.returncode != 0 and "nothing to commit" not in (r.stdout + r.stderr):
+        # 可能已在别处提交；继续尝试 push
+        pass
+    r = sh("git push --force-with-lease origin HEAD:pipeline/queue", check=False)
+    if r.returncode != 0:
+        print(f"[research] push pipeline/queue 失败：{r.stderr[-400:]}")
+        return 1
+    print("[research] 已推送 origin/pipeline/queue（不开 PR）")
+    return 0
 
 
 def main():
@@ -166,72 +218,69 @@ def _run():
     start = today - datetime.timedelta(days=args.days)
     if not args.dry_run:
         subprocess.run("git checkout main", shell=True, cwd=ROOT, capture_output=True, text=True)
-        subprocess.run("git pull --rebase origin main", shell=True, cwd=ROOT, capture_output=True, text=True)
-    template = (ROOT / "prompts" / "research-tracker.md").read_text(encoding="utf-8")
-    known = known_content_block()
-    prompt = template.replace("{START_DATE}", start.isoformat()) \
-                      .replace("{END_DATE}", today.isoformat()) \
-                      .replace("{KNOWN_CONTENT}", known) \
-                      .replace("{MAX_ITEMS}", str(args.max))
+        subprocess.run("git pull --rebase origin main", shell=True, cwd=ROOT,
+                       capture_output=True, text=True)
 
-    # Firecrawl 搜索结果注入（为 codex 提供真实候选素材）
-    search_results = firecrawl_search.search("harness engineering coding agent", count=args.max)
-    if search_results:
-        lines = ["\n## 联网检索到的候选（Firecrawl，仅作线索）\n"]
-        for i, r in enumerate(search_results, 1):
-            lines.append(f"{i}. {r['title']} | {r['url']}")
-        prompt += "\n" + "\n".join(lines)
+    known = known_content_block()
+    search_tpl = (ROOT / "prompts" / "research-search.md").read_text(encoding="utf-8")
+    # 去掉 YAML frontmatter，避免干扰模型
+    if search_tpl.startswith("---"):
+        search_tpl = re.sub(r"^---\s*\n.*?\n---\s*\n", "", search_tpl, count=1, flags=re.S)
+    prompt_a = (search_tpl
+                .replace("{START_DATE}", start.isoformat())
+                .replace("{END_DATE}", today.isoformat())
+                .replace("{KNOWN_CONTENT}", known)
+                .replace("{MAX_ITEMS}", str(args.max)))
 
     if args.dry_run:
-        print("[research] dry-run：以下为将注入的提示词（截断）")
-        print(prompt[:2000])
+        snippet = prompt_a[:2000]
+        try:
+            print("[research] dry-run Prompt A（截断）：\n", snippet)
+        except UnicodeEncodeError:
+            sys.stdout.buffer.write(("[research] dry-run Prompt A:\n" + snippet + "\n").encode("utf-8", "replace"))
         return 0
 
-    print("[research] 调用 codex 情报分析…")
-    stdout, rc = run_codex(prompt, ROOT)
-    if rc != 0:
-        print(f"[research] codex 返回 {rc}，失败")
-        print(stdout[-1500:])
-        return rc
+    ts = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    out_dir = ROOT / "candidates" / f"research-{ts}"
+    out_dir.mkdir(parents=True, exist_ok=True)
 
-    cands = parse_candidates(stdout)
-    print(f"[research] codex 产出候选 {len(cands)} 条")
-    new_count = 0
-    known = collect.existing_urls()
-    for c in cands:
-        url = (c.get("url") or "").strip()
-        title = (c.get("title") or "").strip()
-        if not url or not title:
-            continue
-        if url in known:
-            print(f"[research] 去重跳过：{title[:50]}")
-            continue
-        msg = collect.save_item("research", c)
-        print(f"[research] {msg}")
-        if msg and msg.startswith("入队"):
-            known.add(url)
-            new_count += 1
-    body = "情报搜索候选清单，请 review 合并后进入待处理队列：\n\n" + \
-           "\n".join(f"- {c.get('title', '')} | {c.get('url', '')}" for c in cands)
-    print(f"[research] 完成：新增 {new_count} 条候选")
-    # main 受保护不可直推：改为 research/<ts> 分支 + PR，与 curate.py 一致
-    if new_count > 0:
-        branch = f"research/{__import__('datetime').datetime.now().strftime('%Y%m%d-%H%M%S')}"
-        for cmd in [
-            "git checkout -b " + branch,
-            "git add references/articles.md",
-            "git config user.name note-worker || true",
-            "git config user.email note-worker@users.noreply.github.com || true",
-            "git commit -m 'research: 情报搜索新增候选条目'",
-            "git push origin " + branch,
-        ]:
-            r = subprocess.run(cmd, shell=True, cwd=ROOT, capture_output=True, text=True,
-                               encoding="utf-8", errors="replace")
-            if r.returncode != 0:
-                print(f"[research] git 命令失败: {cmd}\n{r.stderr[-300:]}")
-                return 1
-        create_pr(branch, "main", "研究：情报搜索候选条目", body)
-    return 0
+    print("[research] Prompt A：搜索（要求调用 Firecrawl）…")
+    stdout_a, rc_a = run_codex(prompt_a, ".research_search_prompt.md")
+    (out_dir / "search.md").write_text(stdout_a, encoding="utf-8")
+    if rc_a != 0:
+        print(f"[research] Prompt A 失败 rc={rc_a}")
+        print(stdout_a[-1500:])
+        return rc_a
+
+    analyze_tpl = (ROOT / "prompts" / "research-tracker.md").read_text(encoding="utf-8")
+    if analyze_tpl.startswith("---"):
+        analyze_tpl = re.sub(r"^---\s*\n.*?\n---\s*\n", "", analyze_tpl, count=1, flags=re.S)
+    prompt_b = (analyze_tpl
+                .replace("{SEARCH_OUTPUT}", stdout_a[-60000:])
+                .replace("{KNOWN_CONTENT}", known))
+
+    print("[research] Prompt B：长分析 + 三档分流…")
+    stdout_b, rc_b = run_codex(prompt_b, ".research_analyze_prompt.md")
+    (out_dir / "analyze.md").write_text(stdout_b, encoding="utf-8")
+    if rc_b != 0:
+        print(f"[research] Prompt B 失败 rc={rc_b}")
+        print(stdout_b[-1500:])
+        return rc_b
+
+    data = extract_json_obj(stdout_b)
+    cands = data.get("candidates") if isinstance(data, dict) else None
+    if not isinstance(cands, list):
+        # 兜底：尝试从 Prompt A JSON 取候选并默认 observe
+        data_a = extract_json_obj(stdout_a)
+        cands = data_a.get("candidates", []) if isinstance(data_a, dict) else []
+        for c in cands:
+            c.setdefault("verdict", "observe")
+        print("[research] Prompt B JSON 解析失败，回退 A 候选且默认 observe")
+
+    print(f"[research] 分流候选 {len(cands)} 条")
+    tn, ix, ob = apply_triage(cands)
+    print(f"[research] 完成：translate={tn} index={ix} observe={ob}")
+    return push_queue_branch()
 
 
 if __name__ == "__main__":
