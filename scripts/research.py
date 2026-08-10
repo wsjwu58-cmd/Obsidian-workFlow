@@ -216,9 +216,16 @@ def _run():
 
     today = datetime.date.today()
     start = today - datetime.timedelta(days=args.days)
+    git_ref = os.environ.get("NOTE_GIT_REF", "main")
     if not args.dry_run:
-        subprocess.run("git checkout main", shell=True, cwd=ROOT, capture_output=True, text=True)
-        subprocess.run("git pull --rebase origin main", shell=True, cwd=ROOT,
+        subprocess.run(f"git fetch origin {git_ref}", shell=True, cwd=ROOT,
+                       capture_output=True, text=True)
+        subprocess.run(f"git checkout {git_ref}", shell=True, cwd=ROOT,
+                       capture_output=True, text=True)
+        subprocess.run(f"git pull --rebase origin {git_ref}", shell=True, cwd=ROOT,
+                       capture_output=True, text=True)
+        # 若本地跟踪不到远程分支，硬对齐 origin/<ref>
+        subprocess.run(f"git reset --hard origin/{git_ref}", shell=True, cwd=ROOT,
                        capture_output=True, text=True)
 
     known = known_content_block()

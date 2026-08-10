@@ -4,6 +4,10 @@ name: E2E 全流程测试（服务器 Codex）
 on:
   workflow_dispatch:
     inputs:
+      git_ref:
+        description: 服务器检出的 git ref（分支或 SHA）
+        default: "main"
+        required: false
       research_max:
         description: research 最多候选条数
         default: "2"
@@ -29,6 +33,7 @@ jobs:
           SERVER_HOST: ${{ secrets.WORKER_HOST }}
           SERVER_SSH_KEY: ${{ secrets.WORKER_SSH_KEY }}
           SERVER_USER: ${{ secrets.WORKER_USER }}
+          GIT_REF: ${{ github.event.inputs.git_ref || github.ref_name }}
           RESEARCH_MAX: ${{ github.event.inputs.research_max || '2' }}
           CURATE_LIMIT: ${{ github.event.inputs.curate_limit || '1' }}
         run: |
@@ -40,9 +45,11 @@ jobs:
               "${SERVER_USER}@${SERVER_HOST}" \
               "set -euo pipefail
                cd /root/note-worker
-               git fetch origin main
-               git checkout main
-               git reset --hard origin/main
+               export NOTE_GIT_REF='${GIT_REF}'
+               git fetch origin '${GIT_REF}'
+               git checkout -B '${GIT_REF}' 'origin/${GIT_REF}'
+               git reset --hard 'origin/${GIT_REF}'
+               echo \"=== on \$(git rev-parse --short HEAD) NOTE_GIT_REF=\$NOTE_GIT_REF ===\"
                echo '=== research.py --max ${RESEARCH_MAX} ==='
                /usr/bin/python3 scripts/research.py --max ${RESEARCH_MAX}
                echo '=== curate.py --limit ${CURATE_LIMIT} ==='

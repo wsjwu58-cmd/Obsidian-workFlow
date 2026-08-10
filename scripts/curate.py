@@ -157,11 +157,16 @@ def _run():
     if pull.returncode != 0:
         print(f"[curate] git pull 警告：{pull.stderr[-300:]}")
 
-    co = sh("git checkout main", check=False)
+    git_ref = os.environ.get("NOTE_GIT_REF", "main")
+    sh(f"git fetch origin {git_ref}", check=False)
+    co = sh(f"git checkout {git_ref}", check=False)
     if co.returncode != 0:
-        print("[curate] 无法切到 main 分支，终止")
+        # 无本地分支时从远程建
+        co = sh(f"git checkout -B {git_ref} origin/{git_ref}", check=False)
+    if co.returncode != 0:
+        print(f"[curate] 无法切到 {git_ref}，终止")
         return 1
-    sh("git reset --hard origin/main", check=False)
+    sh(f"git reset --hard origin/{git_ref}", check=False)
     sh("git clean -fd candidates 2>/dev/null || true", check=False)
 
     merged_queue = merge_pipeline_queue()
