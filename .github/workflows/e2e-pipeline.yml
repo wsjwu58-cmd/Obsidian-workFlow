@@ -1,11 +1,11 @@
 name: E2E 全流程测试（服务器 Codex）
 
-# 手动触发：SSH 到 note-worker，拉最新 main，串行跑 research → curate（小批量）
+# 手动触发：服务器 nohup 跑 research→curate，Actions 轮询 /tmp/e2e.log
 on:
   workflow_dispatch:
     inputs:
       git_ref:
-        description: 服务器检出的 git ref（分支或 SHA）
+        description: 服务器检出的 git ref
         default: "main"
         required: false
       research_max:
@@ -25,37 +25,59 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 180
     steps:
-      - name: 检出（仅取脚本无关，真实跑在服务器）
-        uses: actions/checkout@v4
-
-      - name: SSH 全流程 research → curate
+      - name: 后台启动 + 轮询
         env:
           SERVER_HOST: ${{ secrets.WORKER_HOST }}
           SERVER_SSH_KEY: ${{ secrets.WORKER_SSH_KEY }}
           SERVER_USER: ${{ secrets.WORKER_USER }}
-          GIT_REF: ${{ github.event.inputs.git_ref || github.ref_name }}
+          GIT_REF: ${{ github.event.inputs.git_ref || 'main' }}
           RESEARCH_MAX: ${{ github.event.inputs.research_max || '2' }}
           CURATE_LIMIT: ${{ github.event.inputs.curate_limit || '1' }}
         run: |
           set -euo pipefail
           echo "$SERVER_SSH_KEY" > /tmp/worker_key
           chmod 600 /tmp/worker_key
-          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
-              -o ConnectTimeout=20 -i /tmp/worker_key \
-              "${SERVER_USER}@${SERVER_HOST}" \
-              "set -euo pipefail
-               cd /root/note-worker
-               export NOTE_GIT_REF='${GIT_REF}'
-               git fetch origin '${GIT_REF}'
-               git checkout -B '${GIT_REF}' 'origin/${GIT_REF}'
-               git reset --hard 'origin/${GIT_REF}'
-               echo \"=== on \$(git rev-parse --short HEAD) NOTE_GIT_REF=\$NOTE_GIT_REF ===\"
-               echo '=== research.py --max ${RESEARCH_MAX} ==='
-               /usr/bin/python3 scripts/research.py --max ${RESEARCH_MAX}
-               echo '=== curate.py --limit ${CURATE_LIMIT} ==='
-               /usr/bin/python3 scripts/curate.py --limit ${CURATE_LIMIT}
-               echo '=== done ==='
-               git branch -v | head -20
-               ls -la working/*translation.md 2>/dev/null | tail -5 || true
-              "
-        timeout-minutes: 170
+          ssh_base=(ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
+                    -o ConnectTimeout=20 -o ServerAliveInterval=30 -o ServerAliveCountMax=10
+                    -i /tmp/worker_key "${SERVER_USER}@${SERVER_HOST}")
+
+          # 1) 准备并后台启动（短连接）
+          "${ssh_base[@]}" "bash -s" <<REMOTE
+          set -euo pipefail
+          cd /root/note-worker
+          export NOTE_GIT_REF='${GIT_REF}'
+          git fetch origin '${GIT_REF}'
+          git checkout -B '${GIT_REF}' 'origin/${GIT_REF}'
+          git reset --hard 'origin/${GIT_REF}'
+          rm -f /tmp/e2e.log /tmp/e2e.exit
+          nohup env NOTE_GIT_REF='${GIT_REF}' bash -c '
+            set -euo pipefail
+            cd /root/note-worker
+            echo "=== on \$(git rev-parse --short HEAD) NOTE_GIT_REF=\$NOTE_GIT_REF ==="
+            echo "=== research.py --max ${RESEARCH_MAX} ==="
+            /usr/bin/python3 scripts/research.py --max ${RESEARCH_MAX}
+            echo "=== curate.py --limit ${CURATE_LIMIT} ==="
+            /usr/bin/python3 scripts/curate.py --limit ${CURATE_LIMIT}
+            echo "=== done ==="
+            git branch -v | head -20
+            ls -la working/*translation.md 2>/dev/null | tail -5 || true
+          ' > /tmp/e2e.log 2>&1; echo \$? > /tmp/e2e.exit &
+          echo "e2e started"
+          REMOTE
+
+          # 2) 轮询日志
+          for i in $(seq 1 160); do
+            echo "---- poll $i ----"
+            "${ssh_base[@]}" 'tail -n 50 /tmp/e2e.log 2>/dev/null || echo "(log not ready)"'
+            if "${ssh_base[@]}" 'test -f /tmp/e2e.exit'; then
+              echo '==== full log ===='
+              "${ssh_base[@]}" 'cat /tmp/e2e.log'
+              CODE=$("${ssh_base[@]}" 'cat /tmp/e2e.exit')
+              echo "exit=$CODE"
+              exit "$CODE"
+            fi
+            sleep 60
+          done
+          echo 'timeout waiting for e2e'
+          "${ssh_base[@]}" 'tail -n 100 /tmp/e2e.log 2>/dev/null || true'
+          exit 1
