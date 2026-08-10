@@ -59,16 +59,16 @@ Phase 4 working/     ← 译文作品输出
 **自动化主路径（2026-08-10 起，整库只开一次人工 PR）：**
 
 ```
-research.yml → SSH research.py
-  ├─ Prompt A（prompts/research-search.md）：强制 Firecrawl 搜索
-  ├─ Prompt B（prompts/research-tracker.md）：长分析 + translate|index|observe
-  └─ 写 articles.md → push origin/pipeline/queue（不开 PR）
-
-dispatch-worker.yml → SSH curate.py（待处理 > 0）
-  ├─ 合并 pipeline/queue
-  ├─ Codex（prompts/curate.md）产三件套 → 落位 working/
-  ├─ 同步 expand/index.md、log.md、知识图谱.md、working/AGENTS.md
-  └─ 开唯一终审 PR：review/<timestamp> → 人工合并 main
+research.yml（每周/手动）→ SSH 同一次作业：
+  1) research.py
+     ├─ Prompt A（research-search.md）：强制 Firecrawl 搜索
+     ├─ Prompt B（research-tracker.md）：长分析 + translate|index|observe
+     └─ 写 articles.md → push origin/pipeline/queue（不开 PR）
+  2) curate.py --limit 0（一次处理全部待处理，无 3h 轮询）
+     ├─ 合并 pipeline/queue
+     ├─ Codex（curate.md）产三件套 → 落位 working/
+     ├─ 同步 expand/index.md、log.md、知识图谱.md、working/AGENTS.md
+     └─ 开唯一终审 PR：review/<timestamp> → 人工合并 main
 ```
 
 | research 分流 | 机器动作 |

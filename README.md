@@ -21,7 +21,7 @@ flowchart LR
   R[research.yml<br/>每周/手动] -->|SSH| A[research.py]
   A -->|Codex Prompt A<br/>Firecrawl| B[Codex Prompt B<br/>三档分流]
   B -->|push| Q[pipeline/queue<br/>不开 PR]
-  D[dispatch-worker.yml<br/>每 3h] -->|SSH| C[curate.py]
+  R -->|同一次作业| C[curate.py<br/>--limit 0 全部]
   Q --> C
   C -->|Codex 翻译 + 落位| P[唯一 PR review/…]
   P -->|人工合并| M[main]
@@ -43,7 +43,7 @@ flowchart LR
 ├── prompts/               # research-search / research-tracker / curate 等
 ├── scripts/               # research.py / curate.py / kb_common.py / 门禁与巡检
 ├── candidates/            # 批次暂存（sources / research 分析落盘）
-├── .github/workflows/     # research / dispatch / e2e / consistency / lint …
+├── .github/workflows/     # research（含全量 curate）/ e2e / consistency / lint …
 ├── agents.md              # 知识库总规则
 └── README.md
 ```
@@ -54,9 +54,8 @@ flowchart LR
 
 | 流水线 | 触发 | 职责 |
 |--------|------|------|
-| `research.yml` | 每周一 06:00（UTC+8）/ 手动 | SSH → `research.py`（Prompt A+B）→ `pipeline/queue` |
-| `dispatch-worker.yml` | 每 3 小时 | 待处理 > 0 则 SSH → `curate.py` |
-| `e2e-pipeline.yml` | 手动 | 服务器 nohup 串行 research→curate，轮询日志 |
+| `research.yml` | 每周一 06:00（UTC+8）/ 手动 | SSH → `research.py` → 立即 `curate.py --limit 0`（一次处理全部待处理）→ 唯一终审 PR |
+| `e2e-pipeline.yml` | 手动 | 同上小批量冒烟（可改 research_max / curate_limit） |
 
 ### 门禁与运维
 
@@ -73,6 +72,7 @@ flowchart LR
 
 | 流水线 / 脚本 | 说明 |
 |---------------|------|
+| `dispatch-worker.yml` | 原每 3h 轮询；已并入 research.yml 全量 curate |
 | `finalize.yml` / `finalize.py` | 落位已内联 curate；二次收录 PR 取消 |
 | `collect.yml` + collect/filter | 固定源采集，由 research 替代 |
 | `ingest.yml` + `ingest.py` | 旧 `raw/`→expand 深度笔记旁路 |
@@ -83,7 +83,7 @@ flowchart LR
 | 脚本 | 说明 |
 |------|------|
 | `research.py` | Prompt A（Firecrawl）+ Prompt B（分流）→ articles；push `pipeline/queue` |
-| `curate.py` | 翻译三件套 → 内联落位 working + 同步索引 → **唯一** `review/*` PR |
+| `curate.py` | 默认一次处理全部待处理 → 落位 working + 同步索引 → **唯一** `review/*` PR |
 | `kb_common.py` | slug、落位、index/log/图谱同步 |
 | `check_consistency.py` | K1–K7（含 `working/` 计入全库） |
 | `retrack.py` | 已收录清单（`--list` 注入 research 去重） |
@@ -112,7 +112,7 @@ flowchart LR
 cd /root/note-worker
 export NOTE_GIT_REF=main   # 可选；默认 main
 python3 scripts/research.py --max 10
-python3 scripts/curate.py --limit 4
+python3 scripts/curate.py --limit 0   # 0=全部待处理
 ```
 
 或在 GitHub Actions 手动触发 **E2E 全流程测试（服务器 Codex）**。
