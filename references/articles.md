@@ -7,15 +7,18 @@
 > 占位条目（"待处理 / 待补充"）**不写在编号正文里**，而是统一进本文末尾的「待处理队列」，避免污染计数。
 > 全局连续编号（不按来源重置），最大编号 = 文章总数。
 >
-> **状态字段（流程机器码）：** `待处理`（采集到站，未加工） / `已收录`（判定有值，已归入某模块） / `已淘汰`（判定不值，保留 URL 防重复采集）。
-> **归属字段：** 加工结果所在的模块路径（`expand/…` thinking / `working/…` 作品 / `prompts/…` 提示词），是「分到哪一模块」的落点记录。
+> **状态字段（流程机器码）：** `待处理`（research 判定值得翻译，入队） / `已收录`（索引收录或译文已落 working） / `已淘汰`（判定不值，保留 URL 防重复采集）。
+> **归属字段：** `working/…` 作品路径，或仅索引时的 `脉络:<lineage>`，或 `prompts/…` / `expand/…`。
+> **观察项：** 见文末「观察项」表（不进编号正文、不计入主计数）；research 分流 `observe` 写入。
 >
-> **下游引用都是本文的冗余缓存：** 根 `AGENTS.md`、`expand/index.md`、`.github/workflows/research.yml` 的去重清单、`references/AGENTS.md` 的概览表。
+> **流水线（2026-08-10）：** research 写入 `pipeline/queue`（不开 PR）→ curate 落位并开**唯一终审 PR** → 人工合并 main。
+>
+> **下游引用都是本文的冗余缓存：** 根 `AGENTS.md`、`expand/index.md`、`references/AGENTS.md` 的概览表。
 > 新增/更新文章时，必须**同一次提交**更新本文 + 相关下游缓存。
 
 ## 待处理（采集队列，计入编号正文前的暂存区）
 
-> 由 `collect.yml` / 服务器 codex 采集写入。**人工 review 后移入编号正文**（`已收录`/`已淘汰`）。
+> 由 `research.py`（verdict=`translate`）写入。curate 加工落位后移入编号正文。
 
 <!-- pending:start -->
 <!-- 采集自动化维护，按 `| 标题 | 链接 | 来源 | 日期 |` 追加一行；处理完移入编号正文 -->
@@ -168,6 +171,13 @@
 - **状态：** 已收录 | **归属：** `expand/thinking/Rust2024版次的语义收紧与异步闭合.md`
 - **核心：** Rust 1.85.0 同步稳定 2024 Edition（官方口径「史上最大版次」）：RPIT 生命周期捕获规则、临时作用域/drop 顺序、match 擦除保留、unsafe extern/属性/static mut 收缩、set_var 转 unsafe、async closures（AsyncFn）稳定、元组 collect 扩展至 12 元。思考：采集器「Move 语义」标签失焦——真正主线是「版次语义收紧 + unsafe 显式化 + 异步借用补课」，edition 约三年一拍是 Rust 的语义债务清偿机制。
 - **关联：** Rust / 版次 / 借用检查；对照 [[c++核心编程]]、思考层 [[MCP协议标准化的增量与边界]]
+
+## 观察项
+
+> 暂不收录、持续观察的 URL（防重复采集，不计入编号正文主计数）。由 research Prompt B（`observe`）写入。
+
+| 标题 | 链接 | 来源 | 日期 | 备注 |
+| --- | --- | --- | --- | --- |
 
 ## 统计
 

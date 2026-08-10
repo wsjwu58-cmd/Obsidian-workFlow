@@ -7,21 +7,21 @@
 
 | 文件 | 职责 | 谁维护 |
 |------|------|--------|
-| `articles.md` | 文章收录权威索引（编号正文 + 待处理队列 + 状态/归属字段） | `collect.yml`（采集写入）+ 服务器 codex（处理归集） |
+| `articles.md` | 文章收录权威索引（编号正文 + 待处理 + 观察项） | `research.py` 分流写入；`curate.py` 落位回写 |
 | `agents.md` | 本目录规则（本文） | 人工 + AI |
 
 - 每条记录包含：编号、标题、链接、作者、日期、状态（待处理/已收录/已淘汰）、归属（产出模块路径）
-- **状态机**：`待处理`（采集入队）→ `已收录`（已判值并入 [expand/](../expand/) / [working/](../working/) / [prompts/](../prompts/)）或 `已淘汰`（留 URL 防重复）
+- **状态机**：research `translate`→`待处理`→curate 落位→`已收录`；`index` 直接`已收录`；`observe`→观察项表；或`已淘汰`
 
 ## 索引 → 产出的分流规则（codex 处理素材时判定归属）
 
 | 产出方向 | 落点 | 何时 |
 |---------|------|------|
-| 独立思考 / 观点 | `expand/01-…/thinking/`（或对应分类 thinking 子目录） | 有独立分析、质疑、延伸 |
-| 作品（翻译/教程/工具） | `working/` | 想输出可展示成果 |
-| 提示词沉淀 | `prompts/` | 提炼出验证有效的 prompt |
-| 仅收录 | articles.md 标 `已收录` + 归属无事 | 仅存档、不加工 |
-| 淘汰 | articles.md 标 `已淘汰` | 无深度加工价值，留 URL 防重复 |
+| 值得翻译 | `working/`（经 curate 唯一终审 PR） | research `translate` |
+| 仅索引收录 | articles.md `已收录`（核心含脉络） | research `index` |
+| 持续观察 | articles.md「观察项」表 | research `observe` |
+| 独立思考 / 观点 | `expand/thinking/` | 人写；codex 只建议 |
+| 提示词沉淀 | `prompts/` | 人判亲测有效 |
 
 ## 与其他目录的关系
 

@@ -1,0 +1,61 @@
+name: E2E 全流程测试（服务器 Codex）
+
+# 手动触发：SSH 到 note-worker，拉最新 main，串行跑 research → curate（小批量）
+on:
+  workflow_dispatch:
+    inputs:
+      git_ref:
+        description: 服务器检出的 git ref（分支或 SHA）
+        default: "main"
+        required: false
+      research_max:
+        description: research 最多候选条数
+        default: "2"
+        required: false
+      curate_limit:
+        description: curate 本批翻译上限
+        default: "1"
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: 检出（仅取脚本无关，真实跑在服务器）
+        uses: actions/checkout@v4
+
+      - name: SSH 全流程 research → curate
+        env:
+          SERVER_HOST: ${{ secrets.WORKER_HOST }}
+          SERVER_SSH_KEY: ${{ secrets.WORKER_SSH_KEY }}
+          SERVER_USER: ${{ secrets.WORKER_USER }}
+          GIT_REF: ${{ github.event.inputs.git_ref || github.ref_name }}
+          RESEARCH_MAX: ${{ github.event.inputs.research_max || '2' }}
+          CURATE_LIMIT: ${{ github.event.inputs.curate_limit || '1' }}
+        run: |
+          set -euo pipefail
+          echo "$SERVER_SSH_KEY" > /tmp/worker_key
+          chmod 600 /tmp/worker_key
+          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+              -o ConnectTimeout=20 -i /tmp/worker_key \
+              "${SERVER_USER}@${SERVER_HOST}" \
+              "set -euo pipefail
+               cd /root/note-worker
+               export NOTE_GIT_REF='${GIT_REF}'
+               git fetch origin '${GIT_REF}'
+               git checkout -B '${GIT_REF}' 'origin/${GIT_REF}'
+               git reset --hard 'origin/${GIT_REF}'
+               echo \"=== on \$(git rev-parse --short HEAD) NOTE_GIT_REF=\$NOTE_GIT_REF ===\"
+               echo '=== research.py --max ${RESEARCH_MAX} ==='
+               /usr/bin/python3 scripts/research.py --max ${RESEARCH_MAX}
+               echo '=== curate.py --limit ${CURATE_LIMIT} ==='
+               /usr/bin/python3 scripts/curate.py --limit ${CURATE_LIMIT}
+               echo '=== done ==='
+               git branch -v | head -20
+               ls -la working/*translation.md 2>/dev/null | tail -5 || true
+              "
+        timeout-minutes: 170

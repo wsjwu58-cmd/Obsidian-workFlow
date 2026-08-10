@@ -1,27 +1,23 @@
-name: 收录落位（Finalize）
+# 收录落位（Finalize）— 已退役
+#
+# 2026-08-10：落位已内联到 scripts/curate.py，整条流水线只开一次人工终审 PR。
+# 本 workflow 不再触发，避免第二次「收录 PR」。
+#
+# 手动补跑旧批次：python scripts/finalize.py --batch <name>
+
+name: 收录落位（已退役）
 
 on:
-  pull_request:
-    types: [closed]
-    branches: [main]
+  workflow_dispatch: {}
 
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 
 jobs:
-  finalize:
-    if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'candidates/')
+  retired:
     runs-on: ubuntu-latest
     steps:
-      - name: 检出合并后 main
-        uses: actions/checkout@v4
-        with:
-          ref: main
-          fetch-depth: 0
-
-      - name: 运行 finalize
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: 提示退役
         run: |
-          python3 scripts/finalize.py
+          echo "finalize.yml 已退役。落位由 curate.py 在唯一终审 PR 内完成。"
+          exit 0
