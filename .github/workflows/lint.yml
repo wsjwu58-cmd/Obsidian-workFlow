@@ -39,9 +39,13 @@ jobs:
           git checkout -B "$BRANCH"
           git add expand/log.md
           git commit -m "lint: $(date +%F) 巡检报告" || { echo "无有效提交"; exit 0; }
-          git push -u origin "$BRANCH" --force-with-lease
+          # lint/* 为当日机器人分支，允许覆盖；shallow checkout 下 force-with-lease 易 stale
+          if ! git push -u origin "$BRANCH" --force; then
+            echo "::warning::推送 $BRANCH 失败，巡检本身已完成"
+            exit 0
+          fi
           if [ "$(gh pr list --head "$BRANCH" --state open --json number --jq 'length')" != "0" ]; then
-            echo "已有同分支 open PR，跳过创建"
+            echo "已有同分支 open PR，已更新分支"
             exit 0
           fi
           if gh pr create --base main --head "$BRANCH" \
