@@ -40,13 +40,18 @@ jobs:
           git add expand/log.md
           git commit -m "lint: $(date +%F) 巡检报告" || { echo "无有效提交"; exit 0; }
           git push -u origin "$BRANCH" --force-with-lease
-          if gh pr list --head "$BRANCH" --state open --json number --jq 'length' | grep -q '^0$'; then
-            gh pr create --base main --head "$BRANCH" \
-              --title "lint: $(date +%F) 巡检报告" \
-              --body "每日巡检自动写入 expand/log.md。main 受保护，经 PR 合入。"
-          else
+          if [ "$(gh pr list --head "$BRANCH" --state open --json number --jq 'length')" != "0" ]; then
             echo "已有同分支 open PR，跳过创建"
+            exit 0
           fi
+          if gh pr create --base main --head "$BRANCH" \
+              --title "lint: $(date +%F) 巡检报告" \
+              --body "每日巡检自动写入 expand/log.md。main 受保护，经 PR 合入。"; then
+            exit 0
+          fi
+          echo "::warning::无法用 GITHUB_TOKEN 开 PR（Settings → Actions → General → 勾选 Allow GitHub Actions to create and approve pull requests）。分支已推送：origin/$BRANCH"
+          echo "手动开 PR：${{ github.server_url }}/${{ github.repository }}/compare/main...$BRANCH?expand=1"
+          exit 0
 
       - name: 严重问题开 Issue
         if: hashFiles('.lint-issues.md') != ''
