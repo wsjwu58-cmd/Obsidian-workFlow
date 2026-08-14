@@ -8,6 +8,7 @@ on:
 permissions:
   contents: write
   issues: write
+  pull-requests: write
 
 jobs:
   lint:
@@ -24,14 +25,27 @@ jobs:
       - name: 运行巡检
         run: python scripts/lint.py --log expand/log.md
 
-      - name: 提交巡检报告
+      - name: 提交巡检报告（PR，main 受保护不可直推）
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            git config user.name "kb-bot"
-            git config user.email "kb-bot@users.noreply.github.com"
-            git add expand/log.md
-            git commit -m "lint: $(date +%F) 巡检报告"
-            git push
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "无变更，跳过"
+            exit 0
+          fi
+          BRANCH="lint/$(date +%Y%m%d)"
+          git config user.name "kb-bot"
+          git config user.email "kb-bot@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          git add expand/log.md
+          git commit -m "lint: $(date +%F) 巡检报告" || { echo "无有效提交"; exit 0; }
+          git push -u origin "$BRANCH" --force-with-lease
+          if gh pr list --head "$BRANCH" --state open --json number --jq 'length' | grep -q '^0$'; then
+            gh pr create --base main --head "$BRANCH" \
+              --title "lint: $(date +%F) 巡检报告" \
+              --body "每日巡检自动写入 expand/log.md。main 受保护，经 PR 合入。"
+          else
+            echo "已有同分支 open PR，跳过创建"
           fi
 
       - name: 严重问题开 Issue
