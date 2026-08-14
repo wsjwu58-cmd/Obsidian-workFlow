@@ -20,6 +20,11 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'failure' }}
     steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: 发送失败告警
         env:
           NOTIFY_WEBHOOK: ${{ secrets.NOTIFY_WEBHOOK }}
@@ -60,3 +65,4 @@ jobs:
             git commit -m "feedback: $RUN_NAME 失败记录（$RUN_ID）"
             git push
           fi
+
