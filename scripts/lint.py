@@ -22,11 +22,24 @@ EXPAND = ROOT / "expand"
 RAW = ROOT / "references" / "raw"
 
 # 基础设施文件不计入孤立/同步检查
-INFRA = {"index.md", "log.md", "知识图谱.md",
+INFRA = {"index.md", "log.md", "知识图谱.md", "AGENTS.md",
          "自动化工作流设计.md", "自动化工作流功能与实现方案.md"}
 INFRA |= {"动态索引.md", "知识库周报.md"}
 LINK_RE = re.compile(r"\[\[([^\]|]+)(?:\|[^\]]*)?\]\]")
 FM_RE = re.compile(r"^---\s*$(.*?)^---\s*$", re.M | re.S)
+
+
+def index_rel_candidates(p: pathlib.Path) -> list[str]:
+    """index.md 可能用 stem 或 wiki/expand 相对路径链接。"""
+    cands = [p.stem]
+    for base in (WIKI, EXPAND, ROOT):
+        try:
+            rel = str(p.relative_to(base)).replace("\\", "/").removesuffix(".md")
+            if rel and rel not in cands:
+                cands.append(rel)
+        except ValueError:
+            continue
+    return cands
 
 
 def read_text(p: pathlib.Path) -> str:
@@ -180,10 +193,7 @@ def main():
     for p in files:
         if p.name in INFRA:
             continue
-        if f"[[{p.stem}]]" in idx:
-            continue
-        rel = str(p.relative_to(WIKI)).replace("\\", "/").replace(".md", "")
-        if f"[[{rel}]]" in idx:
+        if any(f"[[{rel}]]" in idx for rel in index_rel_candidates(p)):
             continue
         missing.append(p)
     report.append(f"\n## 5. index 同步：{len(missing)} 个条目未出现在 index.md")
