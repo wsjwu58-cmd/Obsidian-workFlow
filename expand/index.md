@@ -1,13 +1,13 @@
 ---
 created: 2026-08-03
-updated: 2026-08-10
+updated: 2026-08-17
 tags: [知识库, 索引]
 ---
 
 # 内容总目录
 
 > 知识库分类体系：`01-编程语言` → `02-前端` → `03-后端` → `04-数据库` → `05-数据结构与算法` → `06-AI与LLM` → `07-Linux与工具链` → `08-逆向与安全` → `09-源码解读` → `10-求职面试` → `11-生活杂项`
-> 全库共 134 个 Markdown 文件（2026-08-09 更新：index 补入 opencode 项目解读 10 条 wiki 笔记；新增 expand/thinking/ 独立思考层；新增 [[Rust2024版次的语义收紧与异步闭合]]）。关系总览见 [[知识图谱]]。
+> 全库共 139 个 Markdown 文件（2026-08-09 更新：index 补入 opencode 项目解读 10 条 wiki 笔记；新增 expand/thinking/ 独立思考层；新增 [[Rust2024版次的语义收紧与异步闭合]]）。关系总览见 [[知识图谱]]。
 
 ## 知识库自动化
 
@@ -199,6 +199,12 @@ tags: [知识库, 索引]
 
 ## 作品输出（working/）
 
+
+- [[Claude-Code-v2-1-224-self-hosted-environ-translation]]：Claude Code v2.1.224 —— 自托管环境（self-hosted environments）
+- [[EvolveNet-Collaborative-Harness-Evolutio-translation]]：EvolveNet：面向智能体自我改进的协作式 Harness 进化
+- [[Harness-R1-Learning-to-Edit-Executable-R-translation]]：Harness-R1：从智能体失败轨迹学习编辑可执行运行时 Harness
+- [[I-Gave-Claude-Code-an-AGENTS-md-Contract-translation]]：我给 Claude Code 立了一份 AGENTS.md 契约，从此不再当保姆
+- [[The-Shape-of-Things-to-Come-Part-1-The-C-translation]]：未来之形（The Shape of Things to Come）· 第一部分：永不落幕的雷霆穹顶
 - [[Meta-launches-Muse-Code-for-complex-soft-translation]]：Meta 推出 Muse Code：以持久化 AI 智能体处理复杂软件工程
 
 ## 待办清单（维护提醒）
