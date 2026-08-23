@@ -1,13 +1,13 @@
 ---
 created: 2026-08-03
-updated: 2026-08-10
+updated: 2026-08-17
 tags: [知识库, 索引]
 ---
 
 # 内容总目录
 
 > 知识库分类体系：`01-编程语言` → `02-前端` → `03-后端` → `04-数据库` → `05-数据结构与算法` → `06-AI与LLM` → `07-Linux与工具链` → `08-逆向与安全` → `09-源码解读` → `10-求职面试` → `11-生活杂项`
-> 全库共 134 个 Markdown 文件（2026-08-09 更新：index 补入 opencode 项目解读 10 条 wiki 笔记；新增 expand/thinking/ 独立思考层；新增 [[Rust2024版次的语义收紧与异步闭合]]）。关系总览见 [[知识图谱]]。
+> 全库共 149 个 Markdown 文件（2026-08-17 更新：wiki 目录重组——去除编号前缀；补入 Harness Engineering / Loop Engineering / 提示词工程 3 篇 Agent 文章；补入 SpringBoot / Spring / SpringMVC / Mybatis / 微服务 / Elasticsearch 等后端笔记；删除全量微调 / 高效微调占位条目；review/20260817 合入 5 篇 working 译文）。关系总览见 [[知识图谱]]。
 
 ## 知识库自动化
 
@@ -31,7 +31,7 @@ tags: [知识库, 索引]
 - [[Dijkstra最短路算法]]：C++ 邻接矩阵 Dijkstra 最短路实现（图算法编程练习）
 - [[python]]：Python 学习入口（⚠️ 空笔记，待补充）
 - [[数据分析学习笔记]]：NumPy / Pandas / Matplotlib 数据分析实战
-- [[01-编程语言/python/集合]]：Python 列表/元组/集合/字典四大数据结构对比
+- [[编程语言/python/集合]]：Python 列表/元组/集合/字典四大数据结构对比
 
 ## 02-前端
 
@@ -47,7 +47,7 @@ tags: [知识库, 索引]
 ## 03-后端
 
 - [[面向对象]]：Java 对象内存分配与 OOP 基础
-- [[03-后端/java/集合]]：Java 集合框架（ArrayList 等）
+- [[后端/java/集合]]：Java 集合框架（ArrayList 等）
 - [[Stream]]：Java Stream 流式 API 与 Lambda
 - [[java高级技术]]：Java 进阶特性
 - [[javaweb]]：JavaWeb 开发（含 Vue 前端集成）
@@ -60,6 +60,24 @@ tags: [知识库, 索引]
 - [[judge0 API调用]]：Judge0 部署实战与 cgroup 兼容性排查
 - [[苍穹]]：苍穹外卖项目——类别/菜品/套餐业务关系设计
 - [[JavaGuide]]：Java 后端学习与面试指南（基础 / 集合 / 并发 / JVM / 数据库 / 分布式 / AI）
+
+### SpringBoot
+
+- [[Mybatis]]：MyBatis 持久层框架入门（mybatis.org 官方文档）
+- [[Spring]]：Spring IOC 容器
+- [[SpringBoot]]：SpringBoot 配置
+- [[SpringMVC]]：SpringMVC 配置
+
+### 微服务
+
+- [[微服务]]：单体架构到微服务架构演进
+- [[网关和配置共享]]：微服务网关与配置共享
+- [[Elasticsearch]]：Elasticsearch 入门
+- [[Elasticsearch数据搜索]]：Elasticsearch DSL 查询
+
+### 手写Spring
+
+- [[项目：手写Spring框架]]：手写 Spring 框架——IOC / AOP 实现（廖雪峰教程）
 
 ## 04-数据库
 
@@ -79,8 +97,9 @@ tags: [知识库, 索引]
 
 ## 06-AI与LLM
 
-- [[全量微调]]：全量微调（Full Fine-Tuning）概念（⚠️ 待补充）
-- [[高效微调]]：PEFT 高效参数微调（LoRA/QLoRA/Adapter）（⚠️ 待补充）
+- [[Harness Engineering 深度解析：AI Agent 时代的工程范式革命]]：AI Agent 时代工程范式革命——Mitchell Hashimoto / OpenAI / Martin Fowler 三方论述
+- [[别再手写 Prompt 了：一文讲透 Loop Engineering（循环工程）的控制论架构与自愈闭环_Anastasiozzzz-AI编程社区]]：循环工程控制论架构——触发器/目标/上下文/工具/验证/熔断六要素闭环
+- [[提示词工程（Prompt Engineering）]]：Prompt Engineering 简介——与 AI 模型有效互动的方法论
 - [[Agent搭建]]：从符号主义到 LLM Agent，ReAct 模式与 LangGraph 实现
 - [[MCP协议与工具调用]]：MCP 协议标准与工具调用演进
 - [[RAG处理优化]]：RAG 检索增强生成原理与优化
@@ -173,20 +192,20 @@ tags: [知识库, 索引]
 
 ### Free-fs（网盘项目解析）
 
-- [[09-源码解读/Free-fs（网盘项目的解析）/free-fs]]：网盘项目存储系统模块——SPI 服务发现与存储插件
+- [[源码解读/Free-fs（网盘项目的解析）/free-fs]]：网盘项目存储系统模块——SPI 服务发现与存储插件
 
 ### opencode 项目解读（2026-08-09 个人笔记）
 
-- [[opencode项目解读/项目文档索引]]：OpenCode 源码分析报告·10 份文档导航
-- [[opencode项目解读/项目技术画像]]：OpenCode 开源 AI 编码助手·技术栈与定位
-- [[opencode项目解读/系统架构总览]]：数据流全景·模块划分·分层架构·技术栈·数据模型
-- [[opencode项目解读/业务流程梳理]]：六大业务领域流程详解·含分支/回退/容错路径
-- [[opencode项目解读/业务背景重建]]：从源码反推产品业务事实、推导诉求与信息缺口
-- [[opencode项目解读/模块技术说明]]：各 workspace 包技术细节·职责/导出/核心文件/接口/依赖
-- [[opencode项目解读/S级亮点专项]]：面向新人的核心亮点详解·通俗语言+术语释义+阅读路线
-- [[opencode项目解读/技术亮点评估]]：TOP 15 项目技术亮点·按价值排序·源码佐证
-- [[opencode项目解读/系统优化专项]]：优化清单·方案·优先级·区分【已实现/具备基础/建议补齐】
-- [[opencode项目解读/能力缺口分析]]：能力匹配分析·待建设清单·标注【可扩展设计】
+- [[项目文档索引]]：OpenCode 源码分析报告·10 份文档导航
+- [[项目技术画像]]：OpenCode 开源 AI 编码助手·技术栈与定位
+- [[系统架构总览]]：数据流全景·模块划分·分层架构·技术栈·数据模型
+- [[业务流程梳理]]：六大业务领域流程详解·含分支/回退/容错路径
+- [[业务背景重建]]：从源码反推产品业务事实、推导诉求与信息缺口
+- [[模块技术说明]]：各 workspace 包技术细节·职责/导出/核心文件/接口/依赖
+- [[S级亮点专项]]：面向新人的核心亮点详解·通俗语言+术语释义+阅读路线
+- [[技术亮点评估]]：TOP 15 项目技术亮点·按价值排序·源码佐证
+- [[系统优化专项]]：优化清单·方案·优先级·区分【已实现/具备基础/建议补齐】
+- [[能力缺口分析]]：能力匹配分析·待建设清单·标注【可扩展设计】
 
 ## 10-求职面试
 
@@ -199,6 +218,12 @@ tags: [知识库, 索引]
 
 ## 作品输出（working/）
 
+
+- [[Claude-Code-v2-1-224-self-hosted-environ-translation]]：Claude Code v2.1.224 —— 自托管环境（self-hosted environments）
+- [[EvolveNet-Collaborative-Harness-Evolutio-translation]]：EvolveNet：面向智能体自我改进的协作式 Harness 进化
+- [[Harness-R1-Learning-to-Edit-Executable-R-translation]]：Harness-R1：从智能体失败轨迹学习编辑可执行运行时 Harness
+- [[I-Gave-Claude-Code-an-AGENTS-md-Contract-translation]]：我给 Claude Code 立了一份 AGENTS.md 契约，从此不再当保姆
+- [[The-Shape-of-Things-to-Come-Part-1-The-C-translation]]：未来之形（The Shape of Things to Come）· 第一部分：永不落幕的雷霆穹顶
 - [[Meta-launches-Muse-Code-for-complex-soft-translation]]：Meta 推出 Muse Code：以持久化 AI 智能体处理复杂软件工程
 
 ## 待办清单（维护提醒）
