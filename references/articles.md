@@ -22,16 +22,11 @@
 
 <!-- pending:start -->
 <!-- 采集自动化维护，按 `| 标题 | 链接 | 来源 | 日期 |` 追加一行；处理完移入编号正文 -->
-<!-- 当前：6 条待处理 -->
+<!-- 当前：1 条待处理 -->
 | The new rules of context engineering for Claude 5 generation models | https://claude.com/blog/the-new-rules-of-context-engineering-for-claude-5-generation-models | research | 2026-08-09 | 🔄评审中 candidates/20260809-180901/
 | One-shotting a Raccoon Heist game using Claude Fable 5 | https://simonwillison.net/2026/Aug/5/raccoon-heist/ | research | 2026-08-09 | 🔄评审中 candidates/20260809-180901/
 | Six Agent Orchestration Patterns | https://vercel.com/i/agent-orchestration-patterns | research | 2026-08-09 | 🔄评审中 candidates/20260809-180901/
 | Making production-ready agents the default: building Duolingo's agent platform | https://blog.duolingo.com/production-ready-ai-agent-platform/ | research | 2026-08-09 | 🔄评审中 candidates/20260809-180901/
-| Harness-R1: Learning to Edit Executable Runtime Harnesses from Agent Failure Trajectories | https://arxiv.org/abs/2608.02276 | research | 2026-08-09 |
-| EvolveNet: Collaborative Harness Evolution for Agent Self-Improvement | https://arxiv.org/abs/2608.04968 | research | 2026-08-09 |
-| The Shape of Things to Come, Part 1: The Continuous Thunderdome | https://yegge.ai/essays/the-shape-of-things-to-come/ | research | 2026-08-09 |
-| Claude Code v2.1.224 — self-hosted environments | https://github.com/anthropics/claude-code/releases/tag/v2.1.224 | research | 2026-08-09 |
-| I Gave Claude Code an AGENTS.md Contract and Stopped Babysitting It | https://dev.to/daymondhyper/i-gave-claude-code-an-agentsmd-contract-and-stopped-babysitting-it-53m | research | 2026-08-09 |
 <!-- pending:end -->
 
 ## 已收录（编号正文）
@@ -179,12 +174,62 @@
 - **状态：** 已收录 | **归属：** `working/Meta-launches-Muse-Code-for-complex-soft-translation.md`
 - **核心：** Meta launches Muse Code for complex software work with persistent AI agents
 
+### 17. Claude Code v2.1.224 — self-hosted environments
+
+- **标题：** Claude Code v2.1.224 — self-hosted environments
+- **链接：** [github.com/anthropics/claude-code/releases/tag/v2.1.224](https://github.com/anthropics/claude-code/releases/tag/v2.1.224)
+- **作者：** research | **日期：** 2026-08-09
+- **状态：** 已收录 | **归属：** `working/Claude-Code-v2-1-224-self-hosted-environ-translation.md`
+- **核心：** Claude Code v2.1.224 — self-hosted environments
+
+### 18. EvolveNet: Collaborative Harness Evolution for Agent Self-Improvement
+
+- **标题：** EvolveNet: Collaborative Harness Evolution for Agent Self-Improvement
+- **链接：** [arxiv.org/abs/2608.04968](https://arxiv.org/abs/2608.04968)
+- **作者：** research | **日期：** 2026-08-09
+- **状态：** 已收录 | **归属：** `working/EvolveNet-Collaborative-Harness-Evolutio-translation.md`
+- **核心：** EvolveNet: Collaborative Harness Evolution for Agent Self-Improvement
+
+### 19. Harness-R1: Learning to Edit Executable Runtime Harnesses from Agent Failure Trajectories
+
+- **标题：** Harness-R1: Learning to Edit Executable Runtime Harnesses from Agent Failure Trajectories
+- **链接：** [arxiv.org/abs/2608.02276](https://arxiv.org/abs/2608.02276)
+- **作者：** research | **日期：** 2026-08-09
+- **状态：** 已收录 | **归属：** `working/Harness-R1-Learning-to-Edit-Executable-R-translation.md`
+- **核心：** Harness-R1: Learning to Edit Executable Runtime Harnesses from Agent Failure Tra…
+
+### 20. I Gave Claude Code an AGENTS.md Contract and Stopped Babysitting It
+
+- **标题：** I Gave Claude Code an AGENTS.md Contract and Stopped Babysitting It
+- **链接：** [dev.to/daymondhyper/i-gave-claude-code-an-agentsmd-contract-and-stopped-babysitting-it-53m](https://dev.to/daymondhyper/i-gave-claude-code-an-agentsmd-contract-and-stopped-babysitting-it-53m)
+- **作者：** research | **日期：** 2026-08-09
+- **状态：** 已收录 | **归属：** `working/I-Gave-Claude-Code-an-AGENTS-md-Contract-translation.md`
+- **核心：** I Gave Claude Code an AGENTS.md Contract and Stopped Babysitting It
+
+### 21. The Shape of Things to Come, Part 1: The Continuous Thunderdome
+
+- **标题：** The Shape of Things to Come, Part 1: The Continuous Thunderdome
+- **链接：** [yegge.ai/essays/the-shape-of-things-to-come/](https://yegge.ai/essays/the-shape-of-things-to-come/)
+- **作者：** research | **日期：** 2026-08-09
+- **状态：** 已收录 | **归属：** `working/The-Shape-of-Things-to-Come-Part-1-The-C-translation.md`
+- **核心：** The Shape of Things to Come, Part 1: The Continuous Thunderdome
+
 ## 观察项
 
 > 暂不收录、持续观察的 URL（防重复采集，不计入编号正文主计数）。由 research Prompt B（`observe`）写入。
 
 | 标题 | 链接 | 来源 | 日期 | 备注 |
 | --- | --- | --- | --- | --- |
+| Exploring Compose HTML for Server-Side Rendering | https://blog.jetbrains.com/kotlin/2026/08/exploring-compose-html-for-server-side-rendering/ | JetBrains | 2026-08-14 | 官方博客对 CMP 服务端渲染方向的原创前瞻，含可复现代码 |
+| LiveMem: Maintaining Memory State Continuity in Long-Running LLM Inference | https://arxiv.org/abs/2608.02515 | arXiv cs.CL | 2026-08-03 | 为 agent 长会话记忆与上下文管理提供新抽象视角 |
+| Everything we launched during Agents Week | https://blog.cloudflare.com/agents-week-review-august-2026/ | Cloudflare | 2026-08-10 | 云厂商对 agent 运行时与生命周期的一次系统性落子，平台趋势观察 |
+| Announcing Dart 3.13 | https://dart.dev/blog/announcing-dart-3-13 | Dart / Google | 2026-08-12 | 官方稳定版发布，语言/工具链/编译优化多维实质更新 |
+| IntelliJ IDEA Goes LSP: Java and Kotlin Intelligence Comes to VS Code, Cursor, and Agentic Flows | https://blog.jetbrains.com/idea/2026/08/intellij-idea-goes-lsp/ | JetBrains | 2026-08-04 | Kotlin 工具链×agent 工作流交叉的一手官方进展 |
+| Deep Agents vs LangChain vs LangGraph | https://www.langchain.com/blog/deep-agents-vs-langchain-vs-langgraph | LangChain | 2026-08-06 | 官方对 agent 栈分层与 harness 定义的权威界定，指导选型 |
+| SHE: Trajectory-driven Safety Harness Evolution for LLM Agents | https://arxiv.org/abs/2608.09885 | arXiv cs.AI | 2026-08-10 | 首个可演化安全 harness 系统化框架，有数据与复现链接 |
+| SWE-Touch: Benchmarking Coding Agents When Users Touch the Code | https://arxiv.org/abs/2608.02499 | arXiv cs.SE | 2026-08-03 | 填补人机协作共享工作区评测盲区，有数据与开源实现，挑战单干基准范式 |
+| DeepSeek Harness developer preview: Everything is a plugin | https://deepseek.com/harness/en/ | DeepSeek | 2026-08-14 | 开源 harness 平台级发布，Claude Code 直接竞品，HN 732 分高热 |
+| Auto mode is now the default in Claude Code for Pro, Max, and Team plans | https://claude.com/blog/auto-mode-default-in-claude-code | Anthropic | 2026-08-07 | Tier 1 官方一手安全数据，直接塑造 agent 权限与安全架构设计 |
 | New release of LLM adds support for reasoning traces, OpenAI Responses, server-side tools, and smarter logging | https://simonwillison.net/2026/Aug/4/new-release-of-llm/ | Simon Willison (simonwillison.net) | 2026-08-04 | Tier1作者对LLM工具平台的深度工程复盘，含可复现代码，覆盖推理轨迹、服务端工具与日志架构。 |
 | Introducing Data-eng-bench: Why You Need "Data-Native" Harnesses for Data Engineering | https://www.snowflake.com/en/blog/engineering/data-eng-bench-data-engineering-agent-benchmark/ | Snowflake AI Research (Snowflake Engineering Blog) | 2026-08-06 | 首个仓库级dbt agent评测（103任务）并开源，harness×模型双变量质量/成本数据直接服务agent评测与选型。 |
 

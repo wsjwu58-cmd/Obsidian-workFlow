@@ -1,13 +1,13 @@
 ---
 created: 2026-08-03
-updated: 2026-08-10
+updated: 2026-08-17
 tags: [知识库, 索引]
 ---
 
 # 内容总目录
 
 > 知识库分类体系：`01-编程语言` → `02-前端` → `03-后端` → `04-数据库` → `05-数据结构与算法` → `06-AI与LLM` → `07-Linux与工具链` → `08-逆向与安全` → `09-源码解读` → `10-求职面试` → `11-生活杂项`
-> 全库共 144 个 Markdown 文件（2026-08-17 更新：wiki 目录重组——去除编号前缀；补入 Harness Engineering / Loop Engineering / 提示词工程 3 篇 Agent 文章；补入 SpringBoot / Spring / SpringMVC / Mybatis / 微服务 / Elasticsearch 等后端笔记；删除全量微调 / 高效微调占位条目）。关系总览见 [[知识图谱]]。
+> 全库共 149 个 Markdown 文件（2026-08-17 更新：wiki 目录重组——去除编号前缀；补入 Harness Engineering / Loop Engineering / 提示词工程 3 篇 Agent 文章；补入 SpringBoot / Spring / SpringMVC / Mybatis / 微服务 / Elasticsearch 等后端笔记；删除全量微调 / 高效微调占位条目；review/20260817 合入 5 篇 working 译文）。关系总览见 [[知识图谱]]。
 
 ## 知识库自动化
 
@@ -218,6 +218,12 @@ tags: [知识库, 索引]
 
 ## 作品输出（working/）
 
+
+- [[Claude-Code-v2-1-224-self-hosted-environ-translation]]：Claude Code v2.1.224 —— 自托管环境（self-hosted environments）
+- [[EvolveNet-Collaborative-Harness-Evolutio-translation]]：EvolveNet：面向智能体自我改进的协作式 Harness 进化
+- [[Harness-R1-Learning-to-Edit-Executable-R-translation]]：Harness-R1：从智能体失败轨迹学习编辑可执行运行时 Harness
+- [[I-Gave-Claude-Code-an-AGENTS-md-Contract-translation]]：我给 Claude Code 立了一份 AGENTS.md 契约，从此不再当保姆
+- [[The-Shape-of-Things-to-Come-Part-1-The-C-translation]]：未来之形（The Shape of Things to Come）· 第一部分：永不落幕的雷霆穹顶
 - [[Meta-launches-Muse-Code-for-complex-soft-translation]]：Meta 推出 Muse Code：以持久化 AI 智能体处理复杂软件工程
 
 ## 待办清单（维护提醒）

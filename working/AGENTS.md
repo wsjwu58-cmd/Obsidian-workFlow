@@ -18,3 +18,8 @@
 | 作品 | 说明 |
 | --- | --- |
 | [[working/Meta-launches-Muse-Code-for-complex-soft-translation.md]] | curate 收录译文作品 |
+| [[working/Claude-Code-v2-1-224-self-hosted-environ-translation.md]] | curate 收录译文作品 |
+| [[working/EvolveNet-Collaborative-Harness-Evolutio-translation.md]] | curate 收录译文作品 |
+| [[working/Harness-R1-Learning-to-Edit-Executable-R-translation.md]] | curate 收录译文作品 |
+| [[working/I-Gave-Claude-Code-an-AGENTS-md-Contract-translation.md]] | curate 收录译文作品 |
+| [[working/The-Shape-of-Things-to-Come-Part-1-The-C-translation.md]] | curate 收录译文作品 |
