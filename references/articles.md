@@ -220,6 +220,14 @@
 
 | 标题 | 链接 | 来源 | 日期 | 备注 |
 | --- | --- | --- | --- | --- |
+| Klibs.io Grows to 4200+ KMP Projects With Smarter Discovery and New AI Integrations | https://blog.jetbrains.com/kotlin/2026/08/klibsio-grows-to-4200-kmp-projects-with-smarter-discovery-and-new-ai-integrations/ | JetBrains Kotlin 博客 | 2026-08-17 | JetBrains 官方把 KMP 生态目录做成 agent 可调用工具，含评测数据与 AGENTS.md 实践，双领域交集标杆。 |
+| What's new in Kotlin 2.4.20-RC | https://kotlinlang.org/docs/whatsnew-eap.html | Kotlin 官方文档 | 2026-08-12 | 官方 EAP 公告，覆盖标准库、K/N、K/Wasm、K/JS 多层实质变更，KMP 工具链风向标。 |
+| What's new in Flutter 3.47 | https://flutter.dev/blog/whats-new-in-flutter-3-47 | Flutter 官方博客 | 2026-08-12 | 官方发布说明中设计系统解耦是长期架构调整信号，影响依赖管理与跨端构建策略。 |
+| Conceptual integrity and counting lines of code | https://simonwillison.net/2026/Aug/19/conceptual-integrity-and-counting-lines-of-code/ | Simon Willison 博客 | 2026-08-19 | Tier 1 作者原创观点，挑战主流 LOC 无意义论，对 agent 工程管理/评测有启发。 |
+| Introducing LangSmith Tuned Evaluators, starting with Perceived Error | https://www.langchain.com/blog/introducing-langsmith-tuned-evaluators-starting-with-perceived-error | LangChain 官方博客 | 2026-08-18 | 官方评测产品但技术实质充分（后训练法官+82% 成本数据+接入流程），对 agent 评测域有参考价值。 |
+| Agentic Transaction: Towards ACID-Compliant Agent Systems | https://arxiv.org/abs/2608.13900 | arXiv cs.DB/cs.AI | 2026-08-14 | 原创理论框架+可运行系统，是 agent 可靠执行方向少见的系统性工作。 |
+| The Devil Is in the Interface: Evaluating How Tool Architecture Shapes Coding Agent Behavior | https://arxiv.org/abs/2608.11386 | arXiv cs.SE | 2026-08-11 | 大样本受控实验+量化结论，为 harness/工具平台设计提供可复现证据。 |
+| DeepSeek Harness 开发者预览：一切皆插件 | https://news.ycombinator.com/item?id=49285244 | DeepSeek 官方（Hacker News） | 2026-08-13 | 开源 agent harness 标杆事件，插件化架构与可追踪事件流直接回应 harness/编排主题，官方一级内容。 |
 | Exploring Compose HTML for Server-Side Rendering | https://blog.jetbrains.com/kotlin/2026/08/exploring-compose-html-for-server-side-rendering/ | JetBrains | 2026-08-14 | 官方博客对 CMP 服务端渲染方向的原创前瞻，含可复现代码 |
 | LiveMem: Maintaining Memory State Continuity in Long-Running LLM Inference | https://arxiv.org/abs/2608.02515 | arXiv cs.CL | 2026-08-03 | 为 agent 长会话记忆与上下文管理提供新抽象视角 |
 | Everything we launched during Agents Week | https://blog.cloudflare.com/agents-week-review-august-2026/ | Cloudflare | 2026-08-10 | 云厂商对 agent 运行时与生命周期的一次系统性落子，平台趋势观察 |
