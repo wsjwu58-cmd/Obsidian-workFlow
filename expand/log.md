@@ -8,6 +8,12 @@ tags: [知识库, 日志]
 
 > 时间倒序排列
 
+## [2026-08-24] lint | 巡检报告
+
+- 巡检时间：2026-08-24 | 条目数：143 | 断链：6 | 孤立：0 | 重复对：0 | pending：0 | index 缺失：0 | 空笔记：5
+- ⚠️ 发现异常：断链 6 处；- `expand/index.md` → [[Claude-Code-v2-1-224-self-hosted-environ-translation]]；- `expand/index.md` → [[EvolveNet-Collaborative-Harness-Evolutio-translation]]；- `expand/index.md` → [[Harness-R1-Learning-to-Edit-Executable-R-translation]]；- `expand/index.md` → [[I-Gave-Claude-Code-an-AGENTS-md-Contract-translation]]；- `expand/index.md` → [[The-Shape-of-Things-to-Come-Part-1-The-C-translation]]；- `expand/index.md` → [[Meta-launches-Muse-Code-for-complex-soft-translation]]
+
+
 ## [2026-08-09] ingest | Rust 2025 官方博客：Rust 1.85 版本说明（Move 语义 / Borrow Checker 演进）
 
 - 处理：`references/articles.md` 待处理 → 已收录（编号 15，归属 `expand/thinking/`）
