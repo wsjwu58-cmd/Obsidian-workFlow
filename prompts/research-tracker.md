@@ -42,6 +42,12 @@ source: 知识库情报分析 Prompt B（搜后长分析）
    - 值得翻译到 working/ → verdict=`translate`
    - 暂不收录，持续观察 → verdict=`observe`
 
+   **分类门槛（务必遵守，不要过度保守）**：
+   - `translate`：有深度技术内容（架构方案 / 代码示例 / 基准数据 / 反模式），值得全篇翻译留存。Tier 1 来源（Anthropic / OpenAI / LangChain 官方博客）默认至少 `translate`。
+   - `index`：对知识库有增量价值（填补上方缺口 / 验证或挑战既有观点 / 提供可检索的权威链接），但不值得全篇翻译。**如果一篇文章直接命中上方任一知识缺口，verdict 至少为 `index`，不得降为 `observe`。**
+   - `observe`：仅当文章与知识库方向无直接关联、或为小版本更新（如 patch release）无实质架构变化时使用。
+   - **硬性要求：每批 `translate + index` 合计 ≥ 2 条**；如果认为全部不达标，请在 analysis.priority 中明确说明每篇不达标的理由。
+
 ### 已知内容
 
 {KNOWN_CONTENT}
