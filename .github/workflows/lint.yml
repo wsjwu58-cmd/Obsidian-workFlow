@@ -8,7 +8,6 @@ on:
 permissions:
   contents: write
   issues: write
-  pull-requests: write
 
 jobs:
   lint:
@@ -25,37 +24,17 @@ jobs:
       - name: 运行巡检
         run: python scripts/lint.py --log expand/log.md
 
-      - name: 提交巡检报告（PR，main 受保护不可直推）
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: 提交巡检报告
         run: |
           if [ -z "$(git status --porcelain)" ]; then
             echo "无变更，跳过"
             exit 0
           fi
-          BRANCH="lint/$(date +%Y%m%d)"
           git config user.name "kb-bot"
           git config user.email "kb-bot@users.noreply.github.com"
-          git checkout -B "$BRANCH"
           git add expand/log.md
           git commit -m "lint: $(date +%F) 巡检报告" || { echo "无有效提交"; exit 0; }
-          # lint/* 为当日机器人分支，允许覆盖；shallow checkout 下 force-with-lease 易 stale
-          if ! git push -u origin "$BRANCH" --force; then
-            echo "::warning::推送 $BRANCH 失败，巡检本身已完成"
-            exit 0
-          fi
-          if [ "$(gh pr list --head "$BRANCH" --state open --json number --jq 'length')" != "0" ]; then
-            echo "已有同分支 open PR，已更新分支"
-            exit 0
-          fi
-          if gh pr create --base main --head "$BRANCH" \
-              --title "lint: $(date +%F) 巡检报告" \
-              --body "每日巡检自动写入 expand/log.md。main 受保护，经 PR 合入。"; then
-            exit 0
-          fi
-          echo "::warning::无法用 GITHUB_TOKEN 开 PR（Settings → Actions → General → 勾选 Allow GitHub Actions to create and approve pull requests）。分支已推送：origin/$BRANCH"
-          echo "手动开 PR：${{ github.server_url }}/${{ github.repository }}/compare/main...$BRANCH?expand=1"
-          exit 0
+          git push
 
       - name: 严重问题开 Issue
         if: hashFiles('.lint-issues.md') != ''

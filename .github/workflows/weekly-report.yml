@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
   weekly:
@@ -20,18 +19,11 @@ jobs:
         run: python scripts/weekly_report.py
 
       - name: 提交周报
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           if [ -n "$(git status --porcelain)" ]; then
             git config user.name "kb-bot"
             git config user.email "kb-bot@users.noreply.github.com"
-            BRANCH="weekly/$(date +%Y%m%d)"
-            git checkout -b "$BRANCH"
             git add expand/知识库周报.md expand/log.md
             git commit -m "weekly: $(date +%F) 知识库周报"
-            git push -u origin "$BRANCH"
-            gh pr create --base main --head "$BRANCH" \
-              --title "weekly: $(date +%F) 知识库周报" \
-              --body "每周五自动生成的知识库周报，请 review 后合并。"
+            git push
           fi

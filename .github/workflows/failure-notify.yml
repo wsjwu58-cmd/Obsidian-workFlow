@@ -63,6 +63,6 @@ jobs:
           if [ -n "$(git status --porcelain)" ]; then
             git add expand/log.md
             git commit -m "feedback: $RUN_NAME 失败记录（$RUN_ID）"
-            git push || echo "::warning::push to protected main failed; feedback captured locally only"
+            git push
           fi
 
