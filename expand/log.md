@@ -8,6 +8,14 @@ tags: [知识库, 日志]
 
 > 时间倒序排列
 
+## [2026-08-31] feedback | 失败反馈：consistency
+
+- 运行：consistency（id 33344145091，分支 review/20260831-081723@fc1969e）
+- 链接：https://github.com/wsjwu58-cmd/Obsidian-workFlow/actions/runs/33344145091
+- 信号分类：`infra`
+- 处理建议：见 `scripts/gc_report.py` 或人工复盘后，把根因补齐到本条
+
+
 ## [2026-08-30] lint | 巡检报告
 
 - 巡检时间：2026-08-30 | 条目数：143 | 断链：138 | 孤立：0 | 重复对：0 | pending：0 | index 缺失：0 | 空笔记：5
