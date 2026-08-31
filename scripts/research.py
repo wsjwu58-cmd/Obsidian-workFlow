@@ -45,23 +45,67 @@ def sh(cmd, cwd=None, check=True):
 
 
 def known_content_block():
-    """优先 retrack --list；失败则回退标题/URL 拼装。"""
-    r = subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "retrack.py"), "--list"],
-        cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace",
-    )
-    if r.returncode == 0 and r.stdout.strip():
-        return r.stdout.strip()
+    """把当前索引中的 Agent 相关内容注入 Prompt A，保证去重段自包含。"""
     art = ROOT / "references" / "articles.md"
     if not art.exists():
         return "（暂无）"
     t = art.read_text(encoding="utf-8", errors="replace")
-    titles = re.findall(r"### \d+\. (.+)", t)
-    urls = collect.existing_urls()
-    lines = [f"- {x}" for x in titles[:80]]
-    lines.append("URL 清单（已收录 + 待处理，去重用）：")
-    lines += [f"  - {u}" for u in sorted(urls)[:120]]
-    return "\n".join(lines) or "（暂无）"
+    agent_terms = re.compile(
+        r"agent|harness|context engineering|coding|llm|rag|mcp|智能体|上下文|编程|工具调用|评测|工作流",
+        re.I,
+    )
+    lines = [
+        "### 当前知识库 Agent 相关编号文章（references/articles.md）",
+        "（以下内容由当前索引实时生成；包含已收录、已淘汰和已关联的归属信息。）",
+    ]
+    entries = list(re.finditer(r"^### (\d+)\s*\.\s*(.+)$", t, re.M))
+    kept = 0
+    for i, m in enumerate(entries):
+        end = entries[i + 1].start() if i + 1 < len(entries) else len(t)
+        segment = t[m.end():end]
+        section_heading = re.search(r"^##\s+", segment, re.M)
+        if section_heading:
+            segment = segment[:section_heading.start()]
+        if not agent_terms.search(m.group(2) + " " + segment):
+            continue
+        url_m = re.search(r"- \*\*链接：\*\*\s*\[[^]]*\]\(([^)]+)\)", segment)
+        date_m = re.search(r"\*\*日期：\*\*\s*([^|\n]+)", segment)
+        state_m = re.search(r"- \*\*状态：\*\*\s*([^|\n]+)", segment)
+        belong_m = re.search(r"- \*\*归属：\*\*\s*(.+)", segment)
+        url = url_m.group(1).strip() if url_m else ""
+        date = date_m.group(1).strip() if date_m else "未知日期"
+        state = state_m.group(1).strip() if state_m else "未知状态"
+        belong = belong_m.group(1).strip() if belong_m else "—"
+        lines.append(
+            f"- [{int(m.group(1)):02d}] {m.group(2).strip()} | {url} | "
+            f"{date} | {state} | 归属：{belong}"
+        )
+        kept += 1
+
+    def append_table_rows(heading, start_marker, end_marker):
+        section_start = t.find(start_marker)
+        if section_start < 0:
+            return 0
+        section_end = t.find(end_marker, section_start) if end_marker else len(t)
+        section = t[section_start:section_end if section_end >= 0 else len(t)]
+        found = 0
+        for row in re.findall(r"^\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|\s*([^|]+?)\s*\|$", section, re.M):
+            title, url, source, date, note = [x.strip() for x in row]
+            if title in ("标题", "---") or set(title) == {"-"}:
+                continue
+            if not agent_terms.search(" ".join(row)):
+                continue
+            if found == 0:
+                lines.append(f"\n### 当前知识库 Agent 相关{heading}")
+            lines.append(f"- {title} | {url} | {source} | {date} | {note}")
+            found += 1
+        return found
+
+    kept += append_table_rows("待处理内容", "<!-- pending:start -->", "<!-- pending:end -->")
+    kept += append_table_rows("观察项", "## 观察项", "## 统计")
+    if not kept:
+        return "（暂无 Agent 相关内容）"
+    return "\n".join(lines)
 
 
 def run_codex(prompt, prompt_name, timeout=1200):

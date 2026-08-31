@@ -47,8 +47,9 @@ RAW = ROOT / "references" / "raw"
 INFRA = {
     "index.md", "log.md", "知识图谱.md",
     "自动化工作流设计.md", "自动化工作流功能与实现方案.md",
-    "动态索引.md", "知识库周报.md",
+    "动态索引.md", "知识库周报.md", "gc-report.md",
 }
+CI_ARTIFACTS = {"gc-report.md"}
 # 索引同步检查的例外：wiki/ 个人笔记允许只出现在知识图谱而不在 index.md
 INDEX_CHECK_EXEMPT = INFRA | set()
 
@@ -92,7 +93,8 @@ def is_infra(p: pathlib.Path) -> bool:
 def all_files():
     files = [p for p in WIKI.rglob("*.md")]
     if EXPAND.exists():
-        files += [p for p in EXPAND.rglob("*.md")]
+        files += [p for p in EXPAND.rglob("*.md")
+                  if p.name not in CI_ARTIFACTS]
     working = ROOT / "working"
     if working.exists():
         files += [p for p in working.glob("*.md") if p.name != "AGENTS.md"]

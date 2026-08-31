@@ -6,7 +6,7 @@ on:
   workflow_dispatch: {}
 
 permissions:
-  contents: write
+  contents: read
   issues: write
 
 jobs:
@@ -24,17 +24,6 @@ jobs:
       - name: 运行 GC 熵检测
         run: python scripts/gc_report.py --markdown .gc-report.md
 
-      - name: 提交 GC 建议清单
-        run: |
-          if [ -s .gc-report.md ]; then
-            git config user.name "kb-bot"
-            git config user.email "kb-bot@users.noreply.github.com"
-            cp .gc-report.md expand/gc-report.md
-            git add expand/gc-report.md
-            git commit -m "gc: $(date +%F) 熵管理建议清单" || echo "无变更，跳过"
-            git push
-          fi
-
       - name: 生成 Issue 正文（有 high 严重度时）
         if: hashFiles('.gc-report.json') != ''
         env:
@@ -47,3 +36,14 @@ jobs:
           else
             echo "无高风险项，不开 Issue"
           fi
+
+      - name: 保存 GC 报告为 workflow artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gc-report-${{ github.run_id }}
+          path: |
+            .gc-report.md
+            .gc-report.json
+            .gc-issues.md
+          if-no-files-found: ignore

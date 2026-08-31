@@ -22,38 +22,10 @@ Layer 3: 注入（回写 references/articles.md 去重权威）
 
 ### Prompt A — 广度发现
 
-目标：扫描指定领域最近的信息，输出结构化候选。
+目标：扫描 Agent 工程相关领域最近的信息，输出结构化候选。完整、可执行的 Prompt A 以 `prompts/research-search.md` 为准。
 
 ```
-你是技术情报分析师。搜索以下领域过去 2 周（{START} ~ {END}）的高质量内容：
-
-领域：
-1. AI Agent 开发：RAG / Agent 工程（harness / 编排 / 上下文管理 / 调度）/ 多智能体 / 评测 / 工具平台（langchain4j / langgraph4j / Claude Code / Codex）
-2. 跨平台开发：Kotlin 多平台（KMP / Compose Multiplatform）/ Flutter 架构与工具链
-
-信源优先级：
-- Tier 1：Anthropic / OpenAI / Google / LangChain 官方博客、Martin Fowler、Simon Willison、Addy Osmani
-- Tier 2：HackerNews、GitHub Trending、掘金、知乎专栏
-- Tier 3：arXiv (cs.SE/cs.AI)、个人技术博客
-
-去重权威（本知识库）：
-已收录的完整列表见 references/articles.md（LLM 无法访问，但本部分由代码注入；
-运行时系统会先执行 'python scripts/retrack.py --list' 再拼入本 Prompt）
-
-输出（每条）：
-## {编号}. {标题}
-- 链接：{url}
-- 作者/来源：{source}
-- 日期：{date}
-- 推荐指数：⭐⭐⭐（3-5）
-一句话摘要：{50 字内}
-核心洞察（3条）：...
-值得收录理由：{判断}
-
-质量门槛：
-- 必须：有实质技术内容 / 原创洞察 / 来源可信
-- 加分：有数据 / 可复现代码 / 挑战主流观点
-- 排除：纯营销 / 纯摘要 / 草稿级入门教程
+Prompt A 的搜索范围固定为 Harness Engineering、Context Engineering、AI Coding Agents、Agent Infrastructure 和 AI-assisted Software Engineering；去重清单由运行时注入当前 `references/articles.md` 中的相关内容。
 ```
 
 ### Prompt B 深度分析与去向决策（给 Codex/agent）
