@@ -7,7 +7,7 @@ tags: [知识库, 索引]
 # 内容总目录
 
 > 知识库分类体系：`01-编程语言` → `02-前端` → `03-后端` → `04-数据库` → `05-数据结构与算法` → `06-AI与LLM` → `07-Linux与工具链` → `08-逆向与安全` → `09-源码解读` → `10-求职面试` → `11-生活杂项`
-> 全库共 149 个 Markdown 文件（2026-08-17 更新：wiki 目录重组——去除编号前缀；补入 Harness Engineering / Loop Engineering / 提示词工程 3 篇 Agent 文章；补入 SpringBoot / Spring / SpringMVC / Mybatis / 微服务 / Elasticsearch 等后端笔记；删除全量微调 / 高效微调占位条目；review/20260817 合入 5 篇 working 译文）。关系总览见 [[知识图谱]]。
+> 全库共 218 个 Markdown 文件（2026-08-31 更新：补入 Kotlin Clippings 67 篇及基础语法、线程与协程两篇复习入口；同步 Kotlin 主题关系图）。关系总览见 [[知识图谱]]。
 
 ## 知识库自动化
 
@@ -32,6 +32,96 @@ tags: [知识库, 索引]
 - [[python]]：Python 学习入口（⚠️ 空笔记，待补充）
 - [[数据分析学习笔记]]：NumPy / Pandas / Matplotlib 数据分析实战
 - [[编程语言/python/集合]]：Python 列表/元组/集合/字典四大数据结构对比
+
+### Kotlin
+
+- [[Kotlin基础语法梳理]]：Kotlin 基础语法复习路线、主题地图与 Clippings 导航
+- [[Kotlin多线程与协程]]：JVM 线程、共享状态、协程、调度器、取消与结构化并发
+
+#### Kotlin Clippings · 控制流
+
+- [[For loop and ranges]]：范围、步长与 for 循环
+- [[If expression]]：if 条件表达式
+- [[Loops repeat statement]]：repeat 重复语句
+- [[When expression]]：when 分支表达式
+- [[While loops]]：while / do-while 循环
+
+#### Kotlin Clippings · 集合与迭代
+
+- [[For loop and lists]]：遍历列表与索引
+- [[List]]：只读列表
+- [[Mutable List]]：可变列表
+- [[Work with MutableLists]]：MutableList 常用操作
+- [[Map]]：映射基础
+- [[Mutable Map]]：可变映射
+- [[Set]]：集合基础
+- [[Mutable Set]]：可变集合
+- [[Multi-dimensional list]]：多维列表
+- [[ArrayDeque]]：双端队列
+- [[Collections as interface]]：集合接口
+- [[Comparable and Comparator]]：可比较与比较器
+- [[For loop and iterables]]：可迭代对象
+- [[Iterators]]：迭代器
+- [[Mutable Map and Mutable Set as interfaces]]：可变集合接口
+- [[Stack]]：栈与集合操作
+
+#### Kotlin Clippings · 空安全
+
+- [[Avoiding NPEs. Null safety]]：避免 NPE 与空安全
+- [[Nullable and non-nullable types]]：可空与不可空类型
+- [[Null and collections]]：集合中的空值
+- [[Type cast and smart cast]]：类型转换与智能转换
+- [[Type system]]：子类型与超类型
+
+#### Kotlin Clippings · 类和对象
+
+- [[Constructors]]：主构造函数
+- [[Secondary constructor]]：次构造函数
+- [[Overriding constructors]]：构造函数重写
+- [[Inheritance in Kotlin]]：继承基础
+- [[Inheritance and constructors]]：继承与构造函数
+- [[Final members]]：final 成员
+- [[Introduction to interfaces]]：接口基础
+- [[Interface inheritance]]：接口继承
+- [[Abstract classes]]：抽象类
+- [[Overriding functions]]：函数重写
+- [[Overriding properties]]：属性重写
+- [[Argument naming in overridden functions]]：重写函数参数命名
+- [[Visibility modifiers for members]]：成员可见性
+- [[Data class]]：数据类
+- [[Destructuring declarations]]：解构声明
+- [[Enum]]：枚举
+- [[Sealed class and interface]]：密封类与接口
+- [[Pair and Triple]]：Pair 与 Triple
+- [[toString() 1]]：toString 方法
+- [[Member functions]]：成员函数
+- [[Property accessors]]：属性访问器
+- [[Lazy initialization]]：延迟初始化
+- [[Nested and inner classes]]：嵌套类与内部类
+- [[Object declarations]]：对象声明与单例
+- [[Companion object]]：伴随对象
+
+#### Kotlin Clippings · 函数式编程与委托
+
+- [[Functions as objects]]：函数作为对象
+- [[Lambda expressions]]：Lambda 表达式
+- [[Function references]]：函数引用
+- [[Currying]]：柯里化
+- [[Lambda with receiver]]：带接收器 Lambda
+- [[Scope functions let, run, and with]]：let、run、with
+- [[Scope functions apply and also]]：apply、also
+- [[Type-safe builders]]：类型安全构建器
+- [[Delegate]]：委托语法
+- [[Class delegation]]：类委托
+- [[Standard delegates]]：标准委托
+
+#### Kotlin Clippings · Gradle
+
+- [[Gradle overview]]：Gradle 概述
+- [[Basic project with Gradle]]：Gradle 基础项目
+- [[Building apps using Gradle]]：使用 Gradle 构建应用
+- [[Gradle build configuration]]：Gradle 构建配置
+- [[Dependency management repositories]]：依赖管理与仓库
 
 ## 02-前端
 
