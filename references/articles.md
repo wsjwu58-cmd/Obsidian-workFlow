@@ -220,6 +220,16 @@
 
 | 标题 | 链接 | 来源 | 日期 | 备注 |
 | --- | --- | --- | --- | --- |
+| 憋了 7 周没动静，OpenClaw 2.0 带着 16000 个 PR 杀回来了 | https://juejin.cn/post/7680352383386107940 | 一点一木, 稀土掘金 | 2026-09-01 | 窗口内中文社区原创深度分析，覆盖会话管理/沙箱/多 agent 编排并含一手数据，非英文转述 |
+| AgentRoom: Concurrent Multi-Agent Coding in a CRDT-Backed Shared Workspace | http://arxiv.org/abs/2608.23740 | arXiv (Seonglae Cho, Donghyun Lee) | 2026-08-24 | 多 agent 协作方向少见的机制级开放实验，与 SWE-Touch 构成 agent-agent vs 人机触碰互补 |
+| Making Your Data Ready for Agentic AI | https://martinfowler.com/articles/making-data-ready-for-agentic-ai.html | Pramod Sadalage & Prem Chandrasekaran, martinfowler.com (Thoughtworks) | 2026-08-27 | Tier 1 双作者长文，把 agent 数据准备上升为第一方框架，扩展已知数据×agent 方向 |
+| Context Engineering for Coding Agents (Building a Coding Agent From Scratch, Lesson 4) | https://www.decodingai.com/p/context-engineering-for-coding-agents | Paul Iusztin, Decoding AI Magazine | 2026-08-25 | 一线实践+可复现代码直击 context engineering 主题，与 FrontierHarness 量化结论互相印证 |
+| Maybe We Shouldn't Be Reviewing All This Code | https://martinfowler.com/rachels-ramblings/code-review.html | Rachel Laycock, martinfowler.com | 2026-09-02 | Tier 1 作者对主流流程的原创反驳，有明确辩论对象与数据，直接服务 AI 代码评审主题 |
+| Headlong: a microharness for persistent agents (Laude/MIT) | https://www.laude.org/updates/headlong-a-microharness-for-persistent-agents | Laude Institute；github.com/laude-institute/headlong（1.1k stars） | 2026-08-24 | 可运行参考实现 + 透明失败教训，同时命中 harness/context/infra/评测四主题且与已知内容无重复 |
+| Introducing FrontierHarness Eval: 9 harnesses, same model, cost per pass varies 17x | https://runta.com/blog/introducing-frontierharness-eval | Runta (Shilin Zhu, Shiqi Mei)；HN 81 分 | 2026-09-01 | 首个开源可复现的跨 harness 成本×通过率评测（含数据与任务），直接支撑 harness 选型与工程论点 |
+| What's in Your Agent's Context? Context Privilege Escalation Attacks against AI Agent Harness | http://arxiv.org/abs/2609.01222 | arXiv (Zichuan Li, Luyi Xing 等) | 2026-09-01 | 为 context engineering 引入此前缺失的安全攻击面视角，含 12 系统实测，原创性强 |
+| SWE-Gate: Passing Functional Tests Is Not Enough for Software Engineering Agents | http://arxiv.org/abs/2609.04167 | arXiv cs.SE (Xin He, Yanlin Wang 等) | 2026-09-03 | 与 SWE-Touch、Data-eng-bench 互补的新评测维度，且与 code review 辩论直接互证 |
+| A Few Pages of Markdown: Committed AI Configuration and Lower Quality Cost after Coding-Agent Adoption | http://arxiv.org/abs/2608.25241 | arXiv cs.SE (Yegor Denisov-Blanch 等) | 2026-08-26 | 把 AGENTS.md 实践从个案升级为 441 仓库量化研究，直接填补 AI 配置与代码质量关系的实证缺口 |
 | Klibs.io Grows to 4200+ KMP Projects With Smarter Discovery and New AI Integrations | https://blog.jetbrains.com/kotlin/2026/08/klibsio-grows-to-4200-kmp-projects-with-smarter-discovery-and-new-ai-integrations/ | JetBrains Kotlin 博客 | 2026-08-17 | JetBrains 官方把 KMP 生态目录做成 agent 可调用工具，含评测数据与 AGENTS.md 实践，双领域交集标杆。 |
 | What's new in Kotlin 2.4.20-RC | https://kotlinlang.org/docs/whatsnew-eap.html | Kotlin 官方文档 | 2026-08-12 | 官方 EAP 公告，覆盖标准库、K/N、K/Wasm、K/JS 多层实质变更，KMP 工具链风向标。 |
 | What's new in Flutter 3.47 | https://flutter.dev/blog/whats-new-in-flutter-3-47 | Flutter 官方博客 | 2026-08-12 | 官方发布说明中设计系统解耦是长期架构调整信号，影响依赖管理与跨端构建策略。 |
