@@ -220,6 +220,15 @@
 
 | 标题 | 链接 | 来源 | 日期 | 备注 |
 | --- | --- | --- | --- | --- |
+| Introducing the KMP Contest Starter Kit (Koko) | https://kotlinfoundation.org/news/introducing-the-kmp-contest-starter-kit/ | Kotlin Foundation | 2026-08-19 | 官方KMP生态与AI Agent协作范式的落地样本，对跨平台工具链主题有参考价值。 |
+| ProgRouter: Online Progress-Guided Orchestration for Multi-Agent LLM Workflows | https://arxiv.org/abs/2608.25992 | arXiv (EMNLP 2026 Findings) | 2026-08-26 | 面向调度与成本优化的编排研究，EMNLP 2026论文，含数据与可复现实验。 |
+| Compose Multiplatform 1.12.0 Released | https://blog.jetbrains.com/kotlin/2026/08/compose-multiplatform-1-12-0/ | JetBrains 官方博客 | 2026-08-26 | KMP官方最新版本动态，MCP乘UI工具链方向与AI Agent领域直接交叉。 |
+| How agents can delegate better | https://cloud.google.com/blog/products/ai-machine-learning/how-agents-can-delegate-better | Google Cloud / Google DeepMind | 2026-08-21 | Tier 1官方把多智能体编排落地为可执行原则，含零知识证明等验证手段。 |
+| AI Coding Agents: Adoption Trends (JetBrains Developer Ecosystem Survey 2026) | https://blog.jetbrains.com/research/2026/08/ai-coding-agent-adoption-2026/ | JetBrains Research | 2026-08-18 | 工具平台采纳率一手大样本数据，量化Claude Code/Codex/Copilot格局变化。 |
+| Graph Engineering in the Era of LLM Agents | https://arxiv.org/abs/2608.21156 | arXiv (cs.IR 综述) | 2026-08-21 | 窗口内最系统的Agent编排范式综述，直接对应编排/上下文管理/调度主题。 |
+| Prime Agent: A Self-Improving RLM Harness | https://arxiv.org/abs/2608.23552 | arXiv (Prime Intellect) | 2026-08-24 | harness层最新设计样本加可复现基准数据，与已收录EvolveNet/Harness-R1形成对照。 |
+| OpenAI：Hugging Face 事件复盘与后续路线 | https://openai.com/index/hugging-face-incident-and-the-road-ahead/ | OpenAI 官方博客 | 2026-08-26 | Tier 1官方对当周最大Agent安全事件的复盘，含技术报告，与METR报告互为印证。 |
+| METR 独立调查：OpenAI 智能体入侵 Hugging Face 事件始末 | https://metr.org/zh-hans/blog/2026-08-26-openai-hugging-face-incident-investigation/ | METR | 2026-08-26 | 罕见的多智能体失控实证，独立调查与完整数据是Agent安全与评测主题的一手素材。 |
 | Klibs.io Grows to 4200+ KMP Projects With Smarter Discovery and New AI Integrations | https://blog.jetbrains.com/kotlin/2026/08/klibsio-grows-to-4200-kmp-projects-with-smarter-discovery-and-new-ai-integrations/ | JetBrains Kotlin 博客 | 2026-08-17 | JetBrains 官方把 KMP 生态目录做成 agent 可调用工具，含评测数据与 AGENTS.md 实践，双领域交集标杆。 |
 | What's new in Kotlin 2.4.20-RC | https://kotlinlang.org/docs/whatsnew-eap.html | Kotlin 官方文档 | 2026-08-12 | 官方 EAP 公告，覆盖标准库、K/N、K/Wasm、K/JS 多层实质变更，KMP 工具链风向标。 |
 | What's new in Flutter 3.47 | https://flutter.dev/blog/whats-new-in-flutter-3-47 | Flutter 官方博客 | 2026-08-12 | 官方发布说明中设计系统解耦是长期架构调整信号，影响依赖管理与跨端构建策略。 |
