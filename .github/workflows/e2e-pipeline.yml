@@ -52,16 +52,17 @@ jobs:
           rm -f /tmp/e2e.log /tmp/e2e.exit /tmp/.research.lock /tmp/.curate.lock
           nohup env NOTE_GIT_REF='${GIT_REF}' bash -c '
             set -euo pipefail
+            record_exit() { echo \$? > /tmp/e2e.exit; }
+            trap record_exit EXIT
             cd /root/note-worker
             echo "=== on \$(git rev-parse --short HEAD) NOTE_GIT_REF=\$NOTE_GIT_REF ==="
-            echo "=== research.py --max ${RESEARCH_MAX} ==="
-            /usr/bin/python3 scripts/research.py --max ${RESEARCH_MAX}
+            echo "=== replay saved triage; skip new research ==="
             echo "=== curate.py --limit ${CURATE_LIMIT} ==="
-            /usr/bin/python3 scripts/curate.py --limit ${CURATE_LIMIT}
+            /usr/bin/python3 -u scripts/curate.py --limit ${CURATE_LIMIT} --replay-analysis candidates/recovery-20260907/triage.json
             echo "=== done ==="
             git branch -v | head -20
             ls -la working/*translation.md 2>/dev/null | tail -5 || true
-          ' > /tmp/e2e.log 2>&1; echo \$? > /tmp/e2e.exit &
+          ' > /tmp/e2e.log 2>&1 &
           echo "e2e started"
           REMOTE
 
