@@ -22,7 +22,7 @@
 
 <!-- pending:start -->
 <!-- 采集自动化维护，按 `| 标题 | 链接 | 来源 | 日期 |` 追加一行；处理完移入编号正文 -->
-<!-- 当前：21 条待处理 -->
+<!-- 当前：27 条待处理 -->
 | The new rules of context engineering for Claude 5 generation models | https://claude.com/blog/the-new-rules-of-context-engineering-for-claude-5-generation-models | research | 2026-08-09 | 🔄评审中 candidates/20260809-180901/
 | One-shotting a Raccoon Heist game using Claude Fable 5 | https://simonwillison.net/2026/Aug/5/raccoon-heist/ | research | 2026-08-09 | 🔄评审中 candidates/20260809-180901/
 | Six Agent Orchestration Patterns | https://vercel.com/i/agent-orchestration-patterns | research | 2026-08-09 | 🔄评审中 candidates/20260809-180901/
@@ -47,6 +47,9 @@
 | 如何看待特斯拉股价单日大跌近 6%？Cybercab上线一天便遭审查，无方向盘、刹车板的车型有何隐患？ | https://www.zhihu.com/question/2079883205440692454 | rsshub | 2026-09-06 |
 | 中国需要多久达到或超过 GPT-6 Astra 级别的模型水平？ | https://www.zhihu.com/question/2079675087209419385 | rsshub | 2026-09-06 |
 | AI 写出来的代码越来越多，未来的软件会不会变得「没人真正看得懂」？ | https://www.zhihu.com/question/2078550836175815213 | rsshub | 2026-09-06 |
+| What's in Your Agent's Context? Context Privilege Escalation Attacks against AI Agent Harness | http://arxiv.org/abs/2609.01222 | arXiv (Zichuan Li, Xiaojing Liao, Luyi Xing 等) | 2026-09-01 |
+| Headlong: a microharness for persistent agents (Laude/MIT) | https://www.laude.org/updates/headlong-a-microharness-for-persistent-agents | Laude Institute；github.com/laude-institute/headlong | 2026-08-24 |
+| Context Engineering for Coding Agents (Building a Coding Agent From Scratch, Lesson 4) | https://www.decodingai.com/p/context-engineering-for-coding-agents | Paul Iusztin, Decoding AI Magazine | 2026-08-25 |
 <!-- pending:end -->
 
 ## 已收录（编号正文）
@@ -234,6 +237,62 @@
 - **状态：** 已收录 | **归属：** `working/The-Shape-of-Things-to-Come-Part-1-The-C-translation.md`
 - **核心：** The Shape of Things to Come, Part 1: The Continuous Thunderdome
 
+### 22. Introducing FrontierHarness Eval: 9 harnesses, same model, cost per pass varies 17x
+
+- **标题：** Introducing FrontierHarness Eval: 9 harnesses, same model, cost per pass varies 17x
+- **链接：** [runta.com/blog/introducing-frontierharness-eval](https://runta.com/blog/introducing-frontierharness-eval)
+- **作者：** Runta (Shilin Zhu, Shiqi Mei)；HN 81 分 | **日期：** 2026-09-01
+- **状态：** 已收录 | **归属：** —
+- **核心：** 脉络:agent/eval；开源受控 harness×成本×质量数据（360 试次、17 倍成本差、缓存命中率≠成本）作选型锚点与第二组互证基线，价值在数据与归因结论而非全文
+
+### 23. SWE-Gate: Passing Functional Tests Is Not Enough for Software Engineering Agents
+
+- **标题：** SWE-Gate: Passing Functional Tests Is Not Enough for Software Engineering Agents
+- **链接：** [arxiv.org/abs/2609.04167](http://arxiv.org/abs/2609.04167)
+- **作者：** arXiv cs.SE (Xin He, Yanlin Wang 等) | **日期：** 2026-09-03
+- **状态：** 已收录 | **归属：** —
+- **核心：** 脉络:agent/eval；303 实例/34% 差距证明功能通过≠评审约束通过，开源双门控评测改写 coding agent 验收标准讨论，索引+数据集即可
+
+### 24. A Few Pages of Markdown: Committed AI Configuration and Lower Quality Cost after Coding-Agent Adoption
+
+- **标题：** A Few Pages of Markdown: Committed AI Configuration and Lower Quality Cost after Coding-Agent Adoption
+- **链接：** [arxiv.org/abs/2608.25241](http://arxiv.org/abs/2608.25241)
+- **作者：** arXiv cs.SE (Yegor Denisov-Blanch 等) | **日期：** 2026-08-26
+- **状态：** 已收录 | **归属：** —
+- **核心：** 脉络:agent/harness；441 仓库量化 + RAMP 成熟度工具为 AGENTS.md 治理主线提供实证并提示『set-and-forget』治理缺口，索引含脉络即可
+
+### 25. AgentRoom: Concurrent Multi-Agent Coding in a CRDT-Backed Shared Workspace
+
+- **标题：** AgentRoom: Concurrent Multi-Agent Coding in a CRDT-Backed Shared Workspace
+- **链接：** [arxiv.org/abs/2608.23740](http://arxiv.org/abs/2608.23740)
+- **作者：** arXiv (Seonglae Cho, Donghyun Lee) | **日期：** 2026-08-24
+- **状态：** 已收录 | **归属：** —
+- **核心：** 脉络:agent/multi-agent；CRDT 文件系统+MCP claim/broadcast 的机制级开放实验，『协调优于并发』反直觉结论补多 agent 协作空白，索引后按需扩展
+
+### 26. Maybe We Shouldn't Be Reviewing All This Code
+
+- **标题：** Maybe We Shouldn't Be Reviewing All This Code
+- **链接：** [martinfowler.com/rachels-ramblings/code-review.html](https://martinfowler.com/rachels-ramblings/code-review.html)
+- **作者：** Rachel Laycock, martinfowler.com | **日期：** 2026-09-02
+- **状态：** 已收录 | **归属：** —
+- **核心：** 脉络:agent/eval；Tier1 有具名对手与 Meta 数据的流程辩论，与 SWE-Gate 构成『评审左移+机器可判约束』闭环，观点文索引即可
+
+### 27. Making Your Data Ready for Agentic AI
+
+- **标题：** Making Your Data Ready for Agentic AI
+- **链接：** [martinfowler.com/articles/making-data-ready-for-agentic-ai.html](https://martinfowler.com/articles/making-data-ready-for-agentic-ai.html)
+- **作者：** Pramod Sadalage & Prem Chandrasekaran, martinfowler.com | **日期：** 2026-08-27
+- **状态：** 已收录 | **归属：** —
+- **核心：** 脉络:agent/rag；Tier1 双作者企业数据三层框架与模式目录，扩展数据×agent 相邻方向的可检索权威链接
+
+### 28. 憋了 7 周没动静，OpenClaw 2.0 带着 16000 个 PR 杀回来了
+
+- **标题：** 憋了 7 周没动静，OpenClaw 2.0 带着 16000 个 PR 杀回来了
+- **链接：** [juejin.cn/post/7680352383386107940](https://juejin.cn/post/7680352383386107940)
+- **作者：** 一点一木, 稀土掘金 | **日期：** 2026-09-01
+- **状态：** 已收录 | **归属：** —
+- **核心：** 脉络:agent/platform；窗口内中文原创深度分析：多用户 Gateway/角色边界/Swarm/升级事故一手细节与反模式，编入平台脉络（主事实以官方为准）
+
 ## 观察项
 
 > 暂不收录、持续观察的 URL（防重复采集，不计入编号正文主计数）。由 research Prompt B（`observe`）写入。
@@ -263,7 +322,7 @@
 
 ## 统计
 
-- **正式收录：** 12 篇（编号 01-10、14、15）｜**已淘汰隔离：** 3 篇（编号 11-13，不计入收录数，仅防重复采集）
+- **正式收录：** 26 篇｜**已淘汰隔离：** 2 篇（不计入收录数，仅防重复采集）
 
 ## 待补充
 

@@ -15,6 +15,7 @@ import datetime
 import pathlib
 import re
 import sys
+from check_consistency import all_files, INFRA as GATE_INFRA
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 WIKI = ROOT / "wiki"
@@ -25,6 +26,7 @@ RAW = ROOT / "references" / "raw"
 INFRA = {"index.md", "log.md", "知识图谱.md", "AGENTS.md",
          "自动化工作流设计.md", "自动化工作流功能与实现方案.md"}
 INFRA |= {"动态索引.md", "知识库周报.md"}
+INFRA |= GATE_INFRA
 LINK_RE = re.compile(r"\[\[([^\]|]+)(?:\|[^\]]*)?\]\]")
 FM_RE = re.compile(r"^---\s*$(.*?)^---\s*$", re.M | re.S)
 
@@ -72,10 +74,7 @@ def frontmatter(text: str) -> dict:
 
 
 def wiki_md_files():
-    files = [p for p in WIKI.rglob("*.md")]
-    if EXPAND.exists():
-        files += [p for p in EXPAND.rglob("*.md")]
-    return files
+    return all_files()
 
 
 def main():
@@ -112,11 +111,11 @@ def main():
             broken.append((str(p.relative_to(ROOT)), target.strip()))
     report.append(f"## 1. 断链检查：共 {len(broken)} 处")
     for path, target in broken[:30]:
-        report.append(f"- `{path}` → [[{target}]] 无法解析")
+        report.append(f"- `{path}` → `[[{target}]]` 无法解析")
     if broken:
         issues.append(f"### 断链 {len(broken)} 处")
         for path, target in broken[:30]:
-            issues.append(f"- `{path}` → [[{target}]]")
+            issues.append(f"- `{path}` → `[[{target}]]`")
 
     # ---- 2. 孤立节点 ----
     incoming = {str(p): 0 for p in files}

@@ -116,11 +116,20 @@ def remove_pending_urls(art_text, urls):
                 continue
         out_lines.append(line)
     t = "".join(out_lines)
-    cm = re.search(r"<!-- 当前：(\d+) 条待处理 -->", t)
-    if cm and removed:
-        n = max(0, int(cm.group(1)) - removed)
-        t = t.replace(cm.group(0), f"<!-- 当前：{n} 条待处理 -->")
-    return t, removed
+    return sync_article_counts(t), removed
+
+
+def sync_article_counts(text):
+    """Recompute counters from records instead of accumulating stale comments."""
+    pending = re.search(r"<!-- pending:start -->(.*?)<!-- pending:end -->", text, re.S)
+    count = len(re.findall(r"^\|[^|]+\|\s*https?://", pending.group(1), re.M)) if pending else 0
+    text = re.sub(r"<!-- 当前：\d+ 条待处理 -->", f"<!-- 当前：{count} 条待处理 -->", text)
+    statuses = re.findall(r"^- \*\*状态：\*\*\s*([^|\n]+)", text, re.M)
+    accepted = sum(s.strip() == "已收录" for s in statuses)
+    rejected = sum(s.strip() == "已淘汰" for s in statuses)
+    return re.sub(r"^- \*\*正式收录：\*\*.*$",
+                  f"- **正式收录：** {accepted} 篇｜**已淘汰隔离：** {rejected} 篇（不计入收录数，仅防重复采集）",
+                  text, flags=re.M)
 
 
 def sync_working_agents(moved):
@@ -129,7 +138,7 @@ def sync_working_agents(moved):
     if not p.exists() or not moved:
         return
     t = p.read_text(encoding="utf-8")
-    rows = "\n".join(f"| [[working/{name}]] | curate 收录译文作品 |" for name in moved)
+    rows = "\n".join(f"| [[{pathlib.Path(name).stem}]] | curate 收录译文作品 |" for name in moved)
     if re.search(r"^\s*\|", t, flags=re.M):
         lines = t.rstrip("\n").splitlines()
         last = max(i for i, ln in enumerate(lines) if re.match(r"^\s*\|", ln))
@@ -218,7 +227,7 @@ def append_log(batch_name, moved, obs=None, rej=None):
         fh.write(entry)
 
 
-def land_translations(batch_dir, queue_rows, keep_sources=True):
+def land_translations(batch_dir, queue_rows, keep_sources=True, preserve_drafts=False):
     """把 batch 的 works-ready 落位到 working/，回写 articles，同步索引。
 
     无 AI 评审判定：凡成功产出的 works-ready 一律视为收录。
@@ -230,10 +239,16 @@ def land_translations(batch_dir, queue_rows, keep_sources=True):
     all_wr = sorted(f.name for f in wr.glob("*-translation.md")) if wr.exists() else []
     moved = []
     summaries = {}
+    expected = {f"{make_slug(row['title'])}-translation.md": row for row in queue_rows}
     for name in all_wr:
+        if name not in expected:
+            continue
         src = wr / name
         dest = ROOT / "working" / name
         text = src.read_text(encoding="utf-8")
+        if not text.strip():
+            continue
+        dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_text(text, encoding="utf-8")
         moved.append(name)
         # 尝试从 frontmatter title 取摘要
@@ -250,13 +265,11 @@ def land_translations(batch_dir, queue_rows, keep_sources=True):
         for f in moved:
             idx = None
             for i, row in enumerate(remaining):
-                if make_slug(row["title"]) in f:
+                if f == f"{make_slug(row['title'])}-translation.md":
                     idx = i
                     break
             if idx is None:
-                idx = 0 if remaining else None
-            if idx is None:
-                break
+                continue
             pairs.append((remaining.pop(idx), f))
         n = next_article_number(t)
         entries = []
@@ -264,12 +277,9 @@ def land_translations(batch_dir, queue_rows, keep_sources=True):
             core = row["title"] if len(row["title"]) <= 80 else row["title"][:80] + "…"
             entries.append(fmt_article_entry(n, row, "已收录", mf, core))
             n += 1
-        for row in remaining:
-            entries.append(fmt_article_entry(n, row, "已淘汰"))
-            n += 1
         if entries:
             t = append_numbered_entries(t, entries)
-        urls = [r["url"] for r in queue_rows]
+        urls = [row["url"] for row, _ in pairs]
         t, _ = remove_pending_urls(t, urls)
         art.write_text(t, encoding="utf-8")
 
@@ -278,6 +288,9 @@ def land_translations(batch_dir, queue_rows, keep_sources=True):
     sync_expand_index(moved, summaries)
     append_log(batch_dir.name, moved)
 
+    # 未落位条目仍需重试，保留其过程稿和不匹配文件供排查。
+    if preserve_drafts or len(moved) != len(queue_rows) or set(all_wr) != set(moved):
+        return moved
     # 清理过程稿；可选保留 sources 供终审对照
     import shutil
     for sub in ("translations", "works-ready"):
