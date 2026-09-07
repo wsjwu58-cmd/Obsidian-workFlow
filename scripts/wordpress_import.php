@@ -9,7 +9,7 @@ function managed_posts($key, $type = 'post') {
         'meta_value'=>$key, 'suppress_filters'=>true]);
 }
 function managed_posts_by_path($path) {
-    return get_posts(['post_type'=>'post', 'post_status'=>array_keys(get_post_stati()),
+    return get_posts(['post_type'=>'post', 'post_status'=>['publish','draft','pending','private'],
         'numberposts'=>2, 'meta_key'=>'_wiki_sync_path', 'meta_value'=>$path,
         'suppress_filters'=>true]);
 }
