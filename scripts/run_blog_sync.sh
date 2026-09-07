@@ -16,7 +16,12 @@ if [ ! -d "$source_repo/.git" ]; then
   exit 1
 fi
 if ! git -C "$source_repo" cat-file -e "$ref^{commit}" 2>/dev/null; then
-  git -C "$source_repo" fetch origin "$ref"
+  # The scheduled job passes an exact main commit. Fetch the advertised branch
+  # first; GitHub may not advertise an arbitrary SHA as a fetchable ref.
+  git -C "$source_repo" -c http.version=HTTP/1.1 fetch --no-tags origin main
+fi
+if ! git -C "$source_repo" cat-file -e "$ref^{commit}" 2>/dev/null; then
+  git -C "$source_repo" -c http.version=HTTP/1.1 fetch --no-tags origin "$ref"
 fi
 snapshot=$(mktemp -d "$base/run.XXXXXXXX")
 chmod 755 "$snapshot"
