@@ -15,7 +15,9 @@ if [ ! -d "$source_repo/.git" ]; then
   echo "Source repository not found: $source_repo" >&2
   exit 1
 fi
-git -C "$source_repo" fetch origin "$ref"
+if ! git -C "$source_repo" cat-file -e "$ref^{commit}" 2>/dev/null; then
+  git -C "$source_repo" fetch origin "$ref"
+fi
 snapshot=$(mktemp -d "$base/run.XXXXXXXX")
 chmod 755 "$snapshot"
 # Only remove our own uniquely-created directory under this fixed base.
@@ -23,7 +25,7 @@ cleanup() {
   case "$snapshot" in "$base"/run.*) rm -rf -- "$snapshot" ;; *) return 1 ;; esac
 }
 trap cleanup EXIT
-git -C "$source_repo" archive FETCH_HEAD | tar -x -C "$snapshot"
+git -C "$source_repo" archive "$ref" | tar -x -C "$snapshot"
 if [ ! -x "$base/venv/bin/python" ]; then python3 -m venv "$base/venv"; fi
 "$base/venv/bin/python" -m pip install --disable-pip-version-check -r "$snapshot/scripts/requirements-blog.txt"
 args=(--report "$base/last-report.json")
