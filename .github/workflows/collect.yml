@@ -1,9 +1,7 @@
 name: 采集与过滤
-# 废弃：由 research.yml（codex 深度搜索）替代固定源采集。保留历史，不再计划触发。
+# 废弃：由 research.yml（codex 深度搜索）替代固定源采集。保留历史，仅允许手动触发。
 
 on:
-  schedule:
-    - cron: '0 22 * * 0'      # 每周一 06:00（UTC+8）= 周日 22:00 UTC
   workflow_dispatch: {}
 
 permissions:
