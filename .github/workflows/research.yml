@@ -3,7 +3,7 @@ name: 情报追踪（Research → 全量 Curate）
 # research 完成后立即一次性处理全部待处理条目（不再用每 3h dispatch）
 on:
   schedule:
-    - cron: '0 22 * * 0'      # 每周日 22:00 UTC = 周一 06:00（UTC+8）
+    - cron: '0 22 * * 5'      # 每周六 06:00（UTC+8）
   workflow_dispatch:
     inputs:
       research_max:

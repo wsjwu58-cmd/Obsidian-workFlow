@@ -1,7 +1,7 @@
 name: Wiki 博客草稿同步
 on:
   schedule:
-    - cron: '0 18 * * *' # 02:00 Asia/Shanghai; GitHub may delay scheduled starts.
+    - cron: '0 18 * * 0' # 每周一 02:00 Asia/Shanghai; GitHub may delay scheduled starts.
   workflow_dispatch:
     inputs:
       preview:
