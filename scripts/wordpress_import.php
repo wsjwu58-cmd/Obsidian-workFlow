@@ -46,14 +46,13 @@ function find_existing_duplicate($item, $existing) {
         if (get_post_meta($post->ID, '_wiki_sync_key', true)) continue;
         $old_title = normalized_title($post->post_title);
         $old_content = normalized_text($post->post_content);
-        $same_category = in_array($item['category'], wp_get_post_categories($post->ID, ['fields'=>'names']), true);
         if ($title !== '' && $title === $old_title && mb_strlen($title, 'UTF-8') >= 4) {
             return ['id'=>(int)$post->ID, 'title'=>$post->post_title, 'reason'=>'normalized title'];
         }
         $title_overlap = mb_strlen($title, 'UTF-8') >= 3 && mb_strlen($old_title, 'UTF-8') >= 3
             && (str_contains($title, $old_title) || str_contains($old_title, $title));
         $similarity = ($content !== '' && $old_content !== '') ? text_similarity($content, $old_content) : 0.0;
-        if (($title_overlap && ($same_category || $similarity >= 0.25)) || $similarity >= 0.72) {
+        if (($title_overlap && $similarity >= 0.65) || $similarity >= 0.78) {
             return ['id'=>(int)$post->ID, 'title'=>$post->post_title,
                 'reason'=>$title_overlap ? 'title and content match' : 'content similarity'];
         }
@@ -78,6 +77,7 @@ try {
     if (!current_user_can('edit_posts') || !current_user_can('upload_files')) fail_sync('Invalid import author');
     $wiki = realpath($payload['repo'].'/wiki');
     if (!$wiki) fail_sync('wiki root not found');
+    $status = ($payload['status'] ?? 'draft') === 'publish' ? 'publish' : 'draft';
     $report = ['mode'=>'apply','created'=>[], 'updated'=>[], 'unchanged'=>[], 'duplicates'=>[], 'conflicts'=>[], 'errors'=>[]];
     $ids = []; $blocked = [];
     $existing = get_posts(['post_type'=>'post', 'post_status'=>['publish','draft','pending','private'],
@@ -160,14 +160,23 @@ try {
             $id = $ids[$key];
             if ($id && get_post_meta($id, '_wiki_sync_source_hash', true) === $source_hash) {
                 update_post_meta($id, '_wiki_sync_path', $item['path']);
-                $report['unchanged'][] = ['key'=>$key,'id'=>$id];
+                if ($status === 'publish' && get_post_status($id) === 'draft') {
+                    $saved = wp_update_post(['ID'=>$id, 'post_status'=>'publish'], true);
+                    if (is_wp_error($saved)) fail_sync($saved->get_error_message());
+                    $report['updated'][] = ['key'=>$key, 'id'=>$id, 'status'=>'publish'];
+                } else {
+                    $report['unchanged'][] = ['key'=>$key,'id'=>$id];
+                }
                 continue;
             }
             $data = ['post_title'=>$title,'post_content'=>$content,'post_type'=>'post',
                 'post_category'=>[$cat_id], 'ping_status'=>'closed', 'comment_status'=>'closed'];
-            if ($id) $data['ID'] = $id;
+            if ($id) {
+                $data['ID'] = $id;
+                if ($status === 'publish' && get_post_status($id) === 'draft') $data['post_status'] = 'publish';
+            }
             else {
-                $data['post_status'] = 'draft'; $data['post_author'] = $author;
+                $data['post_status'] = $status; $data['post_author'] = $author;
                 $data['post_name'] = 'wiki-'.$key;
                 $data['meta_input'] = ['_wiki_sync_key'=>$key];
             }

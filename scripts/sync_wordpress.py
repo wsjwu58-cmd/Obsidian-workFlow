@@ -161,8 +161,8 @@ class AssetsAndLinks(HTMLParser):
 
 
 def build(root, config):
-    if config.get('status') != 'draft':
-        raise ValueError('Initial sync supports drafts only; publish after review in WordPress')
+    if config.get('status') not in ('draft', 'publish'):
+        raise ValueError('Sync status must be draft or publish')
     selected, keys = {}, set()
     configured_notes = config.get('notes')
     note_items = discover_notes(root, config) if configured_notes in (None, [], 'auto') else configured_notes

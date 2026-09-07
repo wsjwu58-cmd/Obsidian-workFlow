@@ -4,7 +4,7 @@ wordpress_root: /www/wwwroot/www.wsjaly.cn
 php_binary: /www/server/php/82/bin/php
 wordpress_user: www
 author_id: 1
-status: draft
+status: publish
 max_note_bytes: 524288
 max_image_bytes: 10485760
 exclude_categories:
