@@ -13,6 +13,53 @@ function fingerprint($id) {
     $cats = wp_get_post_categories($id); sort($cats);
     return hash('sha256', wp_json_encode([$p->post_title, $p->post_content, $p->post_excerpt, $cats]));
 }
+function normalized_text($value) {
+    $value = html_entity_decode(wp_strip_all_tags((string)$value), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+    $value = mb_strtolower($value, 'UTF-8');
+    return preg_replace('/[\p{P}\p{S}\s]+/u', '', $value) ?? '';
+}
+function normalized_title($value) {
+    $value = normalized_text($value);
+    return preg_replace('/(?:知识点梳理|主要功能实现|初步学习|学习笔记|学习|练习|初识|题目操作|题目|总结)$/u', '', $value) ?? $value;
+}
+function text_similarity($left, $right) {
+    $left = preg_split('//u', $left, -1, PREG_SPLIT_NO_EMPTY);
+    $right = preg_split('//u', $right, -1, PREG_SPLIT_NO_EMPTY);
+    if (count($left) < 3 || count($right) < 3) return 0.0;
+    $grams = function($chars) {
+        $result = [];
+        for ($i = 0; $i <= count($chars) - 3; $i++) {
+            $result[implode('', array_slice($chars, $i, 3))] = true;
+        }
+        return $result;
+    };
+    $a = $grams($left); $b = $grams($right);
+    $intersection = count(array_intersect_key($a, $b));
+    $union = count($a) + count($b) - $intersection;
+    return $union ? $intersection / $union : 0.0;
+}
+function find_existing_duplicate($item, $existing) {
+    $title = normalized_title($item['title']);
+    $content = normalized_text($item['html']);
+    foreach ($existing as $post) {
+        // Posts already owned by this synchronizer are handled by their stable key.
+        if (get_post_meta($post->ID, '_wiki_sync_key', true)) continue;
+        $old_title = normalized_title($post->post_title);
+        $old_content = normalized_text($post->post_content);
+        $same_category = in_array($item['category'], wp_get_post_categories($post->ID, ['fields'=>'names']), true);
+        if ($title !== '' && $title === $old_title && mb_strlen($title, 'UTF-8') >= 4) {
+            return ['id'=>(int)$post->ID, 'title'=>$post->post_title, 'reason'=>'normalized title'];
+        }
+        $title_overlap = mb_strlen($title, 'UTF-8') >= 3 && mb_strlen($old_title, 'UTF-8') >= 3
+            && (str_contains($title, $old_title) || str_contains($old_title, $title));
+        $similarity = ($content !== '' && $old_content !== '') ? text_similarity($content, $old_content) : 0.0;
+        if (($title_overlap && ($same_category || $similarity >= 0.25)) || $similarity >= 0.72) {
+            return ['id'=>(int)$post->ID, 'title'=>$post->post_title,
+                'reason'=>$title_overlap ? 'title and content match' : 'content similarity'];
+        }
+    }
+    return null;
+}
 try {
     $payload = json_decode(stream_get_contents(STDIN, 8 * 1024 * 1024), true, 512, JSON_THROW_ON_ERROR);
     if (($payload['version'] ?? 0) !== 1) fail_sync('Unsupported payload version');
@@ -31,8 +78,10 @@ try {
     if (!current_user_can('edit_posts') || !current_user_can('upload_files')) fail_sync('Invalid import author');
     $wiki = realpath($payload['repo'].'/wiki');
     if (!$wiki) fail_sync('wiki root not found');
-    $report = ['mode'=>'apply','created'=>[], 'updated'=>[], 'unchanged'=>[], 'conflicts'=>[], 'errors'=>[]];
+    $report = ['mode'=>'apply','created'=>[], 'updated'=>[], 'unchanged'=>[], 'duplicates'=>[], 'conflicts'=>[], 'errors'=>[]];
     $ids = []; $blocked = [];
+    $existing = get_posts(['post_type'=>'post', 'post_status'=>['publish','draft','pending','private'],
+        'numberposts'=>-1, 'suppress_filters'=>true]);
     // Inspect every existing article before touching its content or its media.
     foreach ($payload['posts'] as $item) {
         $key = $item['key'];
@@ -47,7 +96,16 @@ try {
                 $blocked[$key] = true;
             }
             $ids[$key] = $id;
-        } else { $ids[$key] = 0; }
+        } else {
+            $ids[$key] = 0;
+            $duplicate = find_existing_duplicate($item, $existing);
+            if ($duplicate) {
+                $ids[$key] = $duplicate['id'];
+                $blocked[$key] = true;
+                $report['duplicates'][] = ['key'=>$key, 'id'=>$duplicate['id'],
+                    'title'=>$duplicate['title'], 'reason'=>$duplicate['reason']];
+            }
+        }
     }
     // Upload local image bytes only; no HTTP request, DNS lookup, or remote credential.
     $asset_urls = [];

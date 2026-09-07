@@ -64,15 +64,31 @@ class BlogSyncTests(unittest.TestCase):
         self.assertEqual(result['missing'],['note-one'])
         self.assertEqual(result['posts'],[])
 
-    def test_external_and_escape_images_fail_closed(self):
-        for target in ('https://example.com/image.png','../../private.png','C:/private.png'):
+    def test_external_and_escape_images_are_reported(self):
+        self.note.write_text('# One\n'+'Text '*40+'\n\n![x](https://example.com/image.png)',encoding='utf-8')
+        result = sync.build(self.root,self.config)
+        self.assertIn('https://example.com/image.png', result['posts'][0]['html'])
+        for target in ('../../private.png','C:/private.png'):
             self.note.write_text('# One\n'+'Text '*40+'\n\n![x]('+target+')',encoding='utf-8')
-            with self.assertRaises(ValueError): sync.build(self.root,self.config)
+            result = sync.build(self.root,self.config)
+            self.assertIn('[图片未同步]', result['posts'][0]['html'])
+            self.assertTrue(any('Image omitted' in warning for warning in result['warnings']))
 
     def test_selected_wikilink_is_deferred_until_post_is_public(self):
         with self.note.open('a') as f: f.write('\n\n[[One|Self link]]')
         result=sync.build(self.root,self.config)
         self.assertIn('href="wiki-note:note-one"',result['posts'][0]['html'])
+
+    def test_auto_discovers_notes_and_excludes_private_categories(self):
+        for category in ('生活杂项', '求职面试'):
+            folder = self.root / 'wiki' / category
+            folder.mkdir(parents=True)
+            (folder / 'Skip.md').write_text('# Skip\n\n' + 'Excluded. ' * 20, encoding='utf-8')
+        config = dict(self.config, notes='auto', exclude_categories=['生活杂项', '求职面试'])
+        result = sync.build(self.root, config)
+        self.assertEqual(len(result['posts']), 1)
+        self.assertEqual(result['posts'][0]['category'], 'Topic')
+        self.assertTrue(result['posts'][0]['key'].startswith('note-'))
 
 
 if __name__ == '__main__': unittest.main()
