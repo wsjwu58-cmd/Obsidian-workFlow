@@ -4,13 +4,10 @@ wordpress_root: /www/wwwroot/www.wsjaly.cn
 php_binary: /www/server/php/82/bin/php
 wordpress_user: www
 author_id: 1
-status: draft
+status: publish
 max_note_bytes: 524288
 max_image_bytes: 10485760
-notes:
-  - id: dp-dynamic-programming
-    path: wiki/数据结构与算法/DP动态规划.md
-  - id: greedy-algorithms
-    path: wiki/数据结构与算法/贪心算法.md
-  - id: springboot
-    path: wiki/后端/springboot/SpringBoot.md
+exclude_categories:
+  - 生活杂项
+  - 求职面试
+notes: auto

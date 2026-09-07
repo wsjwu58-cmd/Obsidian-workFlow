@@ -27,6 +27,28 @@ def digest(data):
     return hashlib.sha256(data).hexdigest()
 
 
+def discover_notes(root, config):
+    """Return every publishable Markdown note under wiki, grouped by top folder."""
+    wiki = (root / 'wiki').resolve()
+    excluded = set(config.get('exclude_categories', []))
+    items = []
+    for path in sorted(wiki.rglob('*')):
+        if not path.is_file() or path.suffix.lower() != '.md':
+            continue
+        relative = path.relative_to(wiki)
+        if any(part.startswith('.') for part in relative.parts):
+            continue
+        category = relative.parts[0] if len(relative.parts) > 1 else '未分类'
+        if category in excluded:
+            continue
+        relative_repo = path.relative_to(root).as_posix()
+        # A path-derived key stays stable while the note content changes and
+        # keeps two notes with the same title distinct.
+        key = 'note-' + hashlib.sha256(relative_repo.encode('utf-8')).hexdigest()[:32]
+        items.append({'id': key, 'path': relative_repo})
+    return items
+
+
 def inside_wiki(root, path):
     wiki = (root / 'wiki').resolve()
     resolved = path.resolve()
@@ -61,6 +83,10 @@ class AssetsAndLinks(HTMLParser):
         self.root, self.note, self.selected, self.config = root, note, selected, config
         self.output, self.assets, self.warnings = [], {}, []
 
+    def omit_image(self, src, reason):
+        self.warnings.append('Image omitted: ' + src + ' (' + reason + ')')
+        self.output.append('<p>[图片未同步]</p>')
+
     def resolve(self, target):
         value = unquote(target).replace('\\', '/')
         if re.match(r'^[A-Za-z]:', value) or '..' in pathlib.PurePosixPath(value).parts:
@@ -84,15 +110,25 @@ class AssetsAndLinks(HTMLParser):
         if tag == 'img':
             src = attrs.get('src', '')
             if urlsplit(src).scheme or src.startswith('//'):
-                raise ValueError('External image requires a local copy before publishing: ' + src)
-            p = self.resolve(src)
-            if p.suffix.lower() not in ('.png', '.jpg', '.jpeg', '.gif', '.webp'):
-                raise ValueError('Unsupported image type: ' + src)
-            if p.stat().st_size > self.config['max_image_bytes']:
-                raise ValueError('Image exceeds size limit: ' + src)
-            sha = digest(p.read_bytes())
-            self.assets[sha] = p.relative_to(self.root).as_posix()
-            attrs = {'src': 'wiki-asset:' + sha, 'alt': attrs.get('alt', '')}
+                if urlsplit(src).scheme not in ('http', 'https') and not src.startswith('//'):
+                    self.omit_image(src, 'unsupported URL scheme')
+                    return
+                self.warnings.append('External image kept as remote URL: ' + src)
+            else:
+                try:
+                    p = self.resolve(src)
+                    if p.suffix.lower() not in ('.png', '.jpg', '.jpeg', '.gif', '.webp'):
+                        self.omit_image(src, 'unsupported image type')
+                        return
+                    if p.stat().st_size > self.config['max_image_bytes']:
+                        self.omit_image(src, 'image exceeds size limit')
+                        return
+                    sha = digest(p.read_bytes())
+                    self.assets[sha] = p.relative_to(self.root).as_posix()
+                    attrs = {'src': 'wiki-asset:' + sha, 'alt': attrs.get('alt', '')}
+                except ValueError as exc:
+                    self.omit_image(src, str(exc))
+                    return
         if tag == 'a':
             href = attrs.get('href', '')
             if href.startswith('wiki-source:') or urlsplit(href).path.endswith('.md'):
@@ -125,10 +161,12 @@ class AssetsAndLinks(HTMLParser):
 
 
 def build(root, config):
-    if config.get('status') != 'draft':
-        raise ValueError('Initial sync supports drafts only; publish after review in WordPress')
+    if config.get('status') not in ('draft', 'publish'):
+        raise ValueError('Sync status must be draft or publish')
     selected, keys = {}, set()
-    for item in config['notes']:
+    configured_notes = config.get('notes')
+    note_items = discover_notes(root, config) if configured_notes in (None, [], 'auto') else configured_notes
+    for item in note_items:
         key = item['id']
         if not re.fullmatch(r'[a-z0-9][a-z0-9-]{2,79}', key) or key in keys:
             raise ValueError('Invalid or duplicate note id')
@@ -162,7 +200,7 @@ def build(root, config):
                           category=path.relative_to(root / 'wiki').parts[0], html=body))
         assets.update(renderer.assets)
         warnings.extend(renderer.warnings)
-    return dict(version=1, site_url=config['site_url'], author_id=config['author_id'],
+    return dict(version=1, site_url=config['site_url'], status=config['status'], author_id=config['author_id'],
                 repo=str(root.resolve()), max_image_bytes=config['max_image_bytes'],
                 posts=posts, assets=assets, missing=missing, warnings=warnings)
 
