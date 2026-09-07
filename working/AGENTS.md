@@ -23,3 +23,6 @@
 | [[working/Harness-R1-Learning-to-Edit-Executable-R-translation.md]] | curate 收录译文作品 |
 | [[working/I-Gave-Claude-Code-an-AGENTS-md-Contract-translation.md]] | curate 收录译文作品 |
 | [[working/The-Shape-of-Things-to-Come-Part-1-The-C-translation.md]] | curate 收录译文作品 |
+| [[Context-Engineering-for-Coding-Agents-Bu-translation]] | curate 收录译文作品 |
+| [[Headlong-a-microharness-for-persistent-a-translation]] | curate 收录译文作品 |
+| [[What-s-in-Your-Agent-s-Context-Context-P-translation]] | curate 收录译文作品 |

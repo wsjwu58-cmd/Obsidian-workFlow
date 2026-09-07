@@ -147,13 +147,29 @@ def _run():
     ap.add_argument("--limit", type=int, default=0,
                     help="本批最多处理条数；0 或负数=一次处理全部待处理（默认）")
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--replay-analysis", type=pathlib.Path,
+                    help="只补跑保存分析中的 translate URL；使用当前分支队列，不合并旧 pipeline/queue")
     args = ap.parse_args()
     limit = None if args.limit <= 0 else args.limit
+    replay_urls = None
+    if args.replay_analysis:
+        from research import extract_json_obj
+        data = extract_json_obj((ROOT / args.replay_analysis).read_text(encoding="utf-8"),
+                                require_verdict=True)
+        if "candidates" not in data:
+            ap.error("补跑分析缺少有效分流")
+        replay_urls = {c["url"] for c in data["candidates"] if c["verdict"] == "translate"}
+
+    def select_queue(text):
+        rows = parse_queue(text)
+        if replay_urls is not None:
+            rows = [row for row in rows if row["url"] in replay_urls]
+        return rows[:limit] if limit else rows
 
     if args.dry_run:
         art = ROOT / "references" / "articles.md"
         text = art.read_text(encoding="utf-8") if art.exists() else ""
-        queue = parse_queue(text, limit)
+        queue = select_queue(text)
         cap = "全部" if limit is None else str(limit)
         print(f"[curate] 待处理 {len(queue)} 条（本次上限 {cap}）")
         for q in queue:
@@ -176,10 +192,10 @@ def _run():
     sh(f"git reset --hard origin/{git_ref}", check=False)
     sh("git clean -fd candidates 2>/dev/null || true", check=False)
 
-    merged_queue = merge_pipeline_queue()
+    merged_queue = merge_pipeline_queue() if replay_urls is None else False
 
     text = (ROOT / "references" / "articles.md").read_text(encoding="utf-8")
-    queue = parse_queue(text, limit)
+    queue = select_queue(text)
     cap = "全部" if limit is None else str(limit)
     print(f"[curate] 待处理 {len(queue)} 条（本次上限 {cap}）")
 

@@ -311,3 +311,8 @@ tags: [知识库, 日志]
 - 收录：Claude-Code-v2-1-224-self-hosted-environ-translation.md, EvolveNet-Collaborative-Harness-Evolutio-translation.md, Harness-R1-Learning-to-Edit-Executable-R-translation.md, I-Gave-Claude-Code-an-AGENTS-md-Contract-translation.md, The-Shape-of-Things-to-Come-Part-1-The-C-translation.md
 - 观察项：无
 - 淘汰：无
+
+## [2026-09-07] curate | 20260907-100131
+- 收录：Context-Engineering-for-Coding-Agents-Bu-translation.md, Headlong-a-microharness-for-persistent-a-translation.md, What-s-in-Your-Agent-s-Context-Context-P-translation.md
+- 观察项：无
+- 淘汰：无
