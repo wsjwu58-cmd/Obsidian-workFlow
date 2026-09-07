@@ -7,13 +7,15 @@ mode="${2:-apply}"
 [[ "$ref" == main || "$ref" =~ ^[0-9a-f]{40}$ ]] || { echo 'Expected main or a full commit SHA'; exit 2; }
 [[ "$mode" == apply || "$mode" == preview ]] || exit 2
 base=/opt/wiki-blog-sync
+source_repo=${NOTE_SOURCE_REPO:-/root/note-worker}
 mkdir -p "$base"
 exec 9>"$base/sync.lock"
 flock -n 9 || { echo 'Another sync is running'; exit 1; }
-if [ ! -d "$base/repo.git" ]; then
-  git clone --bare https://github.com/wsjwu58-cmd/Obsidian-workFlow.git "$base/repo.git"
+if [ ! -d "$source_repo/.git" ]; then
+  echo "Source repository not found: $source_repo" >&2
+  exit 1
 fi
-git --git-dir="$base/repo.git" fetch origin "$ref"
+git -C "$source_repo" fetch origin "$ref"
 snapshot=$(mktemp -d "$base/run.XXXXXXXX")
 chmod 755 "$snapshot"
 # Only remove our own uniquely-created directory under this fixed base.
@@ -21,7 +23,7 @@ cleanup() {
   case "$snapshot" in "$base"/run.*) rm -rf -- "$snapshot" ;; *) return 1 ;; esac
 }
 trap cleanup EXIT
-git --git-dir="$base/repo.git" archive FETCH_HEAD | tar -x -C "$snapshot"
+git -C "$source_repo" archive FETCH_HEAD | tar -x -C "$snapshot"
 if [ ! -x "$base/venv/bin/python" ]; then python3 -m venv "$base/venv"; fi
 "$base/venv/bin/python" -m pip install --disable-pip-version-check -r "$snapshot/scripts/requirements-blog.txt"
 args=(--report "$base/last-report.json")
