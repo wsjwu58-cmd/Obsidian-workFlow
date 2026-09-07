@@ -200,7 +200,7 @@ def build(root, config):
                           category=path.relative_to(root / 'wiki').parts[0], html=body))
         assets.update(renderer.assets)
         warnings.extend(renderer.warnings)
-    return dict(version=1, site_url=config['site_url'], author_id=config['author_id'],
+    return dict(version=1, site_url=config['site_url'], status=config['status'], author_id=config['author_id'],
                 repo=str(root.resolve()), max_image_bytes=config['max_image_bytes'],
                 posts=posts, assets=assets, missing=missing, warnings=warnings)
 
