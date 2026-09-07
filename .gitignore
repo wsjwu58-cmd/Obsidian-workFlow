@@ -40,3 +40,6 @@ harness-engineering-main/
 
 # superpowers 工作树（隔离开发，不入仓）
 .worktrees/
+
+.blog-deps/
+.blog-sync/

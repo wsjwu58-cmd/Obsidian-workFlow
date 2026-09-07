@@ -1,0 +1,40 @@
+name: Wiki 博客草稿同步
+on:
+  schedule:
+    - cron: '0 18 * * *' # 02:00 Asia/Shanghai; GitHub may delay scheduled starts.
+  workflow_dispatch:
+    inputs:
+      preview:
+        description: 只预览，不写入 WordPress
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: wiki-blog-sync
+  cancel-in-progress: false
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: 通过 SSH 在 WordPress 本机同步
+        env:
+          SERVER_HOST: ${{ secrets.WORKER_HOST }}
+          SERVER_USER: ${{ secrets.WORKER_USER }}
+          SERVER_SSH_KEY: ${{ secrets.WORKER_SSH_KEY }}
+          SYNC_SHA: ${{ github.sha }}
+          PREVIEW: ${{ inputs.preview || false }}
+        run: |
+          set -euo pipefail
+          key=$(mktemp)
+          trap 'rm -f "$key"' EXIT
+          printf '%s\n' "$SERVER_SSH_KEY" > "$key"
+          chmod 600 "$key"
+          mode=apply
+          if [ "$PREVIEW" = true ]; then mode=preview; fi
+          ssh -i "$key" -o BatchMode=yes -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile=.github/blog-known-hosts -o ConnectTimeout=20 \
+            -o ServerAliveInterval=30 -o ServerAliveCountMax=3 \
+            "$SERVER_USER@$SERVER_HOST" "bash -s -- $SYNC_SHA $mode" < scripts/run_blog_sync.sh
