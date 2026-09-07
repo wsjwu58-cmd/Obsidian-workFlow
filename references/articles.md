@@ -22,7 +22,7 @@
 
 <!-- pending:start -->
 <!-- 采集自动化维护，按 `| 标题 | 链接 | 来源 | 日期 |` 追加一行；处理完移入编号正文 -->
-<!-- 当前：27 条待处理 -->
+<!-- 当前：24 条待处理 -->
 | The new rules of context engineering for Claude 5 generation models | https://claude.com/blog/the-new-rules-of-context-engineering-for-claude-5-generation-models | research | 2026-08-09 | 🔄评审中 candidates/20260809-180901/
 | One-shotting a Raccoon Heist game using Claude Fable 5 | https://simonwillison.net/2026/Aug/5/raccoon-heist/ | research | 2026-08-09 | 🔄评审中 candidates/20260809-180901/
 | Six Agent Orchestration Patterns | https://vercel.com/i/agent-orchestration-patterns | research | 2026-08-09 | 🔄评审中 candidates/20260809-180901/
@@ -47,9 +47,6 @@
 | 如何看待特斯拉股价单日大跌近 6%？Cybercab上线一天便遭审查，无方向盘、刹车板的车型有何隐患？ | https://www.zhihu.com/question/2079883205440692454 | rsshub | 2026-09-06 |
 | 中国需要多久达到或超过 GPT-6 Astra 级别的模型水平？ | https://www.zhihu.com/question/2079675087209419385 | rsshub | 2026-09-06 |
 | AI 写出来的代码越来越多，未来的软件会不会变得「没人真正看得懂」？ | https://www.zhihu.com/question/2078550836175815213 | rsshub | 2026-09-06 |
-| What's in Your Agent's Context? Context Privilege Escalation Attacks against AI Agent Harness | http://arxiv.org/abs/2609.01222 | arXiv (Zichuan Li, Xiaojing Liao, Luyi Xing 等) | 2026-09-01 |
-| Headlong: a microharness for persistent agents (Laude/MIT) | https://www.laude.org/updates/headlong-a-microharness-for-persistent-agents | Laude Institute；github.com/laude-institute/headlong | 2026-08-24 |
-| Context Engineering for Coding Agents (Building a Coding Agent From Scratch, Lesson 4) | https://www.decodingai.com/p/context-engineering-for-coding-agents | Paul Iusztin, Decoding AI Magazine | 2026-08-25 |
 <!-- pending:end -->
 
 ## 已收录（编号正文）
@@ -293,6 +290,30 @@
 - **状态：** 已收录 | **归属：** —
 - **核心：** 脉络:agent/platform；窗口内中文原创深度分析：多用户 Gateway/角色边界/Swarm/升级事故一手细节与反模式，编入平台脉络（主事实以官方为准）
 
+### 29. Context Engineering for Coding Agents (Building a Coding Agent From Scratch, Lesson 4)
+
+- **标题：** Context Engineering for Coding Agents (Building a Coding Agent From Scratch, Lesson 4)
+- **链接：** [www.decodingai.com/p/context-engineering-for-coding-agents](https://www.decodingai.com/p/context-engineering-for-coding-agents)
+- **作者：** Paul Iusztin, Decoding AI Magazine | **日期：** 2026-08-25
+- **状态：** 已收录 | **归属：** `working/Context-Engineering-for-Coding-Agents-Bu-translation.md`
+- **核心：** Context Engineering for Coding Agents (Building a Coding Agent From Scratch, Les…
+
+### 30. Headlong: a microharness for persistent agents (Laude/MIT)
+
+- **标题：** Headlong: a microharness for persistent agents (Laude/MIT)
+- **链接：** [www.laude.org/updates/headlong-a-microharness-for-persistent-agents](https://www.laude.org/updates/headlong-a-microharness-for-persistent-agents)
+- **作者：** Laude Institute；github.com/laude-institute/headlong | **日期：** 2026-08-24
+- **状态：** 已收录 | **归属：** `working/Headlong-a-microharness-for-persistent-a-translation.md`
+- **核心：** Headlong: a microharness for persistent agents (Laude/MIT)
+
+### 31. What's in Your Agent's Context? Context Privilege Escalation Attacks against AI Agent Harness
+
+- **标题：** What's in Your Agent's Context? Context Privilege Escalation Attacks against AI Agent Harness
+- **链接：** [arxiv.org/abs/2609.01222](http://arxiv.org/abs/2609.01222)
+- **作者：** arXiv (Zichuan Li, Xiaojing Liao, Luyi Xing 等) | **日期：** 2026-09-01
+- **状态：** 已收录 | **归属：** `working/What-s-in-Your-Agent-s-Context-Context-P-translation.md`
+- **核心：** What's in Your Agent's Context? Context Privilege Escalation Attacks against AI …
+
 ## 观察项
 
 > 暂不收录、持续观察的 URL（防重复采集，不计入编号正文主计数）。由 research Prompt B（`observe`）写入。
@@ -322,7 +343,7 @@
 
 ## 统计
 
-- **正式收录：** 26 篇｜**已淘汰隔离：** 2 篇（不计入收录数，仅防重复采集）
+- **正式收录：** 29 篇｜**已淘汰隔离：** 2 篇（不计入收录数，仅防重复采集）
 
 ## 待补充
 

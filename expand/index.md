@@ -1,13 +1,13 @@
 ---
 created: 2026-08-03
-updated: 2026-08-17
+updated: 2026-09-07
 tags: [知识库, 索引]
 ---
 
 # 内容总目录
 
 > 知识库分类体系：`01-编程语言` → `02-前端` → `03-后端` → `04-数据库` → `05-数据结构与算法` → `06-AI与LLM` → `07-Linux与工具链` → `08-逆向与安全` → `09-源码解读` → `10-求职面试` → `11-生活杂项`
-> 全库共 218 个 Markdown 文件（2026-08-31 更新：补入 Kotlin Clippings 67 篇及基础语法、线程与协程两篇复习入口；同步 Kotlin 主题关系图）。关系总览见 [[知识图谱]]。
+> 全库共 221 个 Markdown 文件（2026-08-31 更新：补入 Kotlin Clippings 67 篇及基础语法、线程与协程两篇复习入口；同步 Kotlin 主题关系图）。关系总览见 [[知识图谱]]。
 
 ## 知识库自动化
 
@@ -309,6 +309,10 @@ tags: [知识库, 索引]
 ## 作品输出（working/）
 
 
+
+- [[Context-Engineering-for-Coding-Agents-Bu-translation]]：面向编码智能体的上下文工程（从零构建编码智能体，第 4 课）
+- [[Headlong-a-microharness-for-persistent-a-translation]]：Headlong：面向持久化智能体的微 harness
+- [[What-s-in-Your-Agent-s-Context-Context-P-translation]]：你的 Agent 上下文里有什么？针对 AI Agent Harness 的上下文提权攻击
 - [[Claude-Code-v2-1-224-self-hosted-environ-translation]]：Claude Code v2.1.224 —— 自托管环境（self-hosted environments）
 - [[EvolveNet-Collaborative-Harness-Evolutio-translation]]：EvolveNet：面向智能体自我改进的协作式 Harness 进化
 - [[Harness-R1-Learning-to-Edit-Executable-R-translation]]：Harness-R1：从智能体失败轨迹学习编辑可执行运行时 Harness
