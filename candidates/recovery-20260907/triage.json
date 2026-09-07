@@ -1,0 +1,143 @@
+{
+  "analysis": {
+    "priority": [
+      "CPE 上下文提权攻击最高优先：M-CPE/X-CPE 新分类学 + 12 个真实 harness（含 Codex/Claude Code）系统审计，直击最薄弱的安全审计缺口，translate 全篇留存做审计清单",
+      "FrontierHarness Eval 次优：data-eng-bench 之后第二组开源受控 harness×成本数据，通过率差 17pp/成本差 17x + 缓存命中率≠成本，支撑评测归因与选型",
+      "SWE-Gate 第三：303 实例证明功能通过≠评审约束通过（34% 差距），把评测验收拉到真实合入门槛，与 Laycock 评审辩论构成闭环",
+      "Headlong 与 DecodingAI 第 4 课并列：分别提供可运行的指数衰减 compaction 与记忆/技能/LSP/压缩四件套代码，直接填上下文/记忆可复现实践缺口",
+      "RAMP/AgentRoom 其次：前者把 AGENTS.md 个案升级为 441 仓库量化证据，后者给出多 agent『协调优于并发』的机制级实验",
+      "跨平台方向本轮零达标，不硬凑；KMP/Flutter 与跨平台 CI/发布缺口顺延并建议下一轮定向补源"
+    ],
+    "gaps_covered": [
+      "Agent 安全审计：CPE 的 M-CPE/X-CPE 攻击分类 + 12 harness 实测（含 Codex/Claude Code），上下文组装首次被当作信任边界",
+      "Agent 安全审计（产品侧）：OpenClaw 2.0 会话三档可见/按会话沙箱/凭据只写/出站绑死、roles≠租户隔离、自适应注入>80%",
+      "上下文/compaction/记忆可复现实践：Headlong 指数衰减分辨率压缩 + 轨迹即上下文，DecodingAI 记忆文件上限/LSP 反馈环/会话单行压缩",
+      "Agent 评测组件级归因：FrontierHarness 固定模型/任务/运行时下 9 harness 的成本×质量矩阵与 17 倍成本差",
+      "Agent 评测验收现实性：SWE-Gate 的评审派生约束双门控，644 次功能通过中 221 次违规",
+      "多智能体编排反模式：AgentRoom 证明收益来自协调本身而非并行/CRDT；OpenClaw Swarm 提供实验态产品参照",
+      "AGENTS.md/提交型配置治理：RAMP 四级成熟度模型 + 441 仓库量化（无配置认知复杂度 +53% vs +27%）",
+      "中小团队成本锚点（部分）：FrontierHarness 单次通过成本 $1.05-$18.34 受控基线，非现场数据"
+    ],
+    "gaps_open": [
+      "跨模型可移植性与迁移指南：本轮无直接命中（中立模型选择只是评测去偏，非迁移方法论）",
+      "KMP/CMP vs Flutter 架构选型、共享逻辑边界、工具链痛点；跨平台 CI/发布/性能基线（连续两轮空窗，需定向补源）",
+      "Harness 自身行为/覆盖率的度量工具：SWE-Gate/FrontierHarness 均测任务侧，不测 harness 内部逻辑覆盖率",
+      "激活策略（always-on/per-commit/conditional/human-summoned）系统化比较：仅 Headlong/OpenClaw 零散数据点",
+      "长时程/持续 agent 评测方法论：Headlong 自陈仅能定性测量，无成熟基准",
+      "多智能体权限隔离设计原语：CPE 给出攻击面，OpenClaw 明示协作控制非安全边界，缺可复用隔离模式",
+      "生产环境（含模型/网关交互）的组件级归因：FrontierHarness 自曝局限，环境变量归因仍空"
+    ],
+    "trends": [
+      "Harness 效应进入可复现评测品类：data-eng-bench、FrontierHarness、Terminal-Bench 论断三方独立互证「模型相同、harness 决定成本与排名」，与 ECC 的 harness 主战场论点一致",
+      "竞争主轴从能力转向成本/效率：通过率收敛于 50-66.7% 而成本差 17 倍，『便宜地完成』成为独立技能，步数/token 计价成新度量",
+      "评测验收向『人的验收现实』迁移：SWE-Gate 评审约束门禁 + Laycock 评审左移/按例外，与 SWE-Touch 同向，评审从仪式变成可机器判定的数据",
+      "上下文从优化对象升级为信任边界：CPE 把攻击面上移到 message role 与作用域管理，context engineering 出现安全子域",
+      "持久/自唤醒 agent 成为独立形态并产生自有故障类：自调度唤醒、SQLite 破坏性迁移、split-brain、『用 agent 修 agent』，评测与成本建模滞后",
+      "单人 CLI 向团队驾驶舱/共享工作区演进：OpenClaw 多用户 Gateway+Swarm、AgentRoom CRDT 并发、Headlong 共享 agent，CRDT 机制流入 harness 层",
+      "版本库成为 agent 治理面：RAMP 把提交型配置当成熟度代理指标，与 Klibsio 的 AGENTS.md 实践互证",
+      "跨平台方向连续第二轮零信号：LangChain/Google 检索多营销内容，KMP/Flutter 需换定向信源，否则持续失联"
+    ]
+  },
+  "candidates": [
+    {
+      "title": "What's in Your Agent's Context? Context Privilege Escalation Attacks against AI Agent Harness",
+      "url": "http://arxiv.org/abs/2609.01222",
+      "source": "arXiv (Zichuan Li, Xiaojing Liao, Luyi Xing 等)",
+      "date": "2026-09-01",
+      "verdict": "translate",
+      "lineage": "agent/context",
+      "reason": "首个系统化 harness 上下文安全分类学（M-CPE/X-CPE）+ 含 Codex/Claude Code 的 12 系统实测，直击安全审计最薄弱缺口，值得全篇留存做审计清单",
+      "stars": 5
+    },
+    {
+      "title": "Introducing FrontierHarness Eval: 9 harnesses, same model, cost per pass varies 17x",
+      "url": "https://runta.com/blog/introducing-frontierharness-eval",
+      "source": "Runta (Shilin Zhu, Shiqi Mei)；HN 81 分",
+      "date": "2026-09-01",
+      "verdict": "index",
+      "lineage": "agent/eval",
+      "reason": "开源受控 harness×成本×质量数据（360 试次、17 倍成本差、缓存命中率≠成本）作选型锚点与第二组互证基线，价值在数据与归因结论而非全文",
+      "stars": 5
+    },
+    {
+      "title": "SWE-Gate: Passing Functional Tests Is Not Enough for Software Engineering Agents",
+      "url": "http://arxiv.org/abs/2609.04167",
+      "source": "arXiv cs.SE (Xin He, Yanlin Wang 等)",
+      "date": "2026-09-03",
+      "verdict": "index",
+      "lineage": "agent/eval",
+      "reason": "303 实例/34% 差距证明功能通过≠评审约束通过，开源双门控评测改写 coding agent 验收标准讨论，索引+数据集即可",
+      "stars": 5
+    },
+    {
+      "title": "Headlong: a microharness for persistent agents (Laude/MIT)",
+      "url": "https://www.laude.org/updates/headlong-a-microharness-for-persistent-agents",
+      "source": "Laude Institute；github.com/laude-institute/headlong",
+      "date": "2026-08-24",
+      "verdict": "translate",
+      "lineage": "agent/harness",
+      "reason": "可运行极简持久 micro-harness 全文：自唤醒循环、轨迹即上下文、指数衰减 compaction、沙箱与自伤事故，命中记忆可复现实践与 always-on 两个缺口",
+      "stars": 4
+    },
+    {
+      "title": "Context Engineering for Coding Agents (Building a Coding Agent From Scratch, Lesson 4)",
+      "url": "https://www.decodingai.com/p/context-engineering-for-coding-agents",
+      "source": "Paul Iusztin, Decoding AI Magazine",
+      "date": "2026-08-25",
+      "verdict": "translate",
+      "lineage": "agent/context",
+      "reason": "记忆/技能/LSP/压缩四件套 + 可运行 Python 代码与容量上限细节，是上下文工程缺口最可直接落地的原文",
+      "stars": 4
+    },
+    {
+      "title": "A Few Pages of Markdown: Committed AI Configuration and Lower Quality Cost after Coding-Agent Adoption",
+      "url": "http://arxiv.org/abs/2608.25241",
+      "source": "arXiv cs.SE (Yegor Denisov-Blanch 等)",
+      "date": "2026-08-26",
+      "verdict": "index",
+      "lineage": "agent/harness",
+      "reason": "441 仓库量化 + RAMP 成熟度工具为 AGENTS.md 治理主线提供实证并提示『set-and-forget』治理缺口，索引含脉络即可",
+      "stars": 4
+    },
+    {
+      "title": "AgentRoom: Concurrent Multi-Agent Coding in a CRDT-Backed Shared Workspace",
+      "url": "http://arxiv.org/abs/2608.23740",
+      "source": "arXiv (Seonglae Cho, Donghyun Lee)",
+      "date": "2026-08-24",
+      "verdict": "index",
+      "lineage": "agent/multi-agent",
+      "reason": "CRDT 文件系统+MCP claim/broadcast 的机制级开放实验，『协调优于并发』反直觉结论补多 agent 协作空白，索引后按需扩展",
+      "stars": 4
+    },
+    {
+      "title": "Maybe We Shouldn't Be Reviewing All This Code",
+      "url": "https://martinfowler.com/rachels-ramblings/code-review.html",
+      "source": "Rachel Laycock, martinfowler.com",
+      "date": "2026-09-02",
+      "verdict": "index",
+      "lineage": "agent/eval",
+      "reason": "Tier1 有具名对手与 Meta 数据的流程辩论，与 SWE-Gate 构成『评审左移+机器可判约束』闭环，观点文索引即可",
+      "stars": 3
+    },
+    {
+      "title": "Making Your Data Ready for Agentic AI",
+      "url": "https://martinfowler.com/articles/making-data-ready-for-agentic-ai.html",
+      "source": "Pramod Sadalage & Prem Chandrasekaran, martinfowler.com",
+      "date": "2026-08-27",
+      "verdict": "index",
+      "lineage": "agent/rag",
+      "reason": "Tier1 双作者企业数据三层框架与模式目录，扩展数据×agent 相邻方向的可检索权威链接",
+      "stars": 3
+    },
+    {
+      "title": "憋了 7 周没动静，OpenClaw 2.0 带着 16000 个 PR 杀回来了",
+      "url": "https://juejin.cn/post/7680352383386107940",
+      "source": "一点一木, 稀土掘金",
+      "date": "2026-09-01",
+      "verdict": "index",
+      "lineage": "agent/platform",
+      "reason": "窗口内中文原创深度分析：多用户 Gateway/角色边界/Swarm/升级事故一手细节与反模式，编入平台脉络（主事实以官方为准）",
+      "stars": 3
+    }
+  ]
+}

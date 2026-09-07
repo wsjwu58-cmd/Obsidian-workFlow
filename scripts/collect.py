@@ -15,6 +15,7 @@ import re
 import urllib.parse
 import urllib.request
 import uuid
+from kb_common import sync_article_counts
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 ARTICLES = ROOT / "references" / "articles.md"
@@ -68,7 +69,9 @@ def save_item(source, item):
     url = item["url"]
     title = item["title"].strip().replace("|", "/")[:120]
     today = datetime.date.today().isoformat()
-    row = f"| {title} | {url} | {source} | {today} |"
+    item_source = str(item.get("source") or source).replace("|", "/").replace("\n", " ")
+    item_date = str(item.get("date") or today).replace("|", "/").replace("\n", " ")
+    row = f"| {title} | {url} | {item_source} | {item_date} |"
     art = ARTICLES
     if not art.exists():
         return "references/articles.md 不存在，跳过"
@@ -83,9 +86,7 @@ def save_item(source, item):
         return "URL 已在索引，跳过"
     # 追加一行，并更新队列计数「当前：N 条待处理」
     content = text[:m_end.start()] + row + "\n" + text[m_end.start():]
-    cm = re.search(r"当前：(\d+) 条待处理", content)
-    if cm:
-        content = content.replace(cm.group(0), f"当前：{int(cm.group(1)) + 1} 条待处理", 1)
+    content = sync_article_counts(content)
     art.write_text(content, encoding="utf-8")
     return f"入队 {url}"
 

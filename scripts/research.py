@@ -22,6 +22,7 @@ import re
 import shlex
 import subprocess
 import sys
+import time
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -32,6 +33,7 @@ from kb_common import (
     append_observe_row,
     fmt_article_entry,
     next_article_number,
+    sync_article_counts,
 )
 
 
@@ -111,10 +113,13 @@ def known_content_block():
 def run_codex(prompt, prompt_name, timeout=1200):
     prompt_file = pathlib.Path(__import__("tempfile").gettempdir(), prompt_name)
     prompt_file.write_text(prompt, encoding="utf-8")
+    output_file = prompt_file.with_suffix(".result.md")
+    output_file.unlink(missing_ok=True)
     cmd = (
-        f"set -a; source /etc/environment; set +a; "
+        f"set -a; . /etc/environment; set +a; "
         f"codex exec -C {shlex.quote(str(ROOT))} "
         f"--sandbox workspace-write -c sandbox_workspace_write.network_access=true "
+        f"--output-last-message {shlex.quote(str(output_file))} "
         f"< {shlex.quote(str(prompt_file))}"
     )
     try:
@@ -122,43 +127,93 @@ def run_codex(prompt, prompt_name, timeout=1200):
             cmd, shell=True, cwd=ROOT, capture_output=True, text=True,
             encoding="utf-8", errors="replace", timeout=timeout,
         )
-        return r.stdout + "\n" + r.stderr, r.returncode
+        # stderr includes the echoed prompt and tool traces: never feed it to triage.
+        if r.returncode != 0:
+            return "", r.returncode
+        if not output_file.exists():
+            print("[research] Codex 未写最终回答，终止（不回退运行日志）")
+            return "", 1
+        return output_file.read_text(encoding="utf-8"), 0
     except Exception as e:
         print(f"[research] codex 调用失败：{type(e).__name__}: {e}")
         return "", 1
 
 
-def extract_json_obj(stdout):
+def extract_json_obj(stdout, require_verdict=False):
     """从 codex 输出提取 JSON 对象。"""
     text = stdout or ""
-    m = re.search(r"codex\n(.*)", text, re.S)
-    if m:
-        text = m.group(1)
+    def acceptable(obj):
+        if not isinstance(obj, dict) or not isinstance(obj.get("candidates"), list):
+            return False
+        if require_verdict:
+            try:
+                validate_triage(obj["candidates"])
+            except ValueError:
+                return False
+        return True
     fences = re.findall(r"```json\s*(.*?)```", text, re.S)
     for f in fences:
         try:
-            return json.loads(f.strip())
+            obj = json.loads(f.strip())
+            if acceptable(obj):
+                return obj
         except json.JSONDecodeError:
             continue
     dec = json.JSONDecoder()
     for m in re.finditer(r"\{", text):
         try:
             obj, _ = dec.raw_decode(text, m.start())
-            if isinstance(obj, dict):
+            if acceptable(obj):
                 return obj
         except json.JSONDecodeError:
             continue
     return {}
 
 
-def apply_triage(candidates):
+def validate_triage(candidates):
+    """Reject missing decisions before writing anything; absence is not observe."""
+    if not isinstance(candidates, list):
+        raise ValueError("candidates 必须是列表")
+    seen = set()
+    for c in candidates:
+        if not isinstance(c, dict):
+            raise ValueError("候选必须是对象")
+        for key in ("title", "url", "verdict", "reason"):
+            if not isinstance(c.get(key), str) or not c[key].strip():
+                raise ValueError(f"候选缺少 {key}")
+        if c["verdict"] not in ("translate", "index", "observe"):
+            raise ValueError("候选 verdict 非法")
+        if not re.match(r"^https?://[^/\s]+", c["url"]):
+            raise ValueError("候选 URL 非法")
+        if c["url"] in seen:
+            raise ValueError("候选 URL 重复")
+        seen.add(c["url"])
+
+
+def apply_triage(candidates, promote_observed=False):
     """按 verdict 写入 articles.md。返回 (translate_n, index_n, observe_n)。"""
+    validate_triage(candidates)
     art = ROOT / "references" / "articles.md"
     if not art.exists():
         print("[research] articles.md 不存在")
         return 0, 0, 0
     known = collect.existing_urls()
     t = art.read_text(encoding="utf-8")
+    if promote_observed:
+        # Explicit historical replay only. Never remove numbered or pending rows.
+        promote_urls = {c["url"] for c in candidates if c["verdict"] in ("translate", "index")}
+        in_observe = False
+        lines = []
+        for line in t.splitlines(keepends=True):
+            if line.startswith("## "):
+                in_observe = line.strip() == "## 观察项"
+            cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+            if in_observe and line.lstrip().startswith("|") and len(cells) >= 2 and cells[1] in promote_urls:
+                continue
+            lines.append(line)
+        t = "".join(lines)
+        art.write_text(t, encoding="utf-8")
+        known = collect.existing_urls()
     tn = ix = ob = 0
     today = datetime.date.today().isoformat()
     for c in candidates:
@@ -166,9 +221,7 @@ def apply_triage(candidates):
         title = (c.get("title") or "").strip()
         if not url or not title:
             continue
-        verdict = (c.get("verdict") or "observe").strip().lower()
-        if verdict not in ("index", "translate", "observe"):
-            verdict = "observe"
+        verdict = c["verdict"]
         lineage = (c.get("lineage") or "general").strip()
         reason = (c.get("reason") or "").strip()
         row = {
@@ -213,6 +266,7 @@ def apply_triage(candidates):
         known.add(url)
         ob += 1
         print(f"[research] observe → {title[:40]}")
+    art.write_text(sync_article_counts(art.read_text(encoding="utf-8")), encoding="utf-8")
     return tn, ix, ob
 
 
@@ -322,15 +376,11 @@ def _run():
         print(stdout_b[-1500:])
         return rc_b
 
-    data = extract_json_obj(stdout_b)
+    data = extract_json_obj(stdout_b, require_verdict=True)
     cands = data.get("candidates") if isinstance(data, dict) else None
     if not isinstance(cands, list):
-        # 兜底：尝试从 Prompt A JSON 取候选并默认 observe
-        data_a = extract_json_obj(stdout_a)
-        cands = data_a.get("candidates", []) if isinstance(data_a, dict) else []
-        for c in cands:
-            c.setdefault("verdict", "observe")
-        print("[research] Prompt B JSON 解析失败，回退 A 候选且默认 observe")
+        print("[research] Prompt B 分流无效，保留分析供重试；不改索引、不默认 observe")
+        return 1
 
     print(f"[research] 分流候选 {len(cands)} 条")
     tn, ix, ob = apply_triage(cands)

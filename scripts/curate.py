@@ -53,7 +53,7 @@ def parse_queue(text, limit=None):
         if "评审中" in line:
             continue
         cells = [c.strip() for c in line.strip("|").split("|")]
-        if len(cells) >= 4 and not cells[0].startswith("标题"):
+        if len(cells) >= 4 and re.match(r"^https?://", cells[1]):
             rows.append({"title": cells[0], "url": cells[1],
                          "source": cells[2], "date": cells[3]})
         if limit is not None and limit > 0 and len(rows) >= limit:
@@ -65,7 +65,7 @@ def run_codex(prompt, root, prompt_name):
     prompt_file = pathlib.Path(__import__("tempfile").gettempdir(), prompt_name)
     prompt_file.write_text(prompt, encoding="utf-8")
     cmd = (
-        f"set -a; source /etc/environment; set +a; "
+        f"set -a; . /etc/environment; set +a; "
         f"codex exec -C {shlex.quote(str(root))} "
         f"--sandbox workspace-write -c sandbox_workspace_write.network_access=true "
         f"< {shlex.quote(str(prompt_file))}"
@@ -121,9 +121,12 @@ def merge_pipeline_queue():
     art = ROOT / "references" / "articles.md"
     art.write_text(r.stdout, encoding="utf-8")
     print("[curate] 已合并 origin/pipeline/queue 的 articles.md")
-    # 尝试带上 research-* 分析落盘（可选）
-    sh("git checkout origin/pipeline/queue -- candidates/research-* 2>/dev/null || true",
-       check=False)
+    # Enumerate tracked paths: shell glob expansion used to drop the analysis silently.
+    listing = sh("git ls-tree -r --name-only origin/pipeline/queue -- candidates", check=False)
+    paths = [p for p in listing.stdout.splitlines() if p.startswith("candidates/research-")]
+    if paths:
+        subprocess.run(["git", "checkout", "origin/pipeline/queue", "--", *paths],
+                       cwd=ROOT, check=True, capture_output=True)
     return True
 
 
@@ -184,6 +187,8 @@ def _run():
     batch = f"candidates/{batch_id}"
     batch_dir = ROOT / batch
     ok_items = []
+    moved = []
+    failed_items = []
 
     if queue:
         batch_dir.mkdir(parents=True, exist_ok=True)
@@ -206,23 +211,36 @@ def _run():
             stdout, rc = run_codex(p, ROOT, ".curate_prompt.md")
             if rc != 0:
                 print(f"[curate] 加工失败 {item['title'][:30]}，继续")
+                failed_items.append(item)
+                continue
+            artifact = batch_dir / "works-ready" / f"{slug}-translation.md"
+            if not artifact.is_file() or not artifact.read_text(encoding="utf-8").strip():
+                print(f"[curate] 未生成译文 {item['title'][:30]}，保留待处理")
+                failed_items.append(item)
                 continue
             ok_items.append(item)
 
         if ok_items:
             print(f"[curate] 内联落位 {len(ok_items)} 篇…")
-            land_translations(batch_dir, ok_items, keep_sources=True)
+            moved = land_translations(batch_dir, ok_items, keep_sources=True,
+                                      preserve_drafts=bool(failed_items))
         elif queue:
             print("[curate] 全部条目加工失败，不落位")
             if not merged_queue:
-                return 0
+                return 1
 
     # 无翻译但有 queue 分支 articles 变更时，仍开终审 PR
     sh("git add -A")
     changed = sh("git status --porcelain", check=False).stdout.strip()
     if not changed:
         print("[curate] 无变更，退出")
-        return 0
+        return 1 if failed_items else 0
+
+    gate = sh(f'"{sys.executable}" scripts/check_consistency.py --quiet', check=False)
+    if gate.returncode != 0:
+        print(gate.stdout)
+        print("[curate] 一致性门禁失败，保留现场，不推送终审 PR")
+        return 1
 
     branch = f"review/{batch_id}"
     sh(f"git checkout -b {branch}")
@@ -231,14 +249,12 @@ def _run():
     sh('git commit -m "review: AI 产出待人工终审（唯一 PR）"')
     sh(f"git push origin {branch}")
 
-    moved = sorted((ROOT / "working").glob("*-translation.md"))
     body_lines = [
         "## 待人工终审（本仓库唯一 AI PR）",
         "",
         f"- 批次：`{batch_id}`",
-        f"- 本批翻译落位：{len(ok_items)} 篇",
-        "- 已同步：`references/articles.md` / `expand/index.md` / `expand/log.md` / "
-        "`expand/知识图谱.md` / `working/AGENTS.md`",
+        f"- 本批翻译落位：{len(moved)} 篇；加工失败：{len(failed_items)} 篇（保留待处理）",
+        "- 已通过知识库一致性门禁；具体更新见本 PR 文件差异。",
         "",
         "### 操作",
         "- 同意 → 合并本 PR",
@@ -251,10 +267,11 @@ def _run():
     if not ok_items:
         body_lines.append("- （无新译文；含 research 索引/观察项变更）")
 
-    create_pr(branch, "main", f"待审：AI 产出 {len(ok_items)} 篇（{batch_id}）",
-              "\n".join(body_lines)[:3000])
+    title = (f"待审：AI 产出 {len(moved)} 篇（{batch_id}）" if moved else
+             f"待审：情报索引更新（{batch_id}）")
+    pr = create_pr(branch, "main", title, "\n".join(body_lines)[:3000])
     print(f"[curate] 完成：{branch}")
-    return 0
+    return 1 if failed_items or not pr else 0
 
 
 if __name__ == "__main__":

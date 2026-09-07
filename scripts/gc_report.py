@@ -26,6 +26,7 @@ import json
 import pathlib
 import re
 import sys
+from check_consistency import all_files, INFRA as GATE_INFRA
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 WIKI = ROOT / "wiki"
@@ -35,6 +36,7 @@ RAW = ROOT / "references" / "raw"
 INFRA = {"index.md", "log.md", "知识图谱.md",
          "自动化工作流设计.md", "自动化工作流功能与实现方案.md",
          "动态索引.md", "知识库周报.md"}
+INFRA |= GATE_INFRA | {"AGENTS.md"}
 
 LINK_RE = re.compile(r"\[\[([^\]|]+)(?:\|[^\]]*)?\]\]")
 FM_RE = re.compile(r"^---\s*$(.*?)^---\s*$", re.M | re.S)
@@ -71,10 +73,7 @@ def strip_code(s):
 
 
 def collect_files():
-    files = [p for p in WIKI.rglob("*.md")]
-    if EXPAND.exists():
-        files += [p for p in EXPAND.rglob("*.md")]
-    return files
+    return all_files()
 
 
 def main():
@@ -207,7 +206,7 @@ def main():
     for path, target in broken:
         suggestions.append({
             "kind": "断链", "path": path, "severity": "high",
-            "reason": "[[%s]] 无法解析到任何条目" % target,
+            "reason": "`[[%s]]` 无法解析到任何条目" % target,
             "action": "创建目标条目，或改链为已存在条目",
         })
 
@@ -226,7 +225,7 @@ def main():
                     age = (today - datetime.date.fromisoformat(c)).days
                 except ValueError:
                     pass
-            if age > args.stale_days:
+            if age > args.pending_days:
                 suggestions.append({
                     "kind": "积压", "path": rel(p), "severity": "medium",
                     "reason": "status=pending %d 天未处理" % age,
@@ -270,7 +269,8 @@ def main():
             issue_lines.append(f"  - {s['reason']} → 建议：{s['action']}")
     else:
         issue_lines = []
-    pathlib.Path(args.issue).write_text("\n".join(issue_lines) + "\n", encoding="utf-8")
+    pathlib.Path(args.issue).write_text(
+        "\n".join(issue_lines) + ("\n" if issue_lines else ""), encoding="utf-8")
 
     print(json.dumps(report["counts"], ensure_ascii=False))
     return 0
