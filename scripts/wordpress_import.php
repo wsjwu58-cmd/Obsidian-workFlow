@@ -16,12 +16,12 @@ function fingerprint($id) {
 try {
     $payload = json_decode(stream_get_contents(STDIN, 8 * 1024 * 1024), true, 512, JSON_THROW_ON_ERROR);
     if (($payload['version'] ?? 0) !== 1) fail_sync('Unsupported payload version');
-    $wp = realpath($argv[1] ?? '');
-    if (!$wp || !is_file($wp.'/wp-load.php')) fail_sync('WordPress installation not found');
-    $lock = fopen(sys_get_temp_dir().'/wiki-blog-'.hash('sha256', $wp).'.lock', 'c');
+    $wp_root = realpath($argv[1] ?? '');
+    if (!$wp_root || !is_file($wp_root.'/wp-load.php')) fail_sync('WordPress installation not found');
+    $lock = fopen(sys_get_temp_dir().'/wiki-blog-'.hash('sha256', $wp_root).'.lock', 'c');
     if (!$lock || !flock($lock, LOCK_EX | LOCK_NB)) fail_sync('Another blog sync is running');
     define('WP_USE_THEMES', false);
-    require $wp.'/wp-load.php';
+    require $wp_root.'/wp-load.php';
     require_once ABSPATH.'wp-admin/includes/file.php';
     require_once ABSPATH.'wp-admin/includes/media.php';
     require_once ABSPATH.'wp-admin/includes/image.php';
