@@ -8,6 +8,11 @@ function managed_posts($key, $type = 'post') {
         'numberposts'=>2, 'meta_key'=>$type === 'post' ? '_wiki_sync_key' : '_wiki_asset_hash',
         'meta_value'=>$key, 'suppress_filters'=>true]);
 }
+function managed_posts_by_path($path) {
+    return get_posts(['post_type'=>'post', 'post_status'=>array_keys(get_post_stati()),
+        'numberposts'=>2, 'meta_key'=>'_wiki_sync_path', 'meta_value'=>$path,
+        'suppress_filters'=>true]);
+}
 function fingerprint($id) {
     $p = get_post($id);
     $cats = wp_get_post_categories($id); sort($cats);
@@ -87,6 +92,16 @@ try {
         $key = $item['key'];
         if (!preg_match('/^[a-z0-9][a-z0-9-]{2,79}$/D', $key) || isset($ids[$key])) fail_sync('Duplicate or invalid note key');
         $matches = managed_posts($key);
+        if (!$matches) {
+            $path_matches = managed_posts_by_path($item['path']);
+            if (count($path_matches) === 1) {
+                // Migrate a legacy explicit-config identity to the automatic path identity.
+                update_post_meta($path_matches[0]->ID, '_wiki_sync_key', $key);
+                $matches = $path_matches;
+            } elseif (count($path_matches) > 1) {
+                fail_sync('Duplicate WordPress path identity: '.$item['path']);
+            }
+        }
         if (count($matches) > 1) fail_sync('Duplicate WordPress identity: '.$key);
         if ($matches) {
             $id = $matches[0]->ID;
