@@ -7,6 +7,17 @@ author_id: 1
 status: publish
 max_note_bytes: 524288
 max_image_bytes: 10485760
+# Remote images are copied into WordPress media and the post keeps a local URL.
+# Keep this list narrow: URLs from other hosts remain a visible placeholder.
+external_image_hosts:
+  - gitee.com
+  - giteeusercontent.com
+  - zhimg.com
+  - csdnimg.cn
+  - github.com
+  - githubusercontent.com
+max_external_image_bytes: 10485760
+external_image_timeout: 20
 exclude_categories:
   - 生活杂项
   - 求职面试

@@ -82,8 +82,10 @@ try {
     if (!current_user_can('edit_posts') || !current_user_can('upload_files')) fail_sync('Invalid import author');
     $wiki = realpath($payload['repo'].'/wiki');
     if (!$wiki) fail_sync('wiki root not found');
+    $repo = realpath($payload['repo']);
+    $external = realpath($payload['repo'].'/.blog-sync-external');
     $status = ($payload['status'] ?? 'draft') === 'publish' ? 'publish' : 'draft';
-    $report = ['mode'=>'apply','created'=>[], 'updated'=>[], 'unchanged'=>[], 'duplicates'=>[], 'conflicts'=>[], 'errors'=>[]];
+    $report = ['mode'=>'apply','created'=>[], 'updated'=>[], 'unchanged'=>[], 'comments_opened'=>[], 'duplicates'=>[], 'conflicts'=>[], 'errors'=>[]];
     $ids = []; $blocked = [];
     $existing = get_posts(['post_type'=>'post', 'post_status'=>['publish','draft','pending','private'],
         'numberposts'=>-1, 'suppress_filters'=>true]);
@@ -105,6 +107,13 @@ try {
         if (count($matches) > 1) fail_sync('Duplicate WordPress identity: '.$key);
         if ($matches) {
             $id = $matches[0]->ID;
+            // Comment availability is a site feature, not wiki content. Repair
+            // old imports even when their source hash is unchanged.
+            if ($matches[0]->post_status !== 'trash' && $matches[0]->comment_status !== 'open') {
+                $opened = wp_update_post(['ID'=>$id, 'comment_status'=>'open'], true);
+                if (is_wp_error($opened)) fail_sync($opened->get_error_message());
+                $report['comments_opened'][] = ['key'=>$key, 'id'=>$id];
+            }
             $saved = get_post_meta($id, '_wiki_sync_fingerprint', true);
             if ($matches[0]->post_status === 'trash' || !$saved || !hash_equals($saved, fingerprint($id))) {
                 $report['conflicts'][] = ['key'=>$key,'id'=>$id,'reason'=>'WordPress content was edited or trashed; retained'];
@@ -122,7 +131,8 @@ try {
             }
         }
     }
-    // Upload local image bytes only; no HTTP request, DNS lookup, or remote credential.
+    // Upload image bytes that were staged by the renderer. The renderer only
+    // stages local wiki files or images from the configured host allowlist.
     $asset_urls = [];
     foreach ($payload['assets'] as $sha=>$relative) {
         $used = false;
@@ -131,7 +141,9 @@ try {
         }
         if (!$used) continue;
         $file = realpath($payload['repo'].'/'.$relative);
-        if (!$file || !str_starts_with($file, $wiki.DIRECTORY_SEPARATOR)) fail_sync('Image outside wiki');
+        $in_wiki = $file && str_starts_with($file, $wiki.DIRECTORY_SEPARATOR);
+        $in_external = $file && $external && str_starts_with($file, $external.DIRECTORY_SEPARATOR);
+        if (!$file || (!$in_wiki && !$in_external)) fail_sync('Image outside allowed staging roots');
         if (!preg_match('/^[a-f0-9]{64}$/D', $sha) || !hash_equals($sha, hash_file('sha256', $file))) fail_sync('Image hash mismatch');
         if (filesize($file) > min((int)$payload['max_image_bytes'], 10485760)) fail_sync('Image too large');
         $mime = wp_get_image_mime($file);
@@ -185,7 +197,7 @@ try {
                 continue;
             }
             $data = ['post_title'=>$title,'post_content'=>$content,'post_type'=>'post',
-                'post_category'=>[$cat_id], 'ping_status'=>'closed', 'comment_status'=>'closed'];
+                'post_category'=>[$cat_id], 'ping_status'=>'closed', 'comment_status'=>'open'];
             if ($id) {
                 $data['ID'] = $id;
                 if ($status === 'publish' && get_post_status($id) === 'draft') $data['post_status'] = 'publish';
