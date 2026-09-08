@@ -2,6 +2,8 @@
 
 面向 Obsidian 的个人知识库自动化管线：用 **Firecrawl + 服务器 Codex** 做情报搜索与译文加工，经 **唯一人工终审 PR** 合并进库；`expand/index.md` 维护全库索引（含 `working/` 作品）。
 
+博客网站：[www.wsjaly.cn](http://www.wsjaly.cn/) —— `wiki/` 笔记会同步为“模块 → 子文件夹 → 笔记”的可评论知识库。
+
 > 知识库规则见 [agents.md](agents.md)。管线设计见 [docs/superpowers/specs/2026-08-09-curate-pipeline-design.md](docs/superpowers/specs/2026-08-09-curate-pipeline-design.md)。
 
 ---
@@ -13,6 +15,22 @@
 - **索引权威**：`references/articles.md` 为收录状态机；`expand/index.md` 为全库总目录（wiki + expand + working）
 - **一致性门禁**：K1–K7（`check_consistency.py`）在 pre-commit 与 CI 强制执行
 - **支撑流水线**：每日 lint、周报、GC、凭据扫描、失败告警
+- **博客发布**：自动同步 `wiki/` 到 WordPress，首页展示模块入口，模块内按子文件夹分组，文章默认开放评论
+
+## 博客网站
+
+访问：[http://www.wsjaly.cn/](http://www.wsjaly.cn/)
+
+博客导航与本地知识库保持同一层级：
+
+```text
+首页
+└── 一级模块（wiki/ 的第一层目录）
+    └── 子文件夹（wiki/ 模块下的目录；没有子目录时显示“模块根目录”）
+        └── 笔记
+```
+
+同步范围、图片处理、评论修复、重复文章迁移和手动发布方式见 [docs/blog-sync.md](docs/blog-sync.md)。
 
 ## 主链路（现行）
 

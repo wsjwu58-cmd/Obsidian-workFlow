@@ -39,6 +39,8 @@ install -o www -g www -m 0644 "$snapshot/scripts/wordpress_blog_features.php" \
   /www/wwwroot/www.wsjaly.cn/wp-content/mu-plugins/wiki-blog-features.php
 install -o www -g www -m 0644 "$snapshot/scripts/wordpress_blog_front_page.php" \
   /www/wwwroot/www.wsjaly.cn/wp-content/wiki-blog-front-page.php
+install -o www -g www -m 0644 "$snapshot/scripts/wordpress_blog_category.php" \
+  /www/wwwroot/www.wsjaly.cn/wp-content/wiki-blog-category.php
 rm -f /www/wwwroot/www.wsjaly.cn/wp-content/mu-plugins/wiki-blog-front-page.php
 if [ ! -x "$base/venv/bin/python" ]; then python3 -m venv "$base/venv"; fi
 "$base/venv/bin/python" -m pip install --disable-pip-version-check -r "$snapshot/scripts/requirements-blog.txt"

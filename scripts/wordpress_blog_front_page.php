@@ -11,7 +11,7 @@ $categories = get_terms([
 $modules = [];
 if (!is_wp_error($categories)) {
     foreach ($categories as $category) {
-        if (in_array($category->slug, ['uncategorized', 'wei-fen-lei'], true)) {
+        if ((int)$category->parent !== 0 || in_array($category->slug, ['uncategorized', 'wei-fen-lei'], true)) {
             continue;
         }
         $note_ids = get_posts([

@@ -113,5 +113,13 @@ class BlogSyncTests(unittest.TestCase):
         self.assertEqual(result['posts'][0]['category'], 'Topic')
         self.assertTrue(result['posts'][0]['key'].startswith('note-'))
 
+    def test_auto_discovers_nested_folder_path(self):
+        nested = self.root / 'wiki/Topic/Subfolder/Two.md'
+        nested.parent.mkdir(parents=True)
+        nested.write_text('# Two\n\n' + 'Nested content. ' * 20, encoding='utf-8')
+        result = sync.build(self.root, dict(self.config, notes='auto'))
+        item = next(post for post in result['posts'] if post['title'] == 'Two')
+        self.assertEqual(item['category_path'], ['Topic', 'Subfolder'])
+
 
 if __name__ == '__main__': unittest.main()

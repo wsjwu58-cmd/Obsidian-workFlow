@@ -291,8 +291,10 @@ def build(root, config):
         renderer = AssetsAndLinks(root, path, selected, config, external_cache)
         renderer.feed(markdown.markdown(text, extensions=['fenced_code','tables','sane_lists',WikiExtension()]))
         body = ''.join(renderer.output)
+        relative_wiki = path.relative_to(root / 'wiki')
+        category_path = list(relative_wiki.parts[:-1]) or ['未分类']
         posts.append(dict(key=key, path=path.relative_to(root).as_posix(), title=title,
-                          category=path.relative_to(root / 'wiki').parts[0], html=body))
+                          category=category_path[0], category_path=category_path, html=body))
         assets.update(renderer.assets)
         warnings.extend(renderer.warnings)
     return dict(version=1, site_url=config['site_url'], status=config['status'], author_id=config['author_id'],

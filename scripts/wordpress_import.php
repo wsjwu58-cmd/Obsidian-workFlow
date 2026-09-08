@@ -43,6 +43,26 @@ function text_similarity($left, $right) {
     $union = count($a) + count($b) - $intersection;
     return $union ? $intersection / $union : 0.0;
 }
+function ensure_category_path($path) {
+    if (!is_array($path) || !$path) fail_sync('Invalid category path');
+    $ids = []; $parent = 0;
+    foreach ($path as $name) {
+        $name = trim(wp_strip_all_tags((string)$name));
+        if ($name === '') fail_sync('Empty category name');
+        $terms = get_terms(['taxonomy'=>'category', 'hide_empty'=>false, 'parent'=>$parent,
+            'name'=>$name, 'number'=>1, 'fields'=>'ids']);
+        if (is_wp_error($terms)) fail_sync($terms->get_error_message());
+        if ($terms) {
+            $id = (int)$terms[0];
+        } else {
+            $created = wp_insert_term($name, 'category', ['parent'=>$parent]);
+            if (is_wp_error($created)) fail_sync($created->get_error_message());
+            $id = (int)$created['term_id'];
+        }
+        $ids[] = $id; $parent = $id;
+    }
+    return $ids;
+}
 function find_existing_duplicate($item, $existing) {
     $title = normalized_title($item['title']);
     $content = normalized_text($item['html']);
@@ -124,10 +144,14 @@ try {
             $ids[$key] = 0;
             $duplicate = find_existing_duplicate($item, $existing);
             if ($duplicate) {
+                // This is a high-confidence match for a legacy, unmanaged
+                // post. Adopt it so the note is not lost and its category
+                // follows the source folder instead of creating a duplicate.
+                update_post_meta($duplicate['id'], '_wiki_sync_key', $key);
+                update_post_meta($duplicate['id'], '_wiki_sync_path', $item['path']);
                 $ids[$key] = $duplicate['id'];
-                $blocked[$key] = true;
                 $report['duplicates'][] = ['key'=>$key, 'id'=>$duplicate['id'],
-                    'title'=>$duplicate['title'], 'reason'=>$duplicate['reason']];
+                    'title'=>$duplicate['title'], 'reason'=>$duplicate['reason'], 'action'=>'adopted'];
             }
         }
     }
@@ -179,10 +203,8 @@ try {
             $content = preg_replace('/<a data-wiki-unpublished="true">(.*?)<\/a>/s', '$1', $content);
             $content = wp_kses_post($content);
             $title = wp_strip_all_tags($item['title']);
-            $category = term_exists($item['category'], 'category');
-            if (!$category) $category = wp_insert_term($item['category'], 'category');
-            if (is_wp_error($category)) fail_sync($category->get_error_message());
-            $cat_id = (int)(is_array($category) ? $category['term_id'] : $category);
+            $category_ids = ensure_category_path($item['category_path'] ?? [$item['category']]);
+            $cat_id = end($category_ids);
             $source_hash = hash('sha256', wp_json_encode([$title, $content, $cat_id]));
             $id = $ids[$key];
             if ($id && get_post_meta($id, '_wiki_sync_source_hash', true) === $source_hash) {
@@ -197,7 +219,7 @@ try {
                 continue;
             }
             $data = ['post_title'=>$title,'post_content'=>$content,'post_type'=>'post',
-                'post_category'=>[$cat_id], 'ping_status'=>'closed', 'comment_status'=>'open'];
+                'post_category'=>$category_ids, 'ping_status'=>'closed', 'comment_status'=>'open'];
             if ($id) {
                 $data['ID'] = $id;
                 if ($status === 'publish' && get_post_status($id) === 'draft') $data['post_status'] = 'publish';
