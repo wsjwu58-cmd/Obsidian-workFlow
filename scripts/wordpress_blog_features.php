@@ -9,7 +9,11 @@ if (!defined('ABSPATH')) {
 
 add_filter('template_include', static function ($template) {
     if (is_front_page() && !is_paged() && !is_admin()) {
-        $module_template = __DIR__ . '/wiki-blog-front-page.php';
+        // Only the plugin entrypoint belongs in mu-plugins: WordPress loads
+        // every PHP file in that directory during bootstrap.
+        $module_template = defined('WP_CONTENT_DIR')
+            ? WP_CONTENT_DIR . '/wiki-blog-front-page.php'
+            : dirname(__DIR__) . '/wiki-blog-front-page.php';
         if (is_readable($module_template)) {
             return $module_template;
         }
