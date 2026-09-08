@@ -43,6 +43,26 @@ function text_similarity($left, $right) {
     $union = count($a) + count($b) - $intersection;
     return $union ? $intersection / $union : 0.0;
 }
+function ensure_category_path($path) {
+    if (!is_array($path) || !$path) fail_sync('Invalid category path');
+    $ids = []; $parent = 0;
+    foreach ($path as $name) {
+        $name = trim(wp_strip_all_tags((string)$name));
+        if ($name === '') fail_sync('Empty category name');
+        $terms = get_terms(['taxonomy'=>'category', 'hide_empty'=>false, 'parent'=>$parent,
+            'name'=>$name, 'number'=>1, 'fields'=>'ids']);
+        if (is_wp_error($terms)) fail_sync($terms->get_error_message());
+        if ($terms) {
+            $id = (int)$terms[0];
+        } else {
+            $created = wp_insert_term($name, 'category', ['parent'=>$parent]);
+            if (is_wp_error($created)) fail_sync($created->get_error_message());
+            $id = (int)$created['term_id'];
+        }
+        $ids[] = $id; $parent = $id;
+    }
+    return $ids;
+}
 function find_existing_duplicate($item, $existing) {
     $title = normalized_title($item['title']);
     $content = normalized_text($item['html']);
@@ -82,8 +102,10 @@ try {
     if (!current_user_can('edit_posts') || !current_user_can('upload_files')) fail_sync('Invalid import author');
     $wiki = realpath($payload['repo'].'/wiki');
     if (!$wiki) fail_sync('wiki root not found');
+    $repo = realpath($payload['repo']);
+    $external = realpath($payload['repo'].'/.blog-sync-external');
     $status = ($payload['status'] ?? 'draft') === 'publish' ? 'publish' : 'draft';
-    $report = ['mode'=>'apply','created'=>[], 'updated'=>[], 'unchanged'=>[], 'duplicates'=>[], 'conflicts'=>[], 'errors'=>[]];
+    $report = ['mode'=>'apply','created'=>[], 'updated'=>[], 'unchanged'=>[], 'published'=>[], 'comments_opened'=>[], 'duplicates'=>[], 'conflicts'=>[], 'errors'=>[]];
     $ids = []; $blocked = [];
     $existing = get_posts(['post_type'=>'post', 'post_status'=>['publish','draft','pending','private'],
         'numberposts'=>-1, 'suppress_filters'=>true]);
@@ -105,6 +127,13 @@ try {
         if (count($matches) > 1) fail_sync('Duplicate WordPress identity: '.$key);
         if ($matches) {
             $id = $matches[0]->ID;
+            // Comment availability is a site feature, not wiki content. Repair
+            // old imports even when their source hash is unchanged.
+            if ($matches[0]->post_status !== 'trash' && $matches[0]->comment_status !== 'open') {
+                $opened = wp_update_post(['ID'=>$id, 'comment_status'=>'open'], true);
+                if (is_wp_error($opened)) fail_sync($opened->get_error_message());
+                $report['comments_opened'][] = ['key'=>$key, 'id'=>$id];
+            }
             $saved = get_post_meta($id, '_wiki_sync_fingerprint', true);
             if ($matches[0]->post_status === 'trash' || !$saved || !hash_equals($saved, fingerprint($id))) {
                 $report['conflicts'][] = ['key'=>$key,'id'=>$id,'reason'=>'WordPress content was edited or trashed; retained'];
@@ -115,14 +144,19 @@ try {
             $ids[$key] = 0;
             $duplicate = find_existing_duplicate($item, $existing);
             if ($duplicate) {
+                // This is a high-confidence match for a legacy, unmanaged
+                // post. Adopt it so the note is not lost and its category
+                // follows the source folder instead of creating a duplicate.
+                update_post_meta($duplicate['id'], '_wiki_sync_key', $key);
+                update_post_meta($duplicate['id'], '_wiki_sync_path', $item['path']);
                 $ids[$key] = $duplicate['id'];
-                $blocked[$key] = true;
                 $report['duplicates'][] = ['key'=>$key, 'id'=>$duplicate['id'],
-                    'title'=>$duplicate['title'], 'reason'=>$duplicate['reason']];
+                    'title'=>$duplicate['title'], 'reason'=>$duplicate['reason'], 'action'=>'adopted'];
             }
         }
     }
-    // Upload local image bytes only; no HTTP request, DNS lookup, or remote credential.
+    // Upload image bytes that were staged by the renderer. The renderer only
+    // stages local wiki files or images from the configured host allowlist.
     $asset_urls = [];
     foreach ($payload['assets'] as $sha=>$relative) {
         $used = false;
@@ -131,7 +165,9 @@ try {
         }
         if (!$used) continue;
         $file = realpath($payload['repo'].'/'.$relative);
-        if (!$file || !str_starts_with($file, $wiki.DIRECTORY_SEPARATOR)) fail_sync('Image outside wiki');
+        $in_wiki = $file && str_starts_with($file, $wiki.DIRECTORY_SEPARATOR);
+        $in_external = $file && $external && str_starts_with($file, $external.DIRECTORY_SEPARATOR);
+        if (!$file || (!$in_wiki && !$in_external)) fail_sync('Image outside allowed staging roots');
         if (!preg_match('/^[a-f0-9]{64}$/D', $sha) || !hash_equals($sha, hash_file('sha256', $file))) fail_sync('Image hash mismatch');
         if (filesize($file) > min((int)$payload['max_image_bytes'], 10485760)) fail_sync('Image too large');
         $mime = wp_get_image_mime($file);
@@ -167,10 +203,8 @@ try {
             $content = preg_replace('/<a data-wiki-unpublished="true">(.*?)<\/a>/s', '$1', $content);
             $content = wp_kses_post($content);
             $title = wp_strip_all_tags($item['title']);
-            $category = term_exists($item['category'], 'category');
-            if (!$category) $category = wp_insert_term($item['category'], 'category');
-            if (is_wp_error($category)) fail_sync($category->get_error_message());
-            $cat_id = (int)(is_array($category) ? $category['term_id'] : $category);
+            $category_ids = ensure_category_path($item['category_path'] ?? [$item['category']]);
+            $cat_id = end($category_ids);
             $source_hash = hash('sha256', wp_json_encode([$title, $content, $cat_id]));
             $id = $ids[$key];
             if ($id && get_post_meta($id, '_wiki_sync_source_hash', true) === $source_hash) {
@@ -185,7 +219,7 @@ try {
                 continue;
             }
             $data = ['post_title'=>$title,'post_content'=>$content,'post_type'=>'post',
-                'post_category'=>[$cat_id], 'ping_status'=>'closed', 'comment_status'=>'closed'];
+                'post_category'=>$category_ids, 'ping_status'=>'closed', 'comment_status'=>'open'];
             if ($id) {
                 $data['ID'] = $id;
                 if ($status === 'publish' && get_post_status($id) === 'draft') $data['post_status'] = 'publish';
@@ -203,6 +237,17 @@ try {
             $report[$id ? 'updated' : 'created'][] = ['key'=>$key, 'id'=>$saved, 'status'=>get_post_status($saved)];
             $ids[$key] = $saved;
         } catch (Throwable $e) { $report['errors'][] = ['key'=>$key, 'reason'=>$e->getMessage()]; }
+    }
+    // The configured sync mode is authoritative for managed notes. This also
+    // repairs legacy drafts/pending posts on later runs without touching trash
+    // or posts that were blocked as conflicts above.
+    if ($status === 'publish') {
+        foreach (array_unique(array_filter(array_map('intval', array_values($ids)))) as $managed_id) {
+            if (get_post_status($managed_id) === 'trash' || get_post_status($managed_id) === 'publish') continue;
+            $saved = wp_update_post(['ID'=>$managed_id, 'post_status'=>'publish'], true);
+            if (is_wp_error($saved)) fail_sync($saved->get_error_message());
+            $report['published'][] = ['id'=>$managed_id];
+        }
     }
     echo wp_json_encode($report, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES).PHP_EOL;
 } catch (Throwable $e) { fwrite(STDERR, $e->getMessage().PHP_EOL); exit(1); }

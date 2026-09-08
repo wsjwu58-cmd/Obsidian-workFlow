@@ -31,6 +31,17 @@ cleanup() {
 }
 trap cleanup EXIT
 git -C "$source_repo" archive "$ref" | tar -x -C "$snapshot"
+# Keep site presentation code in the same reviewed commit as the importer.
+# The must-use plugin survives WordPress theme changes and is safe to replace
+# idempotently on every sync.
+mkdir -p /www/wwwroot/www.wsjaly.cn/wp-content/mu-plugins
+install -o www -g www -m 0644 "$snapshot/scripts/wordpress_blog_features.php" \
+  /www/wwwroot/www.wsjaly.cn/wp-content/mu-plugins/wiki-blog-features.php
+install -o www -g www -m 0644 "$snapshot/scripts/wordpress_blog_front_page.php" \
+  /www/wwwroot/www.wsjaly.cn/wp-content/wiki-blog-front-page.php
+install -o www -g www -m 0644 "$snapshot/scripts/wordpress_blog_category.php" \
+  /www/wwwroot/www.wsjaly.cn/wp-content/wiki-blog-category.php
+rm -f /www/wwwroot/www.wsjaly.cn/wp-content/mu-plugins/wiki-blog-front-page.php
 if [ ! -x "$base/venv/bin/python" ]; then python3 -m venv "$base/venv"; fi
 "$base/venv/bin/python" -m pip install --disable-pip-version-check -r "$snapshot/scripts/requirements-blog.txt"
 args=(--report "$base/last-report.json")

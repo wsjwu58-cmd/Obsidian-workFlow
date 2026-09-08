@@ -10,7 +10,9 @@ import pathlib
 import re
 import subprocess
 import sys
+from urllib.error import HTTPError, URLError
 from urllib.parse import unquote, urlsplit
+from urllib.request import Request, urlopen
 import xml.etree.ElementTree as ET
 
 import markdown
@@ -25,6 +27,91 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 
 def digest(data):
     return hashlib.sha256(data).hexdigest()
+
+
+def external_host_allowed(host, configured_hosts):
+    """Allow an exact host or a real subdomain of a configured host."""
+    host = (host or '').lower().rstrip('.')
+    for candidate in configured_hosts or []:
+        candidate = str(candidate).lower().strip().lstrip('.').rstrip('.')
+        if host == candidate or host.endswith('.' + candidate):
+            return True
+    return False
+
+
+def image_extension(data, content_type='', path=''):
+    """Return a safe extension only for bytes that look like a supported image."""
+    if data.startswith(b'\x89PNG\r\n\x1a\n'):
+        return 'png'
+    if data.startswith(b'\xff\xd8\xff'):
+        return 'jpg'
+    if data.startswith((b'GIF87a', b'GIF89a')):
+        return 'gif'
+    if len(data) >= 12 and data[:4] == b'RIFF' and data[8:12] == b'WEBP':
+        return 'webp'
+    # Some CDNs return a generic content type, so use the URL extension only
+    # after the byte signatures have been checked by the importer.
+    suffix = pathlib.PurePosixPath(urlsplit(path).path).suffix.lower().lstrip('.')
+    if suffix in ('png', 'jpg', 'jpeg', 'gif', 'webp'):
+        return 'jpg' if suffix == 'jpeg' else suffix
+    return None
+
+
+def download_external_image(root, source, config, cache):
+    """Download an allowlisted image into the ephemeral sync snapshot.
+
+    The snapshot is removed by run_blog_sync.sh after the CLI importer exits;
+    WordPress receives the bytes through the same local-media path as wiki
+    attachments. No external URL is persisted in post content.
+    """
+    normalized = 'https:' + source if source.startswith('//') else source
+    parts = urlsplit(normalized)
+    if parts.scheme not in ('http', 'https'):
+        raise ValueError('unsupported URL scheme')
+    if not external_host_allowed(parts.hostname, config.get('external_image_hosts')):
+        raise ValueError('external image host is not allowlisted')
+    if normalized in cache:
+        return cache[normalized]
+
+    max_bytes = min(int(config.get('max_external_image_bytes', config['max_image_bytes'])), 10485760)
+    request = Request(normalized, headers={
+        'Accept': 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
+        'User-Agent': 'wiki-blog-sync/1.0 (+https://www.wsjaly.cn/)'
+    })
+    try:
+        with urlopen(request, timeout=float(config.get('external_image_timeout', 20))) as response:
+            final = urlsplit(response.geturl())
+            if final.scheme not in ('http', 'https') or not external_host_allowed(
+                final.hostname, config.get('external_image_hosts')
+            ):
+                raise ValueError('redirected to a non-allowlisted image host')
+            length = response.headers.get('Content-Length')
+            if length and int(length) > max_bytes:
+                raise ValueError('image exceeds size limit')
+            data = response.read(max_bytes + 1)
+            if hasattr(response.headers, 'get_content_type'):
+                content_type = response.headers.get_content_type()
+            else:
+                content_type = response.headers.get('Content-Type', '').split(';', 1)[0].strip().lower()
+    except (HTTPError, URLError, TimeoutError, ValueError) as exc:
+        if isinstance(exc, ValueError):
+            raise
+        raise ValueError('download failed: ' + str(exc)) from exc
+    if len(data) > max_bytes:
+        raise ValueError('image exceeds size limit')
+    extension = image_extension(data, content_type, final.path)
+    if not extension:
+        raise ValueError('response is not a supported image')
+
+    sha = digest(data)
+    staging = root / '.blog-sync-external'
+    staging.mkdir(exist_ok=True)
+    target = staging / ('external-' + sha + '.' + extension)
+    if not target.exists():
+        target.write_bytes(data)
+    result = sha, target.relative_to(root).as_posix()
+    cache[normalized] = result
+    return result
 
 
 def discover_notes(root, config):
@@ -78,9 +165,10 @@ class WikiExtension(Extension):
 
 
 class AssetsAndLinks(HTMLParser):
-    def __init__(self, root, note, selected, config):
+    def __init__(self, root, note, selected, config, external_cache):
         super().__init__(convert_charrefs=False)
         self.root, self.note, self.selected, self.config = root, note, selected, config
+        self.external_cache = external_cache
         self.output, self.assets, self.warnings = [], {}, []
 
     def omit_image(self, src, reason):
@@ -113,7 +201,13 @@ class AssetsAndLinks(HTMLParser):
                 if urlsplit(src).scheme not in ('http', 'https') and not src.startswith('//'):
                     self.omit_image(src, 'unsupported URL scheme')
                     return
-                self.warnings.append('External image kept as remote URL: ' + src)
+                try:
+                    sha, relative = download_external_image(self.root, src, self.config, self.external_cache)
+                    self.assets[sha] = relative
+                    attrs = {'src': 'wiki-asset:' + sha, 'alt': attrs.get('alt', '')}
+                except (OSError, ValueError) as exc:
+                    self.omit_image(src, str(exc))
+                    return
             else:
                 try:
                     p = self.resolve(src)
@@ -176,6 +270,7 @@ def build(root, config):
         selected[path] = key
         keys.add(key)
     posts, assets, warnings, missing = [], {}, [], []
+    external_cache = {}
     for path, key in selected.items():
         if not path.exists():
             missing.append(key)
@@ -193,11 +288,13 @@ def build(root, config):
         title = heading.group(1).strip() if heading else path.stem
         if heading:
             text = text[:heading.start()] + text[heading.end():]
-        renderer = AssetsAndLinks(root, path, selected, config)
+        renderer = AssetsAndLinks(root, path, selected, config, external_cache)
         renderer.feed(markdown.markdown(text, extensions=['fenced_code','tables','sane_lists',WikiExtension()]))
         body = ''.join(renderer.output)
+        relative_wiki = path.relative_to(root / 'wiki')
+        category_path = list(relative_wiki.parts[:-1]) or ['未分类']
         posts.append(dict(key=key, path=path.relative_to(root).as_posix(), title=title,
-                          category=path.relative_to(root / 'wiki').parts[0], html=body))
+                          category=category_path[0], category_path=category_path, html=body))
         assets.update(renderer.assets)
         warnings.extend(renderer.warnings)
     return dict(version=1, site_url=config['site_url'], status=config['status'], author_id=config['author_id'],

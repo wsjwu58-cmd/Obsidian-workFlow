@@ -1,6 +1,7 @@
 import pathlib
 import tempfile
 import unittest
+from unittest.mock import patch
 
 try:
     import sync_wordpress as sync
@@ -20,6 +21,8 @@ class BlogSyncTests(unittest.TestCase):
         self.note.write_text('# One\n\n' + 'Detailed content. ' * 20, encoding='utf-8')
         self.config = dict(status='draft', site_url='http://example.com', author_id=1,
                            max_note_bytes=10000, max_image_bytes=10000,
+                           external_image_hosts=['example.com'],
+                           max_external_image_bytes=10000,
                            notes=[dict(id='note-one',path='wiki/Topic/One.md')])
 
     def test_readonly_and_id_stable_after_move(self):
@@ -64,10 +67,30 @@ class BlogSyncTests(unittest.TestCase):
         self.assertEqual(result['missing'],['note-one'])
         self.assertEqual(result['posts'],[])
 
-    def test_external_and_escape_images_are_reported(self):
+    def test_allowlisted_external_image_is_staged_and_rewritten(self):
+        class Response:
+            def __init__(self):
+                self.headers = {'Content-Length': '12', 'Content-Type': 'image/png'}
+            def __enter__(self):
+                return self
+            def __exit__(self, *args):
+                return False
+            def geturl(self):
+                return 'https://example.com/image.png'
+            def read(self, size):
+                return b'\x89PNG\r\n\x1a\nfixture'
+
         self.note.write_text('# One\n'+'Text '*40+'\n\n![x](https://example.com/image.png)',encoding='utf-8')
+        with patch('sync_wordpress.urlopen', return_value=Response()):
+            result = sync.build(self.root, self.config)
+        self.assertEqual(len(result['assets']), 1)
+        self.assertIn('wiki-asset:', result['posts'][0]['html'])
+        self.assertTrue((self.root / '.blog-sync-external').exists())
+
+    def test_unallowlisted_and_escape_images_are_reported(self):
+        self.note.write_text('# One\n'+'Text '*40+'\n\n![x](https://not-allowed.example/image.png)',encoding='utf-8')
         result = sync.build(self.root,self.config)
-        self.assertIn('https://example.com/image.png', result['posts'][0]['html'])
+        self.assertIn('[图片未同步]', result['posts'][0]['html'])
         for target in ('../../private.png','C:/private.png'):
             self.note.write_text('# One\n'+'Text '*40+'\n\n![x]('+target+')',encoding='utf-8')
             result = sync.build(self.root,self.config)
@@ -89,6 +112,14 @@ class BlogSyncTests(unittest.TestCase):
         self.assertEqual(len(result['posts']), 1)
         self.assertEqual(result['posts'][0]['category'], 'Topic')
         self.assertTrue(result['posts'][0]['key'].startswith('note-'))
+
+    def test_auto_discovers_nested_folder_path(self):
+        nested = self.root / 'wiki/Topic/Subfolder/Two.md'
+        nested.parent.mkdir(parents=True)
+        nested.write_text('# Two\n\n' + 'Nested content. ' * 20, encoding='utf-8')
+        result = sync.build(self.root, dict(self.config, notes='auto'))
+        item = next(post for post in result['posts'] if post['title'] == 'Two')
+        self.assertEqual(item['category_path'], ['Topic', 'Subfolder'])
 
 
 if __name__ == '__main__': unittest.main()
