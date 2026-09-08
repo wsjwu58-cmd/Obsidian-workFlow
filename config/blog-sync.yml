@@ -16,6 +16,7 @@ external_image_hosts:
   - csdnimg.cn
   - github.com
   - githubusercontent.com
+  - ucarecdn.com
 max_external_image_bytes: 10485760
 external_image_timeout: 20
 exclude_categories:

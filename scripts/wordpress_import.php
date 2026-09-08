@@ -85,7 +85,7 @@ try {
     $repo = realpath($payload['repo']);
     $external = realpath($payload['repo'].'/.blog-sync-external');
     $status = ($payload['status'] ?? 'draft') === 'publish' ? 'publish' : 'draft';
-    $report = ['mode'=>'apply','created'=>[], 'updated'=>[], 'unchanged'=>[], 'comments_opened'=>[], 'duplicates'=>[], 'conflicts'=>[], 'errors'=>[]];
+    $report = ['mode'=>'apply','created'=>[], 'updated'=>[], 'unchanged'=>[], 'published'=>[], 'comments_opened'=>[], 'duplicates'=>[], 'conflicts'=>[], 'errors'=>[]];
     $ids = []; $blocked = [];
     $existing = get_posts(['post_type'=>'post', 'post_status'=>['publish','draft','pending','private'],
         'numberposts'=>-1, 'suppress_filters'=>true]);
@@ -215,6 +215,17 @@ try {
             $report[$id ? 'updated' : 'created'][] = ['key'=>$key, 'id'=>$saved, 'status'=>get_post_status($saved)];
             $ids[$key] = $saved;
         } catch (Throwable $e) { $report['errors'][] = ['key'=>$key, 'reason'=>$e->getMessage()]; }
+    }
+    // The configured sync mode is authoritative for managed notes. This also
+    // repairs legacy drafts/pending posts on later runs without touching trash
+    // or posts that were blocked as conflicts above.
+    if ($status === 'publish') {
+        foreach (array_unique(array_filter(array_map('intval', array_values($ids)))) as $managed_id) {
+            if (get_post_status($managed_id) === 'trash' || get_post_status($managed_id) === 'publish') continue;
+            $saved = wp_update_post(['ID'=>$managed_id, 'post_status'=>'publish'], true);
+            if (is_wp_error($saved)) fail_sync($saved->get_error_message());
+            $report['published'][] = ['id'=>$managed_id];
+        }
     }
     echo wp_json_encode($report, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES).PHP_EOL;
 } catch (Throwable $e) { fwrite(STDERR, $e->getMessage().PHP_EOL); exit(1); }
