@@ -341,3 +341,8 @@ tags: [知识库, 日志]
 - 收录：Context-Engineering-for-Coding-Agents-Bu-translation.md, Headlong-a-microharness-for-persistent-a-translation.md, What-s-in-Your-Agent-s-Context-Context-P-translation.md
 - 观察项：无
 - 淘汰：无
+
+## [2026-09-12] curate | 20260912-080217
+- 收录：A-Case-Study-on-Emergent-Cheating-and-Wh-translation.md, Clean-Engineering-Unstable-Measurement-A-translation.md, Harnessing-the-Universal-Geometry-of-Emb-translation.md, Knowledge-Acquisition-During-Pre-trainin-translation.md, Making-a-Python-interpreter-in-1024-byte-translation.md, SWE-Gate-Passing-Functional-Tests-Is-Not-translation.md, Seeing-Before-Synthesizing-VLM-Guided-Tr-translation.md, Shubhamsaboo-awesome-llm-apps---100-AI-A-translation.md, farion1231-cc-switch---A-cross-platform-translation.md, langchain-ai-langchain---The-agent-engin-translation.md, langgenius-dify---Build-Agentic-workflow-translation.md, open-webui-open-webui---User-friendly-AI-translation.md
+- 观察项：无
+- 淘汰：无

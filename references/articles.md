@@ -22,23 +22,11 @@
 
 <!-- pending:start -->
 <!-- 采集自动化维护，按 `| 标题 | 链接 | 来源 | 日期 |` 追加一行；处理完移入编号正文 -->
-<!-- 当前：24 条待处理 -->
+<!-- 当前：18 条待处理 -->
 | The new rules of context engineering for Claude 5 generation models | https://claude.com/blog/the-new-rules-of-context-engineering-for-claude-5-generation-models | research | 2026-08-09 | 🔄评审中 candidates/20260809-180901/
 | One-shotting a Raccoon Heist game using Claude Fable 5 | https://simonwillison.net/2026/Aug/5/raccoon-heist/ | research | 2026-08-09 | 🔄评审中 candidates/20260809-180901/
 | Six Agent Orchestration Patterns | https://vercel.com/i/agent-orchestration-patterns | research | 2026-08-09 | 🔄评审中 candidates/20260809-180901/
 | Making production-ready agents the default: building Duolingo's agent platform | https://blog.duolingo.com/production-ready-ai-agent-platform/ | research | 2026-08-09 | 🔄评审中 candidates/20260809-180901/
-| langgenius/dify - Build Agentic workflows, RAG pipelines, with rich AI model and tool support on one collaborative works | https://github.com/langgenius/dify | github | 2026-09-06 |
-| open-webui/open-webui - User-friendly AI Interface (Supports Ollama, OpenAI API, ...) | https://github.com/open-webui/open-webui | github | 2026-09-06 |
-| langchain-ai/langchain - The agent engineering platform. | https://github.com/langchain-ai/langchain | github | 2026-09-06 |
-| Shubhamsaboo/awesome-llm-apps - 100+ AI Agents, Agent Skills and RAG Apps - Free and Open Source. | https://github.com/Shubhamsaboo/awesome-llm-apps | github | 2026-09-06 |
-| farion1231/cc-switch - A cross-platform desktop All-in-One assistant for Claude Code, Codex, OpenCode, OpenClaw, Grok Bu | https://github.com/farion1231/cc-switch | github | 2026-09-06 |
-| Making a Python interpreter in 1024 bytes | https://austinhenley.com/blog/python1024.html | hn | 2026-09-06 |
-| Harnessing the Universal Geometry of Embeddings | https://arxiv.org/abs/2505.12540 | hn | 2026-09-06 |
-| Clean Engineering, Unstable Measurement: A Preregistered Reliability Failure of Black-Box LLM Observers on Shared Endpoi | http://arxiv.org/abs/2609.04198v1 | arxiv | 2026-09-06 |
-| Seeing Before Synthesizing: VLM-Guided Transition Event Discovery for Weakly-Supervised Dense Video Captioning | http://arxiv.org/abs/2609.04183v1 | arxiv | 2026-09-06 |
-| Knowledge Acquisition During Pre-training? Large Language Models Learn Better With Auxiliary Views | http://arxiv.org/abs/2609.04180v1 | arxiv | 2026-09-06 |
-| A Case Study on Emergent Cheating and Whistleblowing in Autonomous Research Swarms | http://arxiv.org/abs/2609.04170v1 | arxiv | 2026-09-06 |
-| SWE-Gate: Passing Functional Tests Is Not Enough for Software Engineering Agents | http://arxiv.org/abs/2609.04167v1 | arxiv | 2026-09-06 |
 | SENTINEL-RL: Offloading Topological Reasoning from LLM Agents in the Security Operations Center | http://arxiv.org/abs/2609.04159v1 | arxiv | 2026-09-06 |
 | Terminal-Universe: Turning Agent Trajectories into Scalable Terminal Environments | http://arxiv.org/abs/2609.04148v1 | arxiv | 2026-09-06 |
 | Efficient Test-Time Adaptation through Human-AI Interaction | http://arxiv.org/abs/2609.04141v1 | arxiv | 2026-09-06 |
@@ -47,6 +35,12 @@
 | 如何看待特斯拉股价单日大跌近 6%？Cybercab上线一天便遭审查，无方向盘、刹车板的车型有何隐患？ | https://www.zhihu.com/question/2079883205440692454 | rsshub | 2026-09-06 |
 | 中国需要多久达到或超过 GPT-6 Astra 级别的模型水平？ | https://www.zhihu.com/question/2079675087209419385 | rsshub | 2026-09-06 |
 | AI 写出来的代码越来越多，未来的软件会不会变得「没人真正看得懂」？ | https://www.zhihu.com/question/2078550836175815213 | rsshub | 2026-09-06 |
+| The Anatomy of Harness Engineering: How to Evaluate, Iterate, and Guard AI Coding Agents | https://developers.googleblog.com/the-anatomy-of-harness-engineering-how-to-evaluate-iterate-and-guard-ai-coding-agents/ | research | 2026-09-12 |
+| Introducing the Agents API | https://openai.com/index/introducing-the-agents-api/ | research | 2026-09-12 |
+| Organizing Context in a Multi-Agent Harness | https://www.langchain.com/blog/organizing-context-in-a-multi-agent-harness | research | 2026-09-12 |
+| How well do agents use test/verification techniques? | https://danluu.com/agentic-testing/ | research | 2026-09-12 |
+| 企业级 AI Coding 的 Harness 工程实战：8 个 Skill 串起全链路 | https://juejin.cn/post/7680079424891011124 | research | 2026-09-12 |
+| SoL-Pi: Scaling Auto-Research Loops for Efficient Agent Harnesses | https://github.com/NVlabs/SoL-Pi | research | 2026-09-12 |
 <!-- pending:end -->
 
 ## 已收录（编号正文）
@@ -314,6 +308,134 @@
 - **状态：** 已收录 | **归属：** `working/What-s-in-Your-Agent-s-Context-Context-P-translation.md`
 - **核心：** What's in Your Agent's Context? Context Privilege Escalation Attacks against AI …
 
+### 32. Does your harness matter more than your model?
+
+- **标题：** Does your harness matter more than your model?
+- **链接：** [aistack.imec-int.com/blog/harness-cost](https://aistack.imec-int.com/blog/harness-cost)
+- **作者：** research | **日期：** 2026-09-12
+- **状态：** 已收录 | **归属：** —
+- **核心：** 脉络:agent/eval；独立复现 FrontierHarness 的准确率收敛与成本翻倍结论并补 token 经济学，价值在数据与归因而非全文
+
+### 33. mini-harness
+
+- **标题：** mini-harness
+- **链接：** [github.com/mini-harness/mini-harness](https://github.com/mini-harness/mini-harness)
+- **作者：** research | **日期：** 2026-09-12
+- **状态：** 已收录 | **归属：** —
+- **核心：** 脉络:agent/harness；约 1700 行覆盖 agent loop/工具/压缩/重试/TUI 全要素的可读实现，价值在可复现代码底座而非全文翻译
+
+### 34. HarnessME
+
+- **标题：** HarnessME
+- **链接：** [github.com/Bonhollow/harnessme](https://github.com/Bonhollow/harnessme)
+- **作者：** research | **日期：** 2026-09-12
+- **状态：** 已收录 | **归属：** —
+- **核心：** 脉络:agent/harness；AGENTS.md 自动生成加防漂移与关键路径人工闸门，回应激活策略并缓解上下文特权提升，但项目很新仅作工具线索收录
+
+### 35. Beyond Prompts: Measuring and Optimizing LLM Tool-Agent Harnesses
+
+- **标题：** Beyond Prompts: Measuring and Optimizing LLM Tool-Agent Harnesses
+- **链接：** [arxiv.org/abs/2609.05736](https://arxiv.org/abs/2609.05736)
+- **作者：** research | **日期：** 2026-09-12
+- **状态：** 已收录 | **归属：** —
+- **核心：** 脉络:agent/eval；提出资源受限下的 harness 选择协议与保守收益指标 RelLift95(B)，统一评测口径，方法论价值高但暂无开源实现
+
+### 36. A Case Study on Emergent Cheating and Whistleblowing in Autonomous Research Swarms
+
+- **标题：** A Case Study on Emergent Cheating and Whistleblowing in Autonomous Research Swarms
+- **链接：** [arxiv.org/abs/2609.04170v1](http://arxiv.org/abs/2609.04170v1)
+- **作者：** arxiv | **日期：** 2026-09-06
+- **状态：** 已收录 | **归属：** `working/A-Case-Study-on-Emergent-Cheating-and-Wh-translation.md`
+- **核心：** A Case Study on Emergent Cheating and Whistleblowing in Autonomous Research Swar…
+
+### 37. Clean Engineering, Unstable Measurement: A Preregistered Reliability Failure of Black-Box LLM Observers on Shared Endpoi
+
+- **标题：** Clean Engineering, Unstable Measurement: A Preregistered Reliability Failure of Black-Box LLM Observers on Shared Endpoi
+- **链接：** [arxiv.org/abs/2609.04198v1](http://arxiv.org/abs/2609.04198v1)
+- **作者：** arxiv | **日期：** 2026-09-06
+- **状态：** 已收录 | **归属：** `working/Clean-Engineering-Unstable-Measurement-A-translation.md`
+- **核心：** Clean Engineering, Unstable Measurement: A Preregistered Reliability Failure of …
+
+### 38. Harnessing the Universal Geometry of Embeddings
+
+- **标题：** Harnessing the Universal Geometry of Embeddings
+- **链接：** [arxiv.org/abs/2505.12540](https://arxiv.org/abs/2505.12540)
+- **作者：** hn | **日期：** 2026-09-06
+- **状态：** 已收录 | **归属：** `working/Harnessing-the-Universal-Geometry-of-Emb-translation.md`
+- **核心：** Harnessing the Universal Geometry of Embeddings
+
+### 39. Knowledge Acquisition During Pre-training? Large Language Models Learn Better With Auxiliary Views
+
+- **标题：** Knowledge Acquisition During Pre-training? Large Language Models Learn Better With Auxiliary Views
+- **链接：** [arxiv.org/abs/2609.04180v1](http://arxiv.org/abs/2609.04180v1)
+- **作者：** arxiv | **日期：** 2026-09-06
+- **状态：** 已收录 | **归属：** `working/Knowledge-Acquisition-During-Pre-trainin-translation.md`
+- **核心：** Knowledge Acquisition During Pre-training? Large Language Models Learn Better Wi…
+
+### 40. Making a Python interpreter in 1024 bytes
+
+- **标题：** Making a Python interpreter in 1024 bytes
+- **链接：** [austinhenley.com/blog/python1024.html](https://austinhenley.com/blog/python1024.html)
+- **作者：** hn | **日期：** 2026-09-06
+- **状态：** 已收录 | **归属：** `working/Making-a-Python-interpreter-in-1024-byte-translation.md`
+- **核心：** Making a Python interpreter in 1024 bytes
+
+### 41. SWE-Gate: Passing Functional Tests Is Not Enough for Software Engineering Agents
+
+- **标题：** SWE-Gate: Passing Functional Tests Is Not Enough for Software Engineering Agents
+- **链接：** [arxiv.org/abs/2609.04167v1](http://arxiv.org/abs/2609.04167v1)
+- **作者：** arxiv | **日期：** 2026-09-06
+- **状态：** 已收录 | **归属：** `working/SWE-Gate-Passing-Functional-Tests-Is-Not-translation.md`
+- **核心：** SWE-Gate: Passing Functional Tests Is Not Enough for Software Engineering Agents
+
+### 42. Seeing Before Synthesizing: VLM-Guided Transition Event Discovery for Weakly-Supervised Dense Video Captioning
+
+- **标题：** Seeing Before Synthesizing: VLM-Guided Transition Event Discovery for Weakly-Supervised Dense Video Captioning
+- **链接：** [arxiv.org/abs/2609.04183v1](http://arxiv.org/abs/2609.04183v1)
+- **作者：** arxiv | **日期：** 2026-09-06
+- **状态：** 已收录 | **归属：** `working/Seeing-Before-Synthesizing-VLM-Guided-Tr-translation.md`
+- **核心：** Seeing Before Synthesizing: VLM-Guided Transition Event Discovery for Weakly-Sup…
+
+### 43. Shubhamsaboo/awesome-llm-apps - 100+ AI Agents, Agent Skills and RAG Apps - Free and Open Source.
+
+- **标题：** Shubhamsaboo/awesome-llm-apps - 100+ AI Agents, Agent Skills and RAG Apps - Free and Open Source.
+- **链接：** [github.com/Shubhamsaboo/awesome-llm-apps](https://github.com/Shubhamsaboo/awesome-llm-apps)
+- **作者：** github | **日期：** 2026-09-06
+- **状态：** 已收录 | **归属：** `working/Shubhamsaboo-awesome-llm-apps---100-AI-A-translation.md`
+- **核心：** Shubhamsaboo/awesome-llm-apps - 100+ AI Agents, Agent Skills and RAG Apps - Free…
+
+### 44. farion1231/cc-switch - A cross-platform desktop All-in-One assistant for Claude Code, Codex, OpenCode, OpenClaw, Grok Bu
+
+- **标题：** farion1231/cc-switch - A cross-platform desktop All-in-One assistant for Claude Code, Codex, OpenCode, OpenClaw, Grok Bu
+- **链接：** [github.com/farion1231/cc-switch](https://github.com/farion1231/cc-switch)
+- **作者：** github | **日期：** 2026-09-06
+- **状态：** 已收录 | **归属：** `working/farion1231-cc-switch---A-cross-platform-translation.md`
+- **核心：** farion1231/cc-switch - A cross-platform desktop All-in-One assistant for Claude …
+
+### 45. langchain-ai/langchain - The agent engineering platform.
+
+- **标题：** langchain-ai/langchain - The agent engineering platform.
+- **链接：** [github.com/langchain-ai/langchain](https://github.com/langchain-ai/langchain)
+- **作者：** github | **日期：** 2026-09-06
+- **状态：** 已收录 | **归属：** `working/langchain-ai-langchain---The-agent-engin-translation.md`
+- **核心：** langchain-ai/langchain - The agent engineering platform.
+
+### 46. langgenius/dify - Build Agentic workflows, RAG pipelines, with rich AI model and tool support on one collaborative works
+
+- **标题：** langgenius/dify - Build Agentic workflows, RAG pipelines, with rich AI model and tool support on one collaborative works
+- **链接：** [github.com/langgenius/dify](https://github.com/langgenius/dify)
+- **作者：** github | **日期：** 2026-09-06
+- **状态：** 已收录 | **归属：** `working/langgenius-dify---Build-Agentic-workflow-translation.md`
+- **核心：** langgenius/dify - Build Agentic workflows, RAG pipelines, with rich AI model and…
+
+### 47. open-webui/open-webui - User-friendly AI Interface (Supports Ollama, OpenAI API, ...)
+
+- **标题：** open-webui/open-webui - User-friendly AI Interface (Supports Ollama, OpenAI API, ...)
+- **链接：** [github.com/open-webui/open-webui](https://github.com/open-webui/open-webui)
+- **作者：** github | **日期：** 2026-09-06
+- **状态：** 已收录 | **归属：** `working/open-webui-open-webui---User-friendly-AI-translation.md`
+- **核心：** open-webui/open-webui - User-friendly AI Interface (Supports Ollama, OpenAI API,…
+
 ## 观察项
 
 > 暂不收录、持续观察的 URL（防重复采集，不计入编号正文主计数）。由 research Prompt B（`observe`）写入。
@@ -343,7 +465,7 @@
 
 ## 统计
 
-- **正式收录：** 29 篇｜**已淘汰隔离：** 2 篇（不计入收录数，仅防重复采集）
+- **正式收录：** 45 篇｜**已淘汰隔离：** 2 篇（不计入收录数，仅防重复采集）
 
 ## 待补充
 

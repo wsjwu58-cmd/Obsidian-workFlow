@@ -1,13 +1,13 @@
 ---
 created: 2026-08-03
-updated: 2026-09-07
+updated: 2026-09-12
 tags: [知识库, 索引]
 ---
 
 # 内容总目录
 
 > 知识库分类体系：`01-编程语言` → `02-前端` → `03-后端` → `04-数据库` → `05-数据结构与算法` → `06-AI与LLM` → `07-Linux与工具链` → `08-逆向与安全` → `09-源码解读` → `10-求职面试` → `11-生活杂项`
-> 全库共 221 个 Markdown 文件（2026-08-31 更新：补入 Kotlin Clippings 67 篇及基础语法、线程与协程两篇复习入口；同步 Kotlin 主题关系图）。关系总览见 [[知识图谱]]。
+> 全库共 233 个 Markdown 文件（2026-08-31 更新：补入 Kotlin Clippings 67 篇及基础语法、线程与协程两篇复习入口；同步 Kotlin 主题关系图）。关系总览见 [[知识图谱]]。
 
 ## 知识库自动化
 
@@ -310,6 +310,19 @@ tags: [知识库, 索引]
 
 
 
+
+- [[A-Case-Study-on-Emergent-Cheating-and-Wh-translation]]：自治科研群体中涌现的作弊与举报：一项案例研究
+- [[Clean-Engineering-Unstable-Measurement-A-translation]]：洁净工程，不稳测量：共享端点上黑箱 LLM 观察者的预注册可靠性失败
+- [[Harnessing-the-Universal-Geometry-of-Emb-translation]]：利用嵌入的普适几何
+- [[Knowledge-Acquisition-During-Pre-trainin-translation]]：预训练期间的知识获取？大语言模型借助辅助视角学得更好
+- [[Making-a-Python-interpreter-in-1024-byte-translation]]：用 1024 字节写一个 Python 解释器
+- [[SWE-Gate-Passing-Functional-Tests-Is-Not-translation]]：SWE-Gate：通过功能测试还不够——面向软件工程智能体的评测
+- [[Seeing-Before-Synthesizing-VLM-Guided-Tr-translation]]：先看见，再合成：VLM 引导的过渡事件发现用于弱监督密集视频描述
+- [[Shubhamsaboo-awesome-llm-apps---100-AI-A-translation]]：Shubhamsaboo/awesome-llm-apps —— 100+ AI 智能体、智能体技能与 RAG 应用（免费开源）
+- [[farion1231-cc-switch---A-cross-platform-translation]]：farion1231/cc-switch —— 面向 Claude Code、Codex 等八大 AI 编程工具的跨平台一站式管理器
+- [[langchain-ai-langchain---The-agent-engin-translation]]：langchain-ai/langchain —— Agent 工程平台
+- [[langgenius-dify---Build-Agentic-workflow-translation]]：langgenius/dify —— 在一个协作工作区里构建 Agentic 工作流与 RAG 管道
+- [[open-webui-open-webui---User-friendly-AI-translation]]：open-webui/open-webui —— 用户友好的 AI 界面（支持 Ollama、OpenAI API 等）
 - [[Context-Engineering-for-Coding-Agents-Bu-translation]]：面向编码智能体的上下文工程（从零构建编码智能体，第 4 课）
 - [[Headlong-a-microharness-for-persistent-a-translation]]：Headlong：面向持久化智能体的微 harness
 - [[What-s-in-Your-Agent-s-Context-Context-P-translation]]：你的 Agent 上下文里有什么？针对 AI Agent Harness 的上下文提权攻击

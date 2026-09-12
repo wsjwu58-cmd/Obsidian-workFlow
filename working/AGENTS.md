@@ -26,3 +26,15 @@
 | [[Context-Engineering-for-Coding-Agents-Bu-translation]] | curate 收录译文作品 |
 | [[Headlong-a-microharness-for-persistent-a-translation]] | curate 收录译文作品 |
 | [[What-s-in-Your-Agent-s-Context-Context-P-translation]] | curate 收录译文作品 |
+| [[A-Case-Study-on-Emergent-Cheating-and-Wh-translation]] | curate 收录译文作品 |
+| [[Clean-Engineering-Unstable-Measurement-A-translation]] | curate 收录译文作品 |
+| [[Harnessing-the-Universal-Geometry-of-Emb-translation]] | curate 收录译文作品 |
+| [[Knowledge-Acquisition-During-Pre-trainin-translation]] | curate 收录译文作品 |
+| [[Making-a-Python-interpreter-in-1024-byte-translation]] | curate 收录译文作品 |
+| [[SWE-Gate-Passing-Functional-Tests-Is-Not-translation]] | curate 收录译文作品 |
+| [[Seeing-Before-Synthesizing-VLM-Guided-Tr-translation]] | curate 收录译文作品 |
+| [[Shubhamsaboo-awesome-llm-apps---100-AI-A-translation]] | curate 收录译文作品 |
+| [[farion1231-cc-switch---A-cross-platform-translation]] | curate 收录译文作品 |
+| [[langchain-ai-langchain---The-agent-engin-translation]] | curate 收录译文作品 |
+| [[langgenius-dify---Build-Agentic-workflow-translation]] | curate 收录译文作品 |
+| [[open-webui-open-webui---User-friendly-AI-translation]] | curate 收录译文作品 |
