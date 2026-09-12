@@ -22,7 +22,7 @@
 
 <!-- pending:start -->
 <!-- 采集自动化维护，按 `| 标题 | 链接 | 来源 | 日期 |` 追加一行；处理完移入编号正文 -->
-<!-- 当前：24 条待处理 -->
+<!-- 当前：30 条待处理 -->
 | The new rules of context engineering for Claude 5 generation models | https://claude.com/blog/the-new-rules-of-context-engineering-for-claude-5-generation-models | research | 2026-08-09 | 🔄评审中 candidates/20260809-180901/
 | One-shotting a Raccoon Heist game using Claude Fable 5 | https://simonwillison.net/2026/Aug/5/raccoon-heist/ | research | 2026-08-09 | 🔄评审中 candidates/20260809-180901/
 | Six Agent Orchestration Patterns | https://vercel.com/i/agent-orchestration-patterns | research | 2026-08-09 | 🔄评审中 candidates/20260809-180901/
@@ -47,6 +47,12 @@
 | 如何看待特斯拉股价单日大跌近 6%？Cybercab上线一天便遭审查，无方向盘、刹车板的车型有何隐患？ | https://www.zhihu.com/question/2079883205440692454 | rsshub | 2026-09-06 |
 | 中国需要多久达到或超过 GPT-6 Astra 级别的模型水平？ | https://www.zhihu.com/question/2079675087209419385 | rsshub | 2026-09-06 |
 | AI 写出来的代码越来越多，未来的软件会不会变得「没人真正看得懂」？ | https://www.zhihu.com/question/2078550836175815213 | rsshub | 2026-09-06 |
+| The Anatomy of Harness Engineering: How to Evaluate, Iterate, and Guard AI Coding Agents | https://developers.googleblog.com/the-anatomy-of-harness-engineering-how-to-evaluate-iterate-and-guard-ai-coding-agents/ | research | 2026-09-12 |
+| Introducing the Agents API | https://openai.com/index/introducing-the-agents-api/ | research | 2026-09-12 |
+| Organizing Context in a Multi-Agent Harness | https://www.langchain.com/blog/organizing-context-in-a-multi-agent-harness | research | 2026-09-12 |
+| How well do agents use test/verification techniques? | https://danluu.com/agentic-testing/ | research | 2026-09-12 |
+| 企业级 AI Coding 的 Harness 工程实战：8 个 Skill 串起全链路 | https://juejin.cn/post/7680079424891011124 | research | 2026-09-12 |
+| SoL-Pi: Scaling Auto-Research Loops for Efficient Agent Harnesses | https://github.com/NVlabs/SoL-Pi | research | 2026-09-12 |
 <!-- pending:end -->
 
 ## 已收录（编号正文）
@@ -314,6 +320,38 @@
 - **状态：** 已收录 | **归属：** `working/What-s-in-Your-Agent-s-Context-Context-P-translation.md`
 - **核心：** What's in Your Agent's Context? Context Privilege Escalation Attacks against AI …
 
+### 32. Does your harness matter more than your model?
+
+- **标题：** Does your harness matter more than your model?
+- **链接：** [aistack.imec-int.com/blog/harness-cost](https://aistack.imec-int.com/blog/harness-cost)
+- **作者：** research | **日期：** 2026-09-12
+- **状态：** 已收录 | **归属：** —
+- **核心：** 脉络:agent/eval；独立复现 FrontierHarness 的准确率收敛与成本翻倍结论并补 token 经济学，价值在数据与归因而非全文
+
+### 33. mini-harness
+
+- **标题：** mini-harness
+- **链接：** [github.com/mini-harness/mini-harness](https://github.com/mini-harness/mini-harness)
+- **作者：** research | **日期：** 2026-09-12
+- **状态：** 已收录 | **归属：** —
+- **核心：** 脉络:agent/harness；约 1700 行覆盖 agent loop/工具/压缩/重试/TUI 全要素的可读实现，价值在可复现代码底座而非全文翻译
+
+### 34. HarnessME
+
+- **标题：** HarnessME
+- **链接：** [github.com/Bonhollow/harnessme](https://github.com/Bonhollow/harnessme)
+- **作者：** research | **日期：** 2026-09-12
+- **状态：** 已收录 | **归属：** —
+- **核心：** 脉络:agent/harness；AGENTS.md 自动生成加防漂移与关键路径人工闸门，回应激活策略并缓解上下文特权提升，但项目很新仅作工具线索收录
+
+### 35. Beyond Prompts: Measuring and Optimizing LLM Tool-Agent Harnesses
+
+- **标题：** Beyond Prompts: Measuring and Optimizing LLM Tool-Agent Harnesses
+- **链接：** [arxiv.org/abs/2609.05736](https://arxiv.org/abs/2609.05736)
+- **作者：** research | **日期：** 2026-09-12
+- **状态：** 已收录 | **归属：** —
+- **核心：** 脉络:agent/eval；提出资源受限下的 harness 选择协议与保守收益指标 RelLift95(B)，统一评测口径，方法论价值高但暂无开源实现
+
 ## 观察项
 
 > 暂不收录、持续观察的 URL（防重复采集，不计入编号正文主计数）。由 research Prompt B（`observe`）写入。
@@ -343,7 +381,7 @@
 
 ## 统计
 
-- **正式收录：** 29 篇｜**已淘汰隔离：** 2 篇（不计入收录数，仅防重复采集）
+- **正式收录：** 33 篇｜**已淘汰隔离：** 2 篇（不计入收录数，仅防重复采集）
 
 ## 待补充
 
