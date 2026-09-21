@@ -1,5 +1,17 @@
 name: Wiki 博客同步
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'wiki/**'
+      - 'config/blog-sync.yml'
+      - 'scripts/requirements-blog.txt'
+      - 'scripts/run_blog_sync.sh'
+      - 'scripts/sync_wordpress.py'
+      - 'scripts/wordpress_import.php'
+      - 'scripts/wordpress_blog_*.php'
+      - '.github/workflows/blog-sync.yml'
   schedule:
     - cron: '0 18 * * 0' # 每周一 02:00 Asia/Shanghai; GitHub may delay scheduled starts.
   workflow_dispatch:

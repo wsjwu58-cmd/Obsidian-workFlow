@@ -1,6 +1,6 @@
 # wiki → WordPress 博客同步
 
-GitHub Actions 每周一北京时间 02:00（UTC 前一天 18:00）通过 SSH 触发服务器本机导入。GitHub 的定时任务可能延迟。也可以手动运行博客同步工作流，勾选 preview 只预览。
+GitHub Actions 会在 `main` 分支的 `wiki/` 笔记变更后通过 SSH 触发服务器本机导入，并保留每周一北京时间 02:00（UTC 前一天 18:00）的兜底同步。GitHub 的定时任务可能延迟。也可以手动运行博客同步工作流，勾选 preview 只预览。
 
 ## 发布范围
 

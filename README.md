@@ -73,6 +73,7 @@ flowchart LR
 | 流水线 | 触发 | 职责 |
 |--------|------|------|
 | `research.yml` | 每周一 06:00（UTC+8）/ 手动 | SSH → `research.py` → 立即 `curate.py --limit 0`（一次处理全部待处理）→ 唯一终审 PR |
+| `blog-sync.yml` | `main` 的 `wiki/**` 变更 / 每周兜底 / 手动 | SSH → WordPress 本机导入，保持博客与 wiki 同步 |
 | `e2e-pipeline.yml` | 手动 | 同上小批量冒烟（可改 research_max / curate_limit） |
 
 ### 门禁与运维
