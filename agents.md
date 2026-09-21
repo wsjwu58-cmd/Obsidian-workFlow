@@ -20,7 +20,7 @@ D:\note\
 │   ├── thinking/   ← 独立思考/观点（新观点默认放这里）
 │   └── 01-编程语言/ ... 11-生活杂项/
 ├── working/       ← Phase 4：译文作品（可独立理解；计入一致性图谱）
-├── candidates/    ← 批次暂存（sources / research 分析落盘）
+├── .pipeline/     ← 被忽略的 research/curate 中间产物（不进入终审 PR）
 ├── scripts/       ← research.py / curate.py / kb_common.py / 门禁与巡检
 ├── prompts/       ← research-search / research-tracker / curate（有效提示词）
 │   └── feedback/
@@ -66,7 +66,7 @@ research.yml（每周/手动）→ SSH 同一次作业：
      └─ 写 articles.md → push origin/pipeline/queue（不开 PR）
   2) curate.py --limit 0（一次处理全部待处理，无 3h 轮询）
      ├─ 合并 pipeline/queue
-     ├─ Codex（curate.md）产三件套 → 落位 working/
+     ├─ Codex（curate.md）在 .pipeline/candidates/ 产三件套 → 落位 working/（中间稿不入 PR）
      ├─ 同步 expand/index.md、log.md、知识图谱.md、working/AGENTS.md
      └─ 开唯一终审 PR：review/<timestamp> → 人工合并 main
 ```

@@ -96,7 +96,7 @@ class PipelineTests(unittest.TestCase):
             art.write_text('<!-- pending:start -->\n' + ''.join(
                 f"| {r['title']} | {r['url']} | author | 2026-09-01 |\n" for r in rows
             ) + '<!-- pending:end -->\n', encoding="utf-8")
-            batch = root / "candidates/batch"
+            batch = root / ".pipeline/candidates/batch"
             wr = batch / "works-ready"
             wr.mkdir(parents=True)
             (wr / "One-translation.md").write_text("# A real translation", encoding="utf-8")

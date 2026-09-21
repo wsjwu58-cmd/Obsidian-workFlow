@@ -7,7 +7,7 @@
 职责：
 1. git pull；合并 origin/pipeline/queue 的 articles 变更
 2. 解析待处理队列（默认 --limit 0 = 全部）
-3. codex 为每篇产 candidates/<batch>/ 三件套（sources + translations + works-ready）
+3. codex 为每篇产 .pipeline/candidates/<batch>/ 三件套（sources + translations + works-ready）
 4. 内联落位：works-ready → working/；回写 articles；同步 index/log/图谱/AGENTS
 5. 开**唯一**终审 PR（人工评审后合并 main）
 6. 取消 curate-review 后置 AI 打分
@@ -111,7 +111,7 @@ def create_pr(head, base, title, body):
 
 
 def merge_pipeline_queue():
-    """把 origin/pipeline/queue 的 articles（及 research 产物）合入工作树。"""
+    """把 origin/pipeline/queue 的 articles 合入工作树。"""
     sh("git fetch origin pipeline/queue", check=False)
     # 仅检出 articles.md；若分支不存在则跳过
     r = sh("git show origin/pipeline/queue:references/articles.md", check=False)
@@ -121,12 +121,6 @@ def merge_pipeline_queue():
     art = ROOT / "references" / "articles.md"
     art.write_text(r.stdout, encoding="utf-8")
     print("[curate] 已合并 origin/pipeline/queue 的 articles.md")
-    # Enumerate tracked paths: shell glob expansion used to drop the analysis silently.
-    listing = sh("git ls-tree -r --name-only origin/pipeline/queue -- candidates", check=False)
-    paths = [p for p in listing.stdout.splitlines() if p.startswith("candidates/research-")]
-    if paths:
-        subprocess.run(["git", "checkout", "origin/pipeline/queue", "--", *paths],
-                       cwd=ROOT, check=True, capture_output=True)
     return True
 
 
@@ -200,7 +194,7 @@ def _run():
     print(f"[curate] 待处理 {len(queue)} 条（本次上限 {cap}）")
 
     batch_id = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-    batch = f"candidates/{batch_id}"
+    batch = f".pipeline/candidates/{batch_id}"
     batch_dir = ROOT / batch
     ok_items = []
     moved = []

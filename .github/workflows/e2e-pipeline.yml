@@ -56,9 +56,9 @@ jobs:
             trap record_exit EXIT
             cd /root/note-worker
             echo "=== on \$(git rev-parse --short HEAD) NOTE_GIT_REF=\$NOTE_GIT_REF ==="
-            echo "=== replay saved triage; skip new research ==="
+            echo "=== curate current queue ==="
             echo "=== curate.py --limit ${CURATE_LIMIT} ==="
-            /usr/bin/python3 -u scripts/curate.py --limit ${CURATE_LIMIT} --replay-analysis candidates/recovery-20260907/triage.json
+            /usr/bin/python3 -u scripts/curate.py --limit ${CURATE_LIMIT}
             echo "=== done ==="
             git branch -v | head -20
             ls -la working/*translation.md 2>/dev/null | tail -5 || true

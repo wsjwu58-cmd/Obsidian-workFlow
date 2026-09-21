@@ -14,17 +14,17 @@ source: curate-research 六阶段
 ## 输入
 
 - `references/articles.md` 待处理队列中的一条：标题 / URL / 来源 / 日期
-- 批次目录：`candidates/<batch>/`，slug 由脚本给出
+- 批次目录：`.pipeline/candidates/<batch>/`，slug 由脚本给出。该目录是被 `.gitignore` 忽略的中间产物，**绝不提交到终审 PR**。
 
 ## 对每条待处理做
 
-1. **抓原文**：用网络抓取 URL 真实内容 → 存 `candidates/<batch>/sources/<slug>.md`；
+1. **抓原文**：用网络抓取 URL 真实内容 → 存 `.pipeline/candidates/<batch>/sources/<slug>.md`；
    论文/长文额外抓 HTML 全文到 `sources/<slug>-full.md`。
-2. **翻译**：生成过程稿到 `candidates/<batch>/translations/<slug>/`：
+2. **翻译**：生成过程稿到 `.pipeline/candidates/<batch>/translations/<slug>/`：
    - `01-analysis.md`：原文分析（可含观点建议，**不写** expand/thinking 正文）
    - `02-prompt.md`：本次翻译使用的提示词
    - `translation.md`：中文翻译过程稿
-   再把最终候选写到 `candidates/<batch>/works-ready/<slug>-translation.md`。
+   再把最终候选写到 `.pipeline/candidates/<batch>/works-ready/<slug>-translation.md`。
 
 ## 产出边界（不可逾越）
 

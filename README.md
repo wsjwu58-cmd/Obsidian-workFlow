@@ -60,7 +60,7 @@ flowchart LR
 ├── working/               # Phase 4：可对外译文作品
 ├── prompts/               # research-search / research-tracker / curate 等
 ├── scripts/               # research.py / curate.py / kb_common.py / 门禁与巡检
-├── candidates/            # 批次暂存（sources / research 分析落盘）
+├── .pipeline/             # 被忽略的 research/curate 中间产物（不进入 PR）
 ├── .github/workflows/     # research（含全量 curate）/ e2e / consistency / lint …
 ├── agents.md              # 知识库总规则
 └── README.md

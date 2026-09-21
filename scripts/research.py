@@ -350,7 +350,10 @@ def _run():
         return 0
 
     ts = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-    out_dir = ROOT / "candidates" / f"research-{ts}"
+    # Keep search and triage transcripts available on the worker for debugging,
+    # but outside the tracked tree so the final review PR contains only the
+    # index changes produced by this stage.
+    out_dir = ROOT / ".pipeline" / "research" / f"research-{ts}"
     out_dir.mkdir(parents=True, exist_ok=True)
 
     print("[research] Prompt A：搜索（要求调用 Firecrawl）…")

@@ -46,3 +46,7 @@ harness-engineering-main/
 
 .blog-deps/
 .blog-sync/
+
+# Pipeline intermediate artifacts: never include research/curate work files in PRs.
+.pipeline/
+/candidates/

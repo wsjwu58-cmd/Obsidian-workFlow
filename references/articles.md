@@ -23,10 +23,10 @@
 <!-- pending:start -->
 <!-- 采集自动化维护，按 `| 标题 | 链接 | 来源 | 日期 |` 追加一行；处理完移入编号正文 -->
 <!-- 当前：18 条待处理 -->
-| The new rules of context engineering for Claude 5 generation models | https://claude.com/blog/the-new-rules-of-context-engineering-for-claude-5-generation-models | research | 2026-08-09 | 🔄评审中 candidates/20260809-180901/
-| One-shotting a Raccoon Heist game using Claude Fable 5 | https://simonwillison.net/2026/Aug/5/raccoon-heist/ | research | 2026-08-09 | 🔄评审中 candidates/20260809-180901/
-| Six Agent Orchestration Patterns | https://vercel.com/i/agent-orchestration-patterns | research | 2026-08-09 | 🔄评审中 candidates/20260809-180901/
-| Making production-ready agents the default: building Duolingo's agent platform | https://blog.duolingo.com/production-ready-ai-agent-platform/ | research | 2026-08-09 | 🔄评审中 candidates/20260809-180901/
+| The new rules of context engineering for Claude 5 generation models | https://claude.com/blog/the-new-rules-of-context-engineering-for-claude-5-generation-models | research | 2026-08-09 |
+| One-shotting a Raccoon Heist game using Claude Fable 5 | https://simonwillison.net/2026/Aug/5/raccoon-heist/ | research | 2026-08-09 |
+| Six Agent Orchestration Patterns | https://vercel.com/i/agent-orchestration-patterns | research | 2026-08-09 |
+| Making production-ready agents the default: building Duolingo's agent platform | https://blog.duolingo.com/production-ready-ai-agent-platform/ | research | 2026-08-09 |
 | SENTINEL-RL: Offloading Topological Reasoning from LLM Agents in the Security Operations Center | http://arxiv.org/abs/2609.04159v1 | arxiv | 2026-09-06 |
 | Terminal-Universe: Turning Agent Trajectories into Scalable Terminal Environments | http://arxiv.org/abs/2609.04148v1 | arxiv | 2026-09-06 |
 | Efficient Test-Time Adaptation through Human-AI Interaction | http://arxiv.org/abs/2609.04141v1 | arxiv | 2026-09-06 |
