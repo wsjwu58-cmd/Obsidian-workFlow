@@ -8,6 +8,12 @@ tags: [知识库, 日志]
 
 > 时间倒序排列
 
+## [2026-09-23] lint | 巡检报告
+
+- 巡检时间：2026-09-23 | 条目数：258 | 断链：12 | 孤立：5 | 重复对：0 | pending：0 | index 缺失：5 | 空笔记：5
+- ⚠️ 发现异常：断链 12 处；- `wiki/AI与LLM/AgentRag 学习/RAG处理优化.md` → `[[面试]]`；- `wiki/AI与LLM/AgentRag 学习/Agent搭建.md` → `[[面试]]`；- `wiki/AI与LLM/AgentRag 学习/MCP协议与工具调用.md` → `[[面试]]`；- `expand/log.md` → `[[驾照考试要点]]`；- `expand/index.md` → `[[面试]]`；- `expand/index.md` → `[[驾照考试要点]]`；- `expand/index.md` → `[[驾照考试要点]]`；- `expand/知识图谱.md` → `[[面试]]`；- `expand/知识图谱.md` → `[[面试]]`；- `expand/知识图谱.md` → `[[驾照考试要点]]`；- `expand/03-后端/java/JavaGuide.md` → `[[面试]]`；- `expand/03-后端/java/JavaGuide.md` → `[[面试]]`
+
+
 ## [2026-09-22] lint | 巡检报告
 
 - 巡检时间：2026-09-22 | 条目数：258 | 断链：12 | 孤立：5 | 重复对：0 | pending：0 | index 缺失：5 | 空笔记：5
