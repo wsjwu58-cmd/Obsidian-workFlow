@@ -22,7 +22,7 @@
 
 <!-- pending:start -->
 <!-- 采集自动化维护，按 `| 标题 | 链接 | 来源 | 日期 |` 追加一行；处理完移入编号正文 -->
-<!-- 当前：18 条待处理 -->
+<!-- 当前：22 条待处理 -->
 | The new rules of context engineering for Claude 5 generation models | https://claude.com/blog/the-new-rules-of-context-engineering-for-claude-5-generation-models | research | 2026-08-09 |
 | One-shotting a Raccoon Heist game using Claude Fable 5 | https://simonwillison.net/2026/Aug/5/raccoon-heist/ | research | 2026-08-09 |
 | Six Agent Orchestration Patterns | https://vercel.com/i/agent-orchestration-patterns | research | 2026-08-09 |
@@ -41,6 +41,10 @@
 | How well do agents use test/verification techniques? | https://danluu.com/agentic-testing/ | research | 2026-09-12 |
 | 企业级 AI Coding 的 Harness 工程实战：8 个 Skill 串起全链路 | https://juejin.cn/post/7680079424891011124 | research | 2026-09-12 |
 | SoL-Pi: Scaling Auto-Research Loops for Efficient Agent Harnesses | https://github.com/NVlabs/SoL-Pi | research | 2026-09-12 |
+| Beyond the Model: Demystifying Harness Effects in Software Engineering Agents | https://arxiv.org/abs/2609.32459 | research | 2026-10-03 |
+| AutoCompact: Learning When to Compact Context in Long-Horizon Coding Agents | https://arxiv.org/abs/2610.02163 | research | 2026-10-03 |
+| Engineering the harness: A practical pattern for reliable coding agents | https://www.thoughtworks.com/en-gb/insights/blog/architecture/engineering-the-harness-a-practical-pattern-for-reliable-coding-agents | research | 2026-10-03 |
+| Beyond the Hype: The Efficiency-Throughput Gap with GitHub Copilot | https://cacm.acm.org/research/beyond-the-hype-the-efficiency-throughput-gap-with-github-copilot/ | research | 2026-10-03 |
 <!-- pending:end -->
 
 ## 已收录（编号正文）
@@ -436,6 +440,54 @@
 - **状态：** 已收录 | **归属：** `working/open-webui-open-webui---User-friendly-AI-translation.md`
 - **核心：** open-webui/open-webui - User-friendly AI Interface (Supports Ollama, OpenAI API,…
 
+### 48. Learning Meta-Skills for Agent Harness Design in Test-Time AI4AI
+
+- **标题：** Learning Meta-Skills for Agent Harness Design in Test-Time AI4AI
+- **链接：** [arxiv.org/abs/2609.38143](https://arxiv.org/abs/2609.38143)
+- **作者：** research | **日期：** 2026-10-03
+- **状态：** 已收录 | **归属：** —
+- **核心：** 脉络:agent/harness；把 harness design 抽象为可迁移 skill bank，延续 EvolveNet/Harness-R1 主线，方法论增量值得索引。
+
+### 49. Harness Tokenomics: A Router for the Enterprise Agentic Control Plane
+
+- **标题：** Harness Tokenomics: A Router for the Enterprise Agentic Control Plane
+- **链接：** [arxiv.org/abs/2609.28919](https://arxiv.org/abs/2609.28919)
+- **作者：** research | **日期：** 2026-10-03
+- **状态：** 已收录 | **归属：** —
+- **核心：** 脉络:agent/platform；首次把 router/prompt cache/账单纳入 harness 设计，补成本与多智能体编排缺口。
+
+### 50. 构建稳定的 AI Agent：Harness 工程的核心机制与实践思考
+
+- **标题：** 构建稳定的 AI Agent：Harness 工程的核心机制与实践思考
+- **链接：** [juejin.cn/post/7690982503821246506](https://juejin.cn/post/7690982503821246506)
+- **作者：** research | **日期：** 2026-10-03
+- **状态：** 已收录 | **归属：** —
+- **核心：** 脉络:agent/harness；货拉拉一线实践的中文原创，补中文社区与落地案例缺口（中文原文，仅索引）。
+
+### 51. truefoundry/trueforge
+
+- **标题：** truefoundry/trueforge
+- **链接：** [github.com/truefoundry/trueforge](https://github.com/truefoundry/trueforge)
+- **作者：** research | **日期：** 2026-10-03
+- **状态：** 已收录 | **归属：** —
+- **核心：** 脉络:agent/harness；高星活跃开源 agent harness runtime，可与 ECC/mini-harness 横向对比，属项目级索引。
+
+### 52. omnigent-ai/omnigent
+
+- **标题：** omnigent-ai/omnigent
+- **链接：** [github.com/omnigent-ai/omnigent](https://github.com/omnigent-ai/omnigent)
+- **作者：** research | **日期：** 2026-10-03
+- **状态：** 已收录 | **归属：** —
+- **核心：** 脉络:agent/orchestration；代表 meta-harness 新分层，统一编排多家 agent，与多智能体编排主题强相关。
+
+### 53. lintsinghua/claude-code-book（御舆：解码 Agent Harness）
+
+- **标题：** lintsinghua/claude-code-book（御舆：解码 Agent Harness）
+- **链接：** [github.com/lintsinghua/claude-code-book](https://github.com/lintsinghua/claude-code-book)
+- **作者：** research | **日期：** 2026-10-03
+- **状态：** 已收录 | **归属：** —
+- **核心：** 脉络:agent/harness；42 万字中文原创系统拆解 Claude Code harness 内部机制，补中文深度资料缺口（中文原文，仅索引）。
+
 ## 观察项
 
 > 暂不收录、持续观察的 URL（防重复采集，不计入编号正文主计数）。由 research Prompt B（`observe`）写入。
@@ -465,7 +517,7 @@
 
 ## 统计
 
-- **正式收录：** 45 篇｜**已淘汰隔离：** 2 篇（不计入收录数，仅防重复采集）
+- **正式收录：** 51 篇｜**已淘汰隔离：** 2 篇（不计入收录数，仅防重复采集）
 
 ## 待补充
 
