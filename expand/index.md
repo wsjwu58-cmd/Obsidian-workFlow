@@ -7,7 +7,7 @@ tags: [知识库, 索引]
 # 内容总目录
 
 > 知识库分类体系：`01-编程语言` → `02-前端` → `03-后端` → `04-数据库` → `05-数据结构与算法` → `06-AI与LLM` → `07-Linux与工具链` → `08-逆向与安全` → `09-源码解读` → `10-求职面试` → `11-生活杂项`
-> 全库共 259 个 Markdown 文件（2026-10-10 按磁盘重新核对，计入 wiki、expand 与 working；补登安卓笔记及面试复习入口）。关系总览见 [[知识图谱]]。
+> 全库共 281 个 Markdown 文件（2026-10-10 按磁盘重新核对，计入 wiki、expand 与 working；补登安卓笔记及面试复习入口）。关系总览见 [[知识图谱]]。
 
 ## 知识库自动化
 
@@ -344,6 +344,29 @@ tags: [知识库, 索引]
 
 
 
+
+- [[AI-写出来的代码越来越多-未来的软件会不会变得-没人真正看得懂-translation]]：AI 写出来的代码越来越多，未来的软件会不会变得「没人真正看得懂」？
+- [[AutoCompact-Learning-When-to-Compact-Con-translation]]：AutoCompact：学习长程编程智能体中何时压缩上下文
+- [[Beyond-the-Hype-The-Efficiency-Throughpu-translation]]：超越炒作：GitHub Copilot 的效率—吞吐量缺口
+- [[Beyond-the-Model-Demystifying-Harness-Ef-translation]]：超越模型：揭开软件工程智能体中 Harness 效应的面纱
+- [[Efficient-Test-Time-Adaptation-through-H-translation]]：通过人机交互实现高效的测试时适配
+- [[Engineering-the-harness-A-practical-patt-translation]]：为 harness 做工程：可靠编程智能体的一条实用模式
+- [[Environment-Evolution-for-Terminal-Agent-translation]]：Environment Evolution：面向终端智能体的环境演化
+- [[How-well-do-agents-use-test-verification-translation]]：智能体在使用测试与验证技术方面表现如何？
+- [[Introducing-the-Agents-API-translation]]：推出 Agents API
+- [[Making-production-ready-agents-the-defau-translation]]：让生产就绪的智能体成为默认：构建 Duolingo 的智能体平台
+- [[One-shotting-a-Raccoon-Heist-game-using-translation]]：用 Claude Fable 5 一次性生成《浣熊劫案》游戏
+- [[Organizing-Context-in-a-Multi-Agent-Harn-translation]]：在多智能体 Harness 中组织上下文
+- [[SENTINEL-RL-Offloading-Topological-Reaso-translation]]：Sentinel-RL：在安全运营中心把拓扑推理从 LLM 智能体中卸载
+- [[Six-Agent-Orchestration-Patterns-translation]]：六种智能体编排模式
+- [[SoL-Pi-Scaling-Auto-Research-Loops-for-E-translation]]：SoL-Pi —— 为高效 Agent Harness 扩展自动研究循环
+- [[Terminal-Universe-Turning-Agent-Trajecto-translation]]：Terminal-Universe：把智能体轨迹转化为可扩展的终端环境
+- [[The-Anatomy-of-Harness-Engineering-How-t-translation]]：Harness 工程解剖学：如何评估、迭代与守护 AI 编程智能体
+- [[The-Natural-Language-Interaction-Protoco-translation]]：面向 AI 智能体的自然语言交互协议与标准
+- [[The-new-rules-of-context-engineering-for-translation]]：Claude 5 世代模型的上下文工程新法则
+- [[中国需要多久达到或超过-GPT-6-Astra-级别的模型水平-translation]]：中国需要多久达到或超过 GPT-6 Astra 级别的模型水平？——三种答案与 Astra 的事实底稿
+- [[企业级-AI-Coding-的-Harness-工程实战-8-个-Skill-串-translation]]：企业级 AI Coding 的 Harness 工程实战：8 个 Skill 串起全链路
+- [[如何看待特斯拉股价单日大跌近-6-Cybercab上线一天便遭审查-无方向盘-刹-translation]]：特斯拉 Cybercab 上线一天便遭 NHTSA 审查：股价单日跌近 6%，无方向盘车型的隐患与争议
 - [[A-Case-Study-on-Emergent-Cheating-and-Wh-translation]]：自治科研群体中涌现的作弊与举报：一项案例研究
 - [[Clean-Engineering-Unstable-Measurement-A-translation]]：洁净工程，不稳测量：共享端点上黑箱 LLM 观察者的预注册可靠性失败
 - [[Harnessing-the-Universal-Geometry-of-Emb-translation]]：利用嵌入的普适几何
