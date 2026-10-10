@@ -9,6 +9,14 @@ import re
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
 
+def knowledge_files(root):
+    """Match the consistency gate's file-count scope, including infrastructure."""
+    root = pathlib.Path(root)
+    return (list((root / "wiki").rglob("*.md"))
+            + [p for p in (root / "expand").rglob("*.md") if p.name != "gc-report.md"]
+            + [p for p in (root / "working").glob("*.md") if p.name != "AGENTS.md"])
+
+
 def make_slug(title):
     """标题 → 安全 slug。与 curate.py 传给 codex 的文件名 slug 保持一致。"""
     s = re.sub(r"[^\w\u4e00-\u9fff-]+", "-", title)[:40].strip("-")
@@ -173,7 +181,7 @@ def sync_knowledge_graph(moved):
 def sync_expand_index(moved, summaries=None):
     """把 working 作品登记进 expand/index.md「作品输出（working/）」节。"""
     p = ROOT / "expand" / "index.md"
-    if not p.exists() or not moved:
+    if not p.exists():
         return
     summaries = summaries or {}
     t = p.read_text(encoding="utf-8")
@@ -186,17 +194,15 @@ def sync_expand_index(moved, summaries=None):
         if f"[[{stem}]]" in t or f"[[working/{stem}]]" in t:
             continue
         lines.append(f"- [[{stem}]]：{summary}")
-    if not lines:
-        return
     block = "\n".join(lines) + "\n"
-    if header in t:
+    if lines and header in t:
         # 插在该节标题后、下一 ## 前
         m = re.search(rf"({re.escape(header)}\s*\n)", t)
         if m:
             t = t[:m.end()] + "\n" + block + t[m.end():]
         else:
             t = t.rstrip() + "\n" + block
-    else:
+    elif lines:
         # 插在「待办清单」之前，否则文末
         todo = re.search(r"^## 待办清单", t, re.M)
         insert = f"\n{header}\n\n{block}\n"
@@ -207,7 +213,7 @@ def sync_expand_index(moved, summaries=None):
     # 更新文首计数（working 计入全库文件数）
     m = re.search(r"全库共 (\d+) 个 Markdown (?:条目|文件)", t)
     if m:
-        t = t.replace(m.group(0), f"全库共 {int(m.group(1)) + len(lines)} 个 Markdown 文件", 1)
+        t = t.replace(m.group(0), f"全库共 {len(knowledge_files(ROOT))} 个 Markdown 文件", 1)
     today = datetime.date.today().isoformat()
     t = re.sub(r"^updated:.*$", f"updated: {today}", t, count=1, flags=re.M)
     p.write_text(t, encoding="utf-8")

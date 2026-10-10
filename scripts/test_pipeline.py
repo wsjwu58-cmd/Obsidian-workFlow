@@ -6,6 +6,7 @@ import pathlib
 import subprocess
 import sys
 import tempfile
+import tarfile
 import unittest
 from unittest.mock import patch
 
@@ -16,6 +17,7 @@ import gc_report
 import kb_common
 import lint
 import research
+import worker_safety
 
 
 def candidate(verdict="translate", title="Example"):
@@ -86,6 +88,92 @@ class PipelineTests(unittest.TestCase):
             # A previous successful result must not be reused when output is missing.
             with patch.object(research.subprocess, "run", return_value=subprocess.CompletedProcess([], 0, "", "")):
                 self.assertEqual(research.run_codex("prompt", str(prompt)), ("", 1))
+
+    def test_failed_codex_preserves_redacted_diagnostics_not_triage_input(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = pathlib.Path(d)
+            prompt = root / "prompt.md"
+            failure = subprocess.CompletedProcess([], 1, "tool output", "authentication failed: secret-token")
+            output = io.StringIO()
+            with patch.dict(research.os.environ, {"GH_TOKEN": "secret-token"}), \
+                    patch.object(research.subprocess, "run", return_value=failure), \
+                    contextlib.redirect_stdout(output):
+                self.assertEqual(research.run_codex("prompt", str(prompt), diagnostic_dir=root), ("", 1))
+            diagnostics = (root / "prompt.log").read_text(encoding="utf-8")
+            self.assertIn("authentication failed", diagnostics)
+            self.assertIn("[REDACTED]", diagnostics)
+            self.assertNotIn("secret-token", diagnostics + output.getvalue())
+
+    def test_index_recounts_drift_and_existing_translations(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = pathlib.Path(d)
+            for directory in ("wiki", "expand", "working"):
+                (root / directory).mkdir()
+            index = root / "expand/index.md"
+            index.write_text("全库共 999 个 Markdown 文件\n\n## 作品输出（working/）\n"
+                             "- [[One-translation]]：Existing\n", encoding="utf-8")
+            (root / "wiki/New.md").write_text("# New", encoding="utf-8")
+            (root / "working/One-translation.md").write_text("# One", encoding="utf-8")
+            (root / "working/AGENTS.md").write_text("Rules", encoding="utf-8")
+            (root / "expand/gc-report.md").write_text("Report", encoding="utf-8")
+            with patch.object(kb_common, "ROOT", root):
+                kb_common.sync_expand_index(["One-translation.md"])
+                self.assertIn("全库共 3 个 Markdown 文件", index.read_text(encoding="utf-8"))
+                self.assertEqual(index.read_text(encoding="utf-8").count("[[One-translation]]"), 1)
+                (root / "wiki/New.md").unlink()
+                kb_common.sync_expand_index([])
+                self.assertIn("全库共 2 个 Markdown 文件", index.read_text(encoding="utf-8"))
+
+    def test_codex_timeout_preserves_partial_trace(self):
+        with tempfile.TemporaryDirectory() as d, contextlib.redirect_stdout(io.StringIO()):
+            root = pathlib.Path(d)
+            timeout = subprocess.TimeoutExpired("codex", 5, output=b"partial tool trace", stderr=b"pending request")
+            with patch.object(research.subprocess, "run", side_effect=timeout):
+                self.assertEqual(research.run_codex("prompt", str(root / "prompt.md"), timeout=5,
+                                                   diagnostic_dir=root), ("", 1))
+            self.assertIn("partial tool trace", (root / "prompt.log").read_text(encoding="utf-8"))
+
+    def test_worker_backup_preserves_staged_unstaged_deleted_and_nested_untracked(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = pathlib.Path(d).resolve()
+
+            def git(*args):
+                return subprocess.run(["git", *args], cwd=root, check=True,
+                                      capture_output=True).stdout
+
+            git("init")
+            (root / ".gitignore").write_text(".pipeline/\n", encoding="utf-8")
+            (root / "tracked.txt").write_text("original", encoding="utf-8")
+            (root / "deleted.txt").write_text("original", encoding="utf-8")
+            git("add", ".")
+            git("-c", "user.name=Test", "-c", "user.email=test@example.com", "commit", "-m", "baseline")
+            self.assertIsNone(worker_safety.snapshot_worktree(root))
+            (root / "tracked.txt").write_text("staged", encoding="utf-8")
+            git("add", "tracked.txt")
+            (root / "tracked.txt").write_text("unstaged", encoding="utf-8")
+            (root / "deleted.txt").unlink()
+            (root / "nested").mkdir()
+            (root / "nested/空 格.bin").write_bytes(b"\x00\xff\x01")
+            with contextlib.redirect_stdout(io.StringIO()):
+                backup = worker_safety.snapshot_worktree(root)
+            self.assertIn(b"staged", (backup / "staged.patch").read_bytes())
+            self.assertIn(b"unstaged", (backup / "unstaged.patch").read_bytes())
+            manifest = json.loads((backup / "manifest.json").read_text(encoding="utf-8"))
+            self.assertIn("deleted.txt", manifest["paths"])
+            with tarfile.open(backup / "files.tar.gz") as archive:
+                self.assertEqual(archive.extractfile("tracked.txt").read(), b"unstaged")
+                self.assertEqual(archive.extractfile("nested/空 格.bin").read(), b"\x00\xff\x01")
+            # Only this isolated temporary repository is reset.
+            git("reset", "--hard", "HEAD")
+            self.assertEqual((root / "tracked.txt").read_text(), "original")
+            self.assertTrue((backup / "files.tar.gz").is_file())
+
+    def test_worker_backup_failure_propagates_before_reset(self):
+        with tempfile.TemporaryDirectory() as d:
+            failed = subprocess.CalledProcessError(1, ["git", "status"])
+            with patch.object(worker_safety.subprocess, "run", side_effect=failed):
+                with self.assertRaises(subprocess.CalledProcessError):
+                    worker_safety.snapshot_worktree(pathlib.Path(d))
 
     def test_landing_missing_artifacts_retains_pending_and_unmatched_files(self):
         with tempfile.TemporaryDirectory() as d, contextlib.redirect_stdout(io.StringIO()):
