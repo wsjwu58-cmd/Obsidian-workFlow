@@ -23,6 +23,7 @@ import shlex
 import subprocess
 import sys
 import time
+from worker_safety import snapshot_worktree
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
@@ -110,7 +111,31 @@ def known_content_block():
     return "\n".join(lines)
 
 
-def run_codex(prompt, prompt_name, timeout=1200):
+def save_codex_diagnostics(prompt_file, diagnostic_dir, stdout, stderr, outcome):
+    if diagnostic_dir is None:
+        return
+    diagnostic_dir = pathlib.Path(diagnostic_dir)
+    diagnostic_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
+    log = diagnostic_dir / (prompt_file.stem + ".log")
+
+    def as_text(value):
+        return value.decode("utf-8", "replace") if isinstance(value, bytes) else (value or "")
+
+    diagnostics = f"{outcome}\n{as_text(stdout)}\n{as_text(stderr)}"
+    # Tool traces may echo credentials. Redact known values and common credential formats.
+    for key, value in os.environ.items():
+        if len(value) >= 4 and re.search(r"TOKEN|SECRET|PASSWORD|API_KEY", key, re.I):
+            diagnostics = diagnostics.replace(value, "[REDACTED]")
+    diagnostics = re.sub(r"\b(?:sk-|ghp_|github_pat_)[A-Za-z0-9_-]+", "[REDACTED]", diagnostics)
+    diagnostics = re.sub(r"(?i)(authorization\s*[:=]\s*bearer\s+)\S+", r"\1[REDACTED]", diagnostics)
+    log.write_text(diagnostics, encoding="utf-8")
+    log.chmod(0o600)
+    print(f"[research] {outcome}；诊断日志：{log}")
+    if outcome != "Codex exit=0":
+        print(diagnostics[-1500:])
+
+
+def run_codex(prompt, prompt_name, timeout=1200, diagnostic_dir=None):
     prompt_file = pathlib.Path(__import__("tempfile").gettempdir(), prompt_name)
     prompt_file.write_text(prompt, encoding="utf-8")
     output_file = prompt_file.with_suffix(".result.md")
@@ -127,6 +152,8 @@ def run_codex(prompt, prompt_name, timeout=1200):
             cmd, shell=True, cwd=ROOT, capture_output=True, text=True,
             encoding="utf-8", errors="replace", timeout=timeout,
         )
+        save_codex_diagnostics(prompt_file, diagnostic_dir, r.stdout, r.stderr,
+                               f"Codex exit={r.returncode}")
         # stderr includes the echoed prompt and tool traces: never feed it to triage.
         if r.returncode != 0:
             return "", r.returncode
@@ -134,6 +161,11 @@ def run_codex(prompt, prompt_name, timeout=1200):
             print("[research] Codex 未写最终回答，终止（不回退运行日志）")
             return "", 1
         return output_file.read_text(encoding="utf-8"), 0
+    except subprocess.TimeoutExpired as e:
+        save_codex_diagnostics(prompt_file, diagnostic_dir, e.stdout, e.stderr,
+                               f"Codex timeout={timeout}s")
+        print(f"[research] Codex 超时（{timeout}s）")
+        return "", 1
     except Exception as e:
         print(f"[research] codex 调用失败：{type(e).__name__}: {e}")
         return "", 1
@@ -320,6 +352,7 @@ def _run():
     start = today - datetime.timedelta(days=args.days)
     git_ref = os.environ.get("NOTE_GIT_REF", "main")
     if not args.dry_run:
+        snapshot_worktree(ROOT)
         subprocess.run(f"git fetch origin {git_ref}", shell=True, cwd=ROOT,
                        capture_output=True, text=True)
         subprocess.run(f"git checkout {git_ref}", shell=True, cwd=ROOT,
@@ -357,7 +390,7 @@ def _run():
     out_dir.mkdir(parents=True, exist_ok=True)
 
     print("[research] Prompt A：搜索（要求调用 Firecrawl）…")
-    stdout_a, rc_a = run_codex(prompt_a, ".research_search_prompt.md")
+    stdout_a, rc_a = run_codex(prompt_a, ".research_search_prompt.md", diagnostic_dir=out_dir)
     (out_dir / "search.md").write_text(stdout_a, encoding="utf-8")
     if rc_a != 0:
         print(f"[research] Prompt A 失败 rc={rc_a}")
@@ -372,7 +405,7 @@ def _run():
                 .replace("{KNOWN_CONTENT}", known))
 
     print("[research] Prompt B：长分析 + 三档分流…")
-    stdout_b, rc_b = run_codex(prompt_b, ".research_analyze_prompt.md")
+    stdout_b, rc_b = run_codex(prompt_b, ".research_analyze_prompt.md", diagnostic_dir=out_dir)
     (out_dir / "analyze.md").write_text(stdout_b, encoding="utf-8")
     if rc_b != 0:
         print(f"[research] Prompt B 失败 rc={rc_b}")

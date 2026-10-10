@@ -32,6 +32,8 @@ import pathlib
 import re
 import sys
 
+from kb_common import knowledge_files
+
 if sys.platform == "win32":
     try:
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -91,14 +93,7 @@ def is_infra(p: pathlib.Path) -> bool:
 
 
 def all_files():
-    files = [p for p in WIKI.rglob("*.md")]
-    if EXPAND.exists():
-        files += [p for p in EXPAND.rglob("*.md")
-                  if p.name not in CI_ARTIFACTS]
-    working = ROOT / "working"
-    if working.exists():
-        files += [p for p in working.glob("*.md") if p.name != "AGENTS.md"]
-    return files
+    return knowledge_files(ROOT)
 
 
 def index_stem(p: pathlib.Path) -> str:

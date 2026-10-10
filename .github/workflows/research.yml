@@ -14,11 +14,16 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: note-worker-pipeline
+  cancel-in-progress: false
+
 jobs:
   research-and-curate:
     runs-on: ubuntu-latest
     timeout-minutes: 180
     steps:
+      - uses: actions/checkout@v4
       - name: 后台启动 research → curate（全量）并轮询
         env:
           SERVER_HOST: ${{ secrets.WORKER_HOST }}
@@ -33,6 +38,8 @@ jobs:
                     -o ConnectTimeout=20 -o ServerAliveInterval=30 -o ServerAliveCountMax=10
                     -i /tmp/worker_key "${SERVER_USER}@${SERVER_HOST}")
 
+          # Run the new backup helper before touching the worker's older checkout.
+          "${ssh_base[@]}" 'python3 - --root /root/note-worker' < scripts/worker_safety.py
           "${ssh_base[@]}" "bash -s" <<REMOTE
           set -euo pipefail
           cd /root/note-worker
@@ -40,17 +47,18 @@ jobs:
           git fetch origin main
           git checkout main
           git reset --hard origin/main
+          /usr/bin/python3 scripts/check_consistency.py
           rm -f /tmp/pipeline.log /tmp/pipeline.exit /tmp/.research.lock /tmp/.curate.lock
           nohup env NOTE_GIT_REF=main bash -c '
             set +e
             cd /root/note-worker
             echo "=== research.py --max ${RESEARCH_MAX} ==="
-            /usr/bin/python3 scripts/research.py --max ${RESEARCH_MAX}
+            /usr/bin/python3 -u scripts/research.py --max ${RESEARCH_MAX}
             rc1=\$?
             echo "=== research exit \$rc1 ==="
             if [ \$rc1 -ne 0 ]; then echo \$rc1 > /tmp/pipeline.exit; exit \$rc1; fi
             echo "=== curate.py --limit 0（全部待处理）==="
-            /usr/bin/python3 scripts/curate.py --limit 0
+            /usr/bin/python3 -u scripts/curate.py --limit 0
             rc2=\$?
             echo "=== curate exit \$rc2 ==="
             echo "=== done ==="

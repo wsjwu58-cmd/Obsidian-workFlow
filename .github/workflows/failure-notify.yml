@@ -3,6 +3,7 @@ name: 失败告警
 on:
   workflow_run:
     workflows:
+      - 情报追踪（Research → 全量 Curate）
       - 采集与过滤
       - AI 加工（深度 Ingest）
       - 每日巡检

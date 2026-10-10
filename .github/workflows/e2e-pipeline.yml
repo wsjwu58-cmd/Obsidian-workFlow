@@ -20,11 +20,16 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: note-worker-pipeline
+  cancel-in-progress: false
+
 jobs:
   e2e:
     runs-on: ubuntu-latest
     timeout-minutes: 180
     steps:
+      - uses: actions/checkout@v4
       - name: 后台启动 + 轮询
         env:
           SERVER_HOST: ${{ secrets.WORKER_HOST }}
@@ -42,6 +47,7 @@ jobs:
                     -i /tmp/worker_key "${SERVER_USER}@${SERVER_HOST}")
 
           # 1) 准备并后台启动（短连接）
+          "${ssh_base[@]}" 'python3 - --root /root/note-worker' < scripts/worker_safety.py
           "${ssh_base[@]}" "bash -s" <<REMOTE
           set -euo pipefail
           cd /root/note-worker

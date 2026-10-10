@@ -1,0 +1,42 @@
+name: 恢复未提交译文
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: note-worker-pipeline
+  cancel-in-progress: false
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: 只读扫描服务器译文与 Git 暂存对象
+        env:
+          SERVER_HOST: ${{ secrets.WORKER_HOST }}
+          SERVER_SSH_KEY: ${{ secrets.WORKER_SSH_KEY }}
+          SERVER_USER: ${{ secrets.WORKER_USER }}
+        run: |
+          set -euo pipefail
+          echo "$SERVER_SSH_KEY" > /tmp/worker_key
+          chmod 600 /tmp/worker_key
+          ssh_options=(-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
+                       -o ConnectTimeout=20 -o ServerAliveInterval=30 -i /tmp/worker_key)
+          code=0
+          ssh "${ssh_options[@]}" "${SERVER_USER}@${SERVER_HOST}" \
+            'python3 - --root /root/note-worker --output /tmp/note-recovered-22.tar.gz' \
+            < scripts/recover_translations.py || code=$?
+          scp "${ssh_options[@]}" "${SERVER_USER}@${SERVER_HOST}:/tmp/note-recovered-22.tar.gz" recovered-22.tar.gz
+          exit "$code"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: recovered-22-translations
+          path: recovered-22.tar.gz
+          if-no-files-found: error
+          retention-days: 7

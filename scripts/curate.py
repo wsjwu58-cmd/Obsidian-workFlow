@@ -29,6 +29,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from kb_common import land_translations, make_slug
+from worker_safety import snapshot_worktree
 
 
 def sh(cmd, cwd=None, check=True):
@@ -170,6 +171,7 @@ def _run():
             print(f"  [dry] {q['title'][:60]} | {q['url']}")
         return 0
 
+    snapshot_worktree(ROOT)
     pull = sh("git pull --rebase origin main", check=False)
     if pull.returncode != 0:
         print(f"[curate] git pull 警告：{pull.stderr[-300:]}")
@@ -185,6 +187,12 @@ def _run():
         return 1
     sh(f"git reset --hard origin/{git_ref}", check=False)
     sh("git clean -fd candidates 2>/dev/null || true", check=False)
+
+    gate = sh(f'"{sys.executable}" scripts/check_consistency.py --quiet', check=False)
+    if gate.returncode != 0:
+        print(gate.stdout)
+        print("[curate] 基线一致性检查失败，终止加工")
+        return 1
 
     merged_queue = merge_pipeline_queue() if replay_urls is None else False
 
