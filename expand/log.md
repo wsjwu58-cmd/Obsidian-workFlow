@@ -8,6 +8,11 @@ tags: [知识库, 日志]
 
 > 时间倒序排列
 
+## [2026-10-11] lint | 巡检报告
+
+- 巡检时间：2026-10-11 | 条目数：281 | 断链：0 | 孤立：0 | 重复对：0 | pending：0 | index 缺失：0 | 空笔记：5
+
+
 ## [2026-10-10] curate | recovered-20261003-22
 - 收录：AI-写出来的代码越来越多-未来的软件会不会变得-没人真正看得懂-translation.md, AutoCompact-Learning-When-to-Compact-Con-translation.md, Beyond-the-Hype-The-Efficiency-Throughpu-translation.md, Beyond-the-Model-Demystifying-Harness-Ef-translation.md, Efficient-Test-Time-Adaptation-through-H-translation.md, Engineering-the-harness-A-practical-patt-translation.md, Environment-Evolution-for-Terminal-Agent-translation.md, How-well-do-agents-use-test-verification-translation.md, Introducing-the-Agents-API-translation.md, Making-production-ready-agents-the-defau-translation.md, One-shotting-a-Raccoon-Heist-game-using-translation.md, Organizing-Context-in-a-Multi-Agent-Harn-translation.md, SENTINEL-RL-Offloading-Topological-Reaso-translation.md, Six-Agent-Orchestration-Patterns-translation.md, SoL-Pi-Scaling-Auto-Research-Loops-for-E-translation.md, Terminal-Universe-Turning-Agent-Trajecto-translation.md, The-Anatomy-of-Harness-Engineering-How-t-translation.md, The-Natural-Language-Interaction-Protoco-translation.md, The-new-rules-of-context-engineering-for-translation.md, 中国需要多久达到或超过-GPT-6-Astra-级别的模型水平-translation.md, 企业级-AI-Coding-的-Harness-工程实战-8-个-Skill-串-translation.md, 如何看待特斯拉股价单日大跌近-6-Cybercab上线一天便遭审查-无方向盘-刹-translation.md
 - 恢复：2026-10-03 批次的 22 篇原译文，逐文件核对 Git blob 哈希；未重新翻译。
