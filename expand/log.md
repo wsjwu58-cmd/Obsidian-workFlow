@@ -8,6 +8,14 @@ tags: [知识库, 日志]
 
 > 时间倒序排列
 
+## [2026-11-21] feedback | 失败反馈：情报追踪（Research → 全量 Curate）
+
+- 运行：情报追踪（Research → 全量 Curate）（id 44858711114，分支 main@95c4127）
+- 链接：https://github.com/wsjwu58-cmd/Obsidian-workFlow/actions/runs/44858711114
+- 信号分类：`infra`
+- 处理建议：见 `scripts/gc_report.py` 或人工复盘后，把根因补齐到本条
+
+
 ## [2026-11-20] lint | 巡检报告
 
 - 巡检时间：2026-11-20 | 条目数：281 | 断链：0 | 孤立：0 | 重复对：0 | pending：0 | index 缺失：0 | 空笔记：5
